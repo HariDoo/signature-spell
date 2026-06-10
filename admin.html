@@ -3,13 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Administration panel for Signature Spell. Authenticate with Google SSO, add/remove product inventory, and update order statuses.">
-  <title>Admin Dashboard | Signature Spell</title>
+  <meta name="description" content="Administration panel for Signature Spell. Authenticate with Google SSO, manage users, add/remove product inventory, and update order statuses.">
+  <title>Admin Control Panel | Signature Spell</title>
   
-  <!-- CSS Link -->
+  <!-- CSS Links -->
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
+
+  <!-- Access Denied Overlay (shown to non-admins) -->
+  <div id="accessDeniedOverlay" class="loading-overlay" style="display: none; background-color: var(--color-cream);">
+    <div style="text-align: center; max-width: 400px; padding: 40px; border: 1px solid var(--color-light-gray); background: white;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="none" stroke="#cf222e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="margin-bottom: 20px;">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+      <h2 style="font-size: 1.8rem; margin-bottom: 10px; color: #cf222e;">Access Denied</h2>
+      <p style="color: var(--color-muted-gray); margin-bottom: 24px;">You do not possess the required administrator credentials to view this page.</p>
+      <a href="index.html" class="btn btn-primary btn-block">Return to Home</a>
+    </div>
+  </div>
+
+  <!-- Loading Spinner Overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <p style="font-family: var(--font-heading); color: var(--color-charcoal);">Verifying security privileges...</p>
+  </div>
+
+  <!-- Impersonation Banner (shown when impersonating a client user) -->
+  <div id="impersonationBanner" class="impersonation-banner" style="display: none;">
+    <span>You are currently simulating page views as user: <strong id="impersonatedUser">client@example.com</strong></span>
+    <button id="stopImpersonationBtn">Stop Simulation</button>
+  </div>
 
   <!-- Sticky Luxury Header -->
   <header class="header">
@@ -40,19 +66,16 @@
       </nav>
       
       <div class="nav-icons">
-        <!-- Wishlist -->
         <a href="shop.html" class="icon-btn" id="wishlist-btn" aria-label="Wishlist" style="position: relative;">
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
           <span class="wishlist-count" id="wishlist-badge-count" style="display: none;">0</span>
         </a>
         
-        <!-- Cart -->
         <a href="cart.html" class="icon-btn" id="cart-btn" aria-label="Shopping Cart">
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
           <span class="cart-count" id="cart-badge-count">0</span>
         </a>
         
-        <!-- User Account -->
         <a href="#" class="icon-btn" id="user-btn" aria-label="User Account">
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         </a>
@@ -90,42 +113,484 @@
     </div>
   </section>
 
-  <!-- Admin CRUD Workspace (Populated dynamically by main.js) -->
-  <section class="admin-workspace-section" style="background-color: var(--color-cream); min-height: 50vh;">
-    <div class="container" id="admin-page-workspace">
-      <!-- Loaded dynamically via js/main.js (renderAdminDashboard) -->
-      <div style="text-align:center; padding: 80px 0;">
-        <p>Loading administration console details...</p>
+  <!-- Admin Console Main Workspace -->
+  <section class="admin-workspace-section" style="background-color: var(--color-cream); min-height: 80vh; padding: 40px 0;">
+    <div class="container" id="admin-workspace-root">
+      
+      <!-- Admin Page Header -->
+      <div class="admin-header">
+        <div>
+          <h2 style="font-family: var(--font-heading); font-size: 1.8rem;">Control Center</h2>
+          <span style="font-size:0.75rem; color:var(--color-muted-gray); text-transform:uppercase; letter-spacing:0.1em; font-weight:700;">Signature Spell Management Portal</span>
+        </div>
+        <div class="admin-user-info">
+          <span>Hello, <strong id="admin-user-fullname">Administrator</strong></span>
+          <button class="btn btn-secondary btn-small" onclick="handleAdminPageLogout()">Log Out</button>
+        </div>
       </div>
+
+      <!-- Stats Cards Row -->
+      <div class="stats-grid">
+        <div class="stats-card">
+          <div class="stats-icon">👥</div>
+          <div class="stats-info">
+            <h3 id="stat-total-users">0</h3>
+            <p>Total Users</p>
+          </div>
+        </div>
+        <div class="stats-card">
+          <div class="stats-icon">📦</div>
+          <div class="stats-info">
+            <h3 id="stat-total-orders">0</h3>
+            <p>Active Orders</p>
+          </div>
+        </div>
+        <div class="stats-card">
+          <div class="stats-icon">🕯️</div>
+          <div class="stats-info">
+            <h3 id="stat-total-candles">0</h3>
+            <p>Total Candles</p>
+          </div>
+        </div>
+        <div class="stats-card">
+          <div class="stats-icon">⚡</div>
+          <div class="stats-info">
+            <h3 id="stat-pending-shipments">0</h3>
+            <p>Pending Orders</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Split Layout Columns -->
+      <div class="admin-main-grid">
+        
+        <!-- Left Column: User lists & Fragrance management -->
+        <div>
+          <!-- User Management Card -->
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h2>User Registry</h2>
+              <button class="btn btn-primary btn-small" onclick="openAddUserModal()">+ Add User</button>
+            </div>
+            
+            <div class="admin-filters">
+              <input type="text" id="admin-user-search" placeholder="Search by email...">
+              <select id="admin-role-filter">
+                <option value="all">All Roles</option>
+                <option value="admin">Admins</option>
+                <option value="user">Users</option>
+              </select>
+              <select id="admin-status-filter">
+                <option value="all">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="disabled">Disabled</option>
+              </select>
+            </div>
+
+            <div class="admin-table-container">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Email Address</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-user-table-body">
+                  <tr>
+                    <td colspan="5" style="text-align: center; color: var(--color-muted-gray);">No users found.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="pagination" id="admin-user-pagination">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Manage Fragrances (Candle Catalog CRUD) -->
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h2>Manage Fragrances</h2>
+            </div>
+            
+            <!-- Add Form -->
+            <form id="admin-add-product-form" style="margin-bottom: 24px; border-bottom:1px solid var(--color-light-gray); padding-bottom:20px;">
+              <h5 style="margin-bottom:12px; font-weight:700; font-family: var(--font-body); font-size: 0.9rem; text-transform: uppercase;">Add New Candle</h5>
+              
+              <div class="admin-filters" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 10px;">
+                <input type="text" id="add-prod-name" required placeholder="E.g., Vanilla Wood Candle">
+                <input type="number" id="add-prod-price" required placeholder="INR Price (₹)">
+                <select id="add-prod-category" required>
+                  <option value="Tea Lights">Tea Lights</option>
+                  <option value="Jars">Glass Jars</option>
+                  <option value="Shells">Coconut Shells</option>
+                </select>
+              </div>
+
+              <div class="admin-filters" style="grid-template-columns: 2fr 1fr; margin-bottom: 15px;">
+                <input type="text" id="add-prod-image" value="assets/regular_tlight.png" required placeholder="Image URL path">
+                <input type="text" id="add-prod-notes" placeholder="Top, Heart, Base notes (comma separated)">
+              </div>
+
+              <button type="submit" class="btn btn-accent btn-block" style="padding:10px; font-size:0.8rem;">Add Candle to Storefront</button>
+            </form>
+            
+            <div class="admin-table-container">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Vessel</th>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th style="text-align:right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-product-table-body">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Customer Orders Card -->
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h2>Customer Orders</h2>
+            </div>
+            
+            <div class="admin-table-container">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Date</th>
+                    <th>Customer</th>
+                    <th>Status</th>
+                    <th>Update Tracking</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-orders-table-body">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Quick Actions, Announcements, Audit logs -->
+        <div>
+          
+          <!-- Quick Actions Panel -->
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h2>Quick Actions</h2>
+            </div>
+            <div class="quick-actions-grid">
+              <button class="quick-action-btn" onclick="openAnnouncementModal()">
+                <i>📣</i>
+                <span>Announce</span>
+              </button>
+              <button class="quick-action-btn" onclick="triggerBackupData()">
+                <i>💾</i>
+                <span>Backup</span>
+              </button>
+              <button class="quick-action-btn" onclick="openMaintenanceModal()">
+                <i>🔧</i>
+                <span>Maintenance</span>
+              </button>
+              <button class="quick-action-btn" onclick="triggerExportUsers()">
+                <i>📥</i>
+                <span>Export Users</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Active Announcements List -->
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h2>Announcements</h2>
+            </div>
+            <div id="admin-announcements-feed" style="display: flex; flex-direction: column; gap: 12px;">
+              <p style="color: var(--color-muted-gray); font-size: 0.9rem; text-align: center;">No active bulletins.</p>
+            </div>
+          </div>
+
+          <!-- Admin Access Card -->
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h2>Admin Access</h2>
+              <button class="btn btn-primary btn-small" onclick="openAddAdminModal()">+ Add Admin</button>
+            </div>
+            <div id="admin-managers-list" style="display: flex; flex-direction: column; gap: 10px;">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- Recent Activity Card -->
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h2>Recent Actions</h2>
+            </div>
+            <div id="admin-activity-feed" style="font-size: 0.85rem; color: var(--color-charcoal); display: flex; flex-direction: column; gap: 10px;">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Audit Logs Row -->
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h2>Administrative Audit Trails</h2>
+          <button class="btn btn-secondary btn-small" onclick="triggerClearAuditLogs()">Clear Old Trails</button>
+        </div>
+        <div class="admin-table-container">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Administrator</th>
+                <th>Action</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody id="admin-audit-logs-body">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   </section>
 
-  <!-- Global Auth Login Modal (also accessible on admin page for standard users) -->
-  <div class="modal-overlay" id="auth-modal-overlay">
-    <div class="auth-modal">
-      <button class="modal-close" id="auth-modal-close">&times;</button>
-      <h3 class="auth-title" id="auth-form-title">Welcome Back</h3>
-      
-      <form id="auth-email-form">
+  <!-- Modals Overlay System -->
+  
+  <!-- Modal: Add User -->
+  <div class="modal-overlay" id="modal-add-user">
+    <div class="admin-modal">
+      <button class="modal-close" onclick="closeAllAdminModals()">&times;</button>
+      <h3 class="modal-title">Create User Account</h3>
+      <div id="alert-add-user"></div>
+      <form id="form-add-user">
         <div class="form-group">
-          <label for="auth-email-input">Email Address</label>
-          <input type="email" id="auth-email-input" required placeholder="E.g., name@example.com">
+          <label for="add-user-email">Email Address</label>
+          <input type="email" id="add-user-email" required placeholder="E.g., client@example.com">
         </div>
         <div class="form-group">
-          <label for="auth-pass-input">Password</label>
-          <input type="password" id="auth-pass-input" required placeholder="Enter password">
+          <label for="add-user-password">Temporary Password</label>
+          <input type="text" id="add-user-password" required minlength="6" placeholder="At least 6 characters">
         </div>
-        <button type="submit" class="btn btn-primary btn-block" id="auth-submit-btn">Sign In</button>
+        <div class="form-group">
+          <label for="add-user-name">Display Name (Optional)</label>
+          <input type="text" id="add-user-name" placeholder="E.g., Jane Smith">
+        </div>
+        <div class="form-group">
+          <label for="add-user-role">Account Privilege</label>
+          <select id="add-user-role">
+            <option value="user">Standard Client</option>
+            <option value="admin">Administrator</option>
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-small" onclick="closeAllAdminModals()">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-small">Register Account</button>
+        </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add Admin -->
+  <div class="modal-overlay" id="modal-add-admin">
+    <div class="admin-modal">
+      <button class="modal-close" onclick="closeAllAdminModals()">&times;</button>
+      <h3 class="modal-title">Grant Administrative Access</h3>
+      <div id="alert-add-admin"></div>
+      <form id="form-add-admin">
+        <div class="form-group">
+          <label for="add-admin-email">Existing User Email</label>
+          <input type="email" id="add-admin-email" required placeholder="Enter the user's email address">
+        </div>
+        <div class="form-group">
+          <label for="add-admin-notes">Administrative Notes</label>
+          <input type="text" id="add-admin-notes" placeholder="E.g., Senior Inventory manager role">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-small" onclick="closeAllAdminModals()">Cancel</button>
+          <button type="submit" class="btn btn-accent btn-small">Grant Privileges</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Edit User -->
+  <div class="modal-overlay" id="modal-edit-user">
+    <div class="admin-modal">
+      <button class="modal-close" onclick="closeAllAdminModals()">&times;</button>
+      <h3 class="modal-title">Update User Details</h3>
+      <div id="alert-edit-user"></div>
+      <form id="form-edit-user">
+        <input type="hidden" id="edit-user-id">
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="edit-user-email" readonly disabled style="opacity: 0.6;">
+        </div>
+        <div class="form-group">
+          <label for="edit-user-name">Display Name</label>
+          <input type="text" id="edit-user-name">
+        </div>
+        <div class="form-group">
+          <label for="edit-user-role">Role</label>
+          <select id="edit-user-role">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="edit-user-status">Status</label>
+          <select id="edit-user-status">
+            <option value="active">Active</option>
+            <option value="disabled">Disabled</option>
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-small" onclick="closeAllAdminModals()">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-small">Save Updates</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: User Details & Action Options -->
+  <div class="modal-overlay" id="modal-user-actions">
+    <div class="admin-modal">
+      <button class="modal-close" onclick="closeAllAdminModals()">&times;</button>
+      <h3 class="modal-title">User Account Actions</h3>
       
-      <div class="sso-divider">Or SSO</div>
+      <div style="background-color: var(--color-cream-dark); padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+        <p><strong>Email:</strong> <span id="action-user-email">-</span></p>
+        <p><strong>Display Name:</strong> <span id="action-user-name">-</span></p>
+        <p><strong>Status:</strong> <span id="action-user-status" class="badge badge-info">Active</span></p>
+      </div>
+
+      <div class="user-actions-grid">
+        <button class="action-btn" id="btn-action-impersonate">
+          <span>Simulate Client View</span>
+          <small>Browse site as this user</small>
+        </button>
+        <button class="action-btn" id="btn-action-reset-pass">
+          <span>Reset Password Link</span>
+          <small>Dispatch recovery email</small>
+        </button>
+        <button class="action-btn" id="btn-action-toggle-status">
+          <span>Toggle Status</span>
+          <small>Activate/Disable user</small>
+        </button>
+        <button class="action-btn" id="btn-action-view-data">
+          <span>Inspect User Orders</span>
+          <small>View client orders history</small>
+        </button>
+        <button class="action-btn action-btn-danger" id="btn-action-delete-user" style="grid-column: 1 / -1;">
+          <span>Permanently Delete User</span>
+          <small>Erase credentials and records</small>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: View User Orders Data -->
+  <div class="modal-overlay" id="modal-view-user-data">
+    <div class="admin-modal" style="max-width: 800px;">
+      <button class="modal-close" onclick="closeAllAdminModals()">&times;</button>
+      <h3 class="modal-title">User Orders History - <span id="user-orders-title-email"></span></h3>
       
-      <button class="btn btn-google-sso" id="google-sso-btn">
-        <svg viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5.04c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 1.84 14.96 1 12 1 7.35 1 3.37 3.68 1.41 7.59l3.79 2.94C6.11 7.25 8.84 5.04 12 5.04z"/><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.46c-.29 1.48-1.14 2.73-2.4 3.58l3.76 2.91c2.2-2.03 3.67-5.02 3.67-8.64z"/><path fill="#FBBC05" d="M5.2 14.75c-.24-.72-.38-1.49-.38-2.3c0-.81.14-1.59.38-2.3L1.41 7.21C.51 9.02 0 11.01 0 13.1c0 2.09.51 4.08 1.41 5.89l3.79-3.24z"/><path fill="#34A853" d="M12 23c3.24 0 5.97-1.09 7.96-2.96l-3.76-2.91c-1.11.75-2.53 1.21-4.2 1.21-3.16 0-5.89-2.21-6.84-5.49L1.36 16.1C3.32 20.02 7.3 23 12 23z"/></svg>
-        Sign In with Google
-      </button>
+      <div class="tabs-nav">
+        <button class="tab-link active" onclick="switchUserDataTab('user-orders')">Orders Placed</button>
+        <button class="tab-link" onclick="switchUserDataTab('user-stats')">Activity Metrics</button>
+      </div>
+
+      <div id="tab-user-orders" class="tab-content-panel active">
+        <div class="admin-table-container">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Date</th>
+                <th>Fragrances</th>
+                <th>Amount</th>
+                <th>Tracking</th>
+              </tr>
+            </thead>
+            <tbody id="user-orders-table-rows">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="tab-user-stats" class="tab-content-panel">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px 0;">
+          <div style="background-color: var(--color-cream); padding: 20px; text-align: center; border-radius: 4px;">
+            <p style="font-size: 0.8rem; text-transform: uppercase; color: var(--color-muted-gray);">Total Purchases</p>
+            <h4 style="font-size: 2rem; font-weight: 700; color: var(--color-gold);" id="user-metric-total-amount">₹0</h4>
+          </div>
+          <div style="background-color: var(--color-cream); padding: 20px; text-align: center; border-radius: 4px;">
+            <p style="font-size: 0.8rem; text-transform: uppercase; color: var(--color-muted-gray);">Order Volumes</p>
+            <h4 style="font-size: 2rem; font-weight: 700; color: var(--color-gold);" id="user-metric-total-orders">0</h4>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Bulletins & Announcements -->
+  <div class="modal-overlay" id="modal-announcement">
+    <div class="admin-modal">
+      <button class="modal-close" onclick="closeAllAdminModals()">&times;</button>
+      <h3 class="modal-title">Create Scentportal Bulletin</h3>
+      <div id="alert-announcement"></div>
+      <form id="form-announcement">
+        <div class="form-group">
+          <label for="announcement-title">Headline Title</label>
+          <input type="text" id="announcement-title" required placeholder="E.g., Scheduled Database Maintenance">
+        </div>
+        <div class="form-group">
+          <label for="announcement-message">Bulletin Message Description</label>
+          <textarea id="announcement-message" rows="4" required placeholder="Detail the bulletin information for active administrators..." style="width:100%; padding:10px; border:1px solid var(--color-light-gray); font-family: var(--font-body);"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-small" onclick="closeAllAdminModals()">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-small">Broadcast Bulletin</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Maintenance Mode Toggle -->
+  <div class="modal-overlay" id="modal-maintenance">
+    <div class="admin-modal">
+      <button class="modal-close" onclick="closeAllAdminModals()">&times;</button>
+      <h3 class="modal-title">Maintenance Mode System</h3>
+      <div id="alert-maintenance"></div>
       
-      <p class="auth-switch" id="auth-switch-desc">Don't have an account? <a href="#" id="auth-switch-link">Sign Up</a></p>
+      <p style="margin-bottom: 20px;">
+        Enabling maintenance mode will restrict access to storefront sections, allowing only authorized administrators to perform updates.
+      </p>
+
+      <div style="background-color: var(--color-cream); padding: 20px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <div>
+          <strong style="font-size: 1rem;">System State Status</strong>
+          <p id="maintenance-status-label" style="font-size: 0.85rem; color: var(--color-muted-gray);">State: Inactive (Normal operations)</p>
+        </div>
+        <button class="btn btn-secondary btn-small" id="maintenance-toggle-btn" onclick="toggleMaintenanceState()">Activate Maintenance</button>
+      </div>
     </div>
   </div>
 
@@ -153,16 +618,6 @@
       </div>
       
       <div class="footer-col">
-        <h4>Support</h4>
-        <ul class="footer-links">
-          <li><a href="contact.html">Contact Us</a></li>
-          <li><a href="order-tracking.html">Track Your Order</a></li>
-          <li><a href="contact.html">Bulk & Wholesale</a></li>
-          <li><a href="terms.html">Terms & Conditions</a></li>
-        </ul>
-      </div>
-      
-      <div class="footer-col">
         <h4>Philosophy</h4>
         <ul class="footer-links">
           <li><a href="about.html">Our Sourcing</a></li>
@@ -174,12 +629,6 @@
     
     <div class="container footer-bottom">
       <p>&copy; 2026 Signature Spell Candles. All rights reserved. Designed for clean, warm homes.</p>
-      <div class="footer-cards">
-        <span>Pay</span>
-        <span>💳Visa</span>
-        <span>💳MC</span>
-        <span>💳Amex</span>
-      </div>
     </div>
   </footer>
 
@@ -190,5 +639,6 @@
 
   <!-- Core JavaScript -->
   <script src="js/main.js"></script>
+  <script src="js/admin.js"></script>
 </body>
 </html>

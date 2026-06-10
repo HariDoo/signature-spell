@@ -1,17 +1,77 @@
 {
   "rules": {
     "products": {
-      // Anyone can view the catalog of candles
       ".read": true,
-      // Only administrators can add/edit/delete fragrances
-      ".write": "auth != null && (auth.token.email.beginsWith('admin') || auth.token.email === 'admin@signaturespell.com')"
+      ".write": "auth != null && (auth.token.email.beginsWith('admin') || auth.token.email === 'admin@signaturespell.com' || auth.token.email === 'nandheswara21@gmail.com' || root.child('users/' + auth.uid + '/role').val() === 'admin')"
     },
     "orders": {
-      // Anyone can query tracking status
       ".read": true,
-      // Anyone can submit a new order, but updating/modifying existing orders requires authentication
       "$orderId": {
         ".write": "!data.exists() || auth != null"
+      }
+    },
+    "adminUsers": {
+      ".read": "auth != null",
+      ".write": "auth != null && (auth.token.email === 'nandheswara21@gmail.com' || auth.token.email === 'admin@signaturespell.com' || root.child('users/' + auth.uid + '/role').val() === 'admin')",
+      ".indexOn": ["email", "active"]
+    },
+    "adminLogs": {
+      ".read": "auth != null && (auth.token.email === 'nandheswara21@gmail.com' || auth.token.email === 'admin@signaturespell.com' || root.child('users/' + auth.uid + '/role').val() === 'admin')",
+      ".write": "auth != null",
+      ".indexOn": ["timestamp", "action", "adminId"]
+    },
+    "systemSettings": {
+      ".read": "auth != null",
+      ".write": "auth != null && (auth.token.email === 'nandheswara21@gmail.com' || auth.token.email === 'admin@signaturespell.com' || root.child('users/' + auth.uid + '/role').val() === 'admin')",
+      "allowRegistration": {
+        ".read": true
+      }
+    },
+    "maintenanceMode": {
+      ".read": true,
+      ".write": "auth != null && (auth.token.email === 'nandheswara21@gmail.com' || auth.token.email === 'admin@signaturespell.com' || root.child('users/' + auth.uid + '/role').val() === 'admin')"
+    },
+    "announcements": {
+      ".read": "auth != null",
+      ".write": "auth != null && (auth.token.email === 'nandheswara21@gmail.com' || auth.token.email === 'admin@signaturespell.com' || root.child('users/' + auth.uid + '/role').val() === 'admin')"
+    },
+    "emailQueue": {
+      ".read": "auth != null && (auth.token.email === 'nandheswara21@gmail.com' || auth.token.email === 'admin@signaturespell.com' || root.child('users/' + auth.uid + '/role').val() === 'admin')",
+      ".write": "auth != null"
+    },
+    "users": {
+      ".read": "auth != null && (auth.token.email === 'nandheswara21@gmail.com' || auth.token.email === 'admin@signaturespell.com' || root.child('users/' + auth.uid + '/role').val() === 'admin')",
+      ".write": "auth != null && (auth.token.email === 'nandheswara21@gmail.com' || auth.token.email === 'admin@signaturespell.com' || root.child('users/' + auth.uid + '/role').val() === 'admin')",
+      "$uid": {
+        ".read": "auth.uid === $uid",
+        ".write": "auth.uid === $uid",
+        "profile": {
+          ".validate": "newData.hasChild('email')"
+        },
+        "phoneNumber": {
+          ".validate": "newData.isString() && newData.val().length <= 20"
+        },
+        "role": {
+          ".validate": "newData.isString()"
+        },
+        "status": {
+          ".validate": "newData.isString()"
+        },
+        "email": {
+          ".validate": "newData.isString()"
+        },
+        "displayName": {
+          ".validate": "newData.isString()"
+        },
+        "createdAt": {
+          ".validate": "newData.isNumber()"
+        },
+        "lastActive": {
+          ".validate": "newData.isNumber()"
+        },
+        "metadata": {
+          ".validate": true
+        }
       }
     }
   }

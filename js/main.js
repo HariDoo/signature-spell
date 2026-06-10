@@ -343,15 +343,30 @@ function tryInitFirebase() {
       console.log("Firebase Realtime Database connection established successfully.");
       
       // Auto listen to Auth changes
-      auth.onAuthStateChanged(user => {
+      auth.onAuthStateChanged(async (user) => {
         if (user) {
+          let isAdmin = user.email === "admin@signaturespell.com" || user.email === "nandheswara21@gmail.com" || user.email.startsWith("admin");
           UserSession.set({
             name: user.displayName || user.email.split("@")[0],
             email: user.email,
             photo: user.photoURL,
             uid: user.uid,
-            isAdmin: user.email === "admin@signaturespell.com" || user.email.startsWith("admin")
+            isAdmin: isAdmin
           });
+          
+          try {
+            const roleSnap = await db.ref("users/" + user.uid + "/role").once("value");
+            if (roleSnap.exists()) {
+              const role = roleSnap.val();
+              UserSession.set({
+                name: user.displayName || user.email.split("@")[0],
+                email: user.email,
+                photo: user.photoURL,
+                uid: user.uid,
+                isAdmin: role === "admin" || isAdmin
+              });
+            }
+          } catch(e) {}
         } else {
           UserSession.clear();
         }
@@ -432,9 +447,11 @@ function initAuthModal() {
       e.preventDefault();
       const user = UserSession.get();
       if (user) {
-        // If logged in, clicking icon acts as toggle/logout or redirects admin to admin portal
+        // Route admins to admin dashboard, standard users to profile settings
         if (user.isAdmin && getPageName() !== "admin.html") {
           window.location.href = "admin.html";
+        } else if (!user.isAdmin && getPageName() !== "profile.html") {
+          window.location.href = "profile.html";
         } else {
           if (confirm(`Logged in as ${user.name}. Would you like to log out?`)) {
             if (isFirebaseInitialized) {
@@ -522,15 +539,7 @@ function initAuthModal() {
             .catch(err => alert(err.message));
         }
       } else {
-        // Mock Login Flow
-        const isMockAdmin = email.startsWith("admin");
-        UserSession.set({
-          name: isMockAdmin ? "Admin Manager" : email.split("@")[0],
-          email: email,
-          isAdmin: isMockAdmin
-        });
-        overlay.classList.remove("active");
-        showToast(isLoginState ? "Signed in successfully (Demo)!" : "Registered successfully (Demo)!");
+        alert("Firebase is not initialized. Please connect your credentials.");
       }
       authForm.reset();
     });
@@ -548,14 +557,7 @@ function initAuthModal() {
           })
           .catch(err => alert(err.message));
       } else {
-        // Mock Google SSO
-        UserSession.set({
-          name: "Dev Scentmaster",
-          email: "aroma.dev@signaturespell.com",
-          isAdmin: true
-        });
-        overlay.classList.remove("active");
-        showToast("Signed in via Google SSO (Demo)!");
+        alert("Firebase is not initialized. Please connect your credentials.");
       }
     });
   }
