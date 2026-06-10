@@ -419,7 +419,6 @@ function initNavigation() {
   }
 }
 
-// Dynamic Badge Counters
 function updateCartBadge() {
   const badge = document.getElementById("cart-badge-count");
   if (badge) {
@@ -427,6 +426,47 @@ function updateCartBadge() {
     badge.textContent = count;
     badge.style.display = count > 0 ? "flex" : "none";
   }
+  updateFloatingCartBar();
+}
+
+function updateFloatingCartBar() {
+  const page = getPageName();
+  if (page === "cart.html" || page === "checkout.html") {
+    const bar = document.getElementById("floating-cart-bar");
+    if (bar) bar.style.display = "none";
+    return;
+  }
+
+  let bar = document.getElementById("floating-cart-bar");
+  const cart = CartStorage.get();
+  const count = CartStorage.count();
+
+  if (count === 0) {
+    if (bar) bar.style.display = "none";
+    return;
+  }
+
+  let subtotal = 0;
+  cart.forEach(item => {
+    const p = PRODUCTS.find(prod => prod.id === item.id);
+    if (p) subtotal += p.price * item.qty;
+  });
+
+  if (!bar) {
+    bar = document.createElement("div");
+    bar.id = "floating-cart-bar";
+    document.body.appendChild(bar);
+  }
+
+  bar.style.display = "flex";
+  bar.innerHTML = `
+    <div class="floating-cart-info">
+      <span class="floating-cart-count">${count} ${count === 1 ? 'item' : 'items'}</span>
+      <span class="floating-cart-divider">|</span>
+      <span class="floating-cart-total">₹${subtotal}</span>
+    </div>
+    <a href="cart.html" class="floating-cart-btn">Checkout &rarr;</a>
+  `;
 }
 
 function updateWishlistBadge() {
