@@ -2,31 +2,32 @@
    SIGNATURE SPELL - CSS STYLING FOUNDATION
    ========================================================================== */
 
-/* Import Playfair Display (Headings) and Lato (Body) */
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+/* Import Outfit (Headings) and Inter (Body) to mimic Cococart's modern clean layout */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
 /* CSS Variables */
 :root {
   --color-charcoal: #121212;
   --color-dark-gray: #1E1E1E;
-  --color-gold: #D4AF37;
-  --color-gold-hover: #F3ECE3;
-  --color-amber: #E5A93B;
-  --color-cream: #FAF6F0;
-  --color-cream-dark: #F3ECE3;
+  --color-gold: #F5C518; /* Vibrant golden yellow accent */
+  --color-gold-hover: #FFF3CD;
+  --color-gold-antique: #D4AF37;
+  --color-amber: #F39C12;
+  --color-cream: #FAF9F6; /* Minimalist warm white background */
+  --color-cream-dark: #F5F4F0; /* Soft container background */
   --color-white: #FFFFFF;
-  --color-off-white: #FAFAFA;
-  --color-light-gray: #E8E5E0;
-  --color-muted-gray: #888888;
+  --color-off-white: #FFFFFF;
+  --color-light-gray: #EBEBEB;
+  --color-muted-gray: #777777;
   
-  --font-heading: 'Playfair Display', serif;
-  --font-body: 'Lato', sans-serif;
+  --font-heading: 'Outfit', sans-serif;
+  --font-body: 'Inter', sans-serif;
   
   --transition-smooth: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.05);
-  --shadow-luxury: 0 10px 30px rgba(18, 18, 18, 0.06);
-  --border-gold-light: 1px solid rgba(212, 175, 55, 0.18);
-  --border-neutral-light: 1px solid #E8E5E0;
+  --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.03);
+  --shadow-luxury: 0 16px 32px rgba(0, 0, 0, 0.08); /* Clean modern shadow */
+  --border-gold-light: 1px solid rgba(245, 197, 24, 0.3);
+  --border-neutral-light: 1px solid #EBEBEB;
 }
 
 /* Base Reset & Globals */
@@ -269,7 +270,6 @@ section {
   visibility: visible;
 }
 
-/* Buttons */
 .btn {
   display: inline-block;
   padding: 14px 32px;
@@ -280,6 +280,7 @@ section {
   font-weight: 700;
   border: none;
   cursor: pointer;
+  border-radius: 30px;
   transition: var(--transition-smooth);
   text-align: center;
 }
@@ -464,7 +465,8 @@ h1, h2, h3, h4, h5, h6 {
 
 .product-card {
   background-color: var(--color-white);
-  border: 1px solid rgba(18, 18, 18, 0.04);
+  border: 1px solid rgba(18, 18, 18, 0.05);
+  border-radius: 16px;
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -473,9 +475,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .product-card:hover {
-  transform: translateY(-8px);
+  transform: translateY(-4px);
   box-shadow: var(--shadow-luxury);
-  border-color: rgba(212, 175, 55, 0.25);
+  border-color: var(--color-gold);
 }
 
 .product-img-wrap {
@@ -485,6 +487,7 @@ h1, h2, h3, h4, h5, h6 {
   position: relative;
   overflow: hidden;
   margin-bottom: 20px;
+  border-radius: 12px;
 }
 
 .product-img-wrap img {
@@ -842,25 +845,34 @@ h1, h2, h3, h4, h5, h6 {
 .filter-groups {
   display: flex;
   gap: 12px;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+  padding-bottom: 4px;
+}
+.filter-groups::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
 }
 
 .filter-btn {
-  background-color: var(--color-cream);
+  background-color: var(--color-white);
   border: 1px solid var(--color-light-gray);
-  padding: 8px 16px;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 700;
+  padding: 10px 24px;
+  font-size: 0.85rem;
+  text-transform: capitalize;
+  border-radius: 30px;
+  font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
   transition: var(--transition-smooth);
 }
 
 .filter-btn:hover,
 .filter-btn.active {
-  background-color: var(--color-charcoal);
-  color: var(--color-white);
-  border-color: var(--color-charcoal);
+  background-color: var(--color-gold);
+  color: var(--color-charcoal);
+  border-color: var(--color-gold);
+  box-shadow: 0 4px 12px rgba(245, 197, 24, 0.2);
 }
 
 .sort-group {
@@ -2443,6 +2455,401 @@ h1, h2, h3, h4, h5, h6 {
 .admin-status-select:focus {
   outline: none;
   border-color: var(--color-gold);
+}
+
+/* ==========================================================================
+   MODERN & CLASSICAL ANIMATIONS / EFFECTS
+   ========================================================================== */
+
+/* Gold glow pulse effect on primary items */
+@keyframes goldGlow {
+  0%, 100% {
+    box-shadow: 0 4px 15px rgba(245, 197, 24, 0.25);
+  }
+  50% {
+    box-shadow: 0 4px 25px rgba(245, 197, 24, 0.55);
+  }
+}
+
+.logo-gold {
+  animation: logoGlicker 3s infinite ease-in-out;
+}
+
+@keyframes logoGlicker {
+  0%, 100% {
+    text-shadow: 0 0 2px rgba(245, 197, 24, 0.2);
+    opacity: 0.95;
+  }
+  50% {
+    text-shadow: 0 0 10px rgba(245, 197, 24, 0.7);
+    opacity: 1;
+  }
+}
+
+/* Elegant floating animation for luxury candles */
+.product-card:hover {
+  animation: elegantFloat 4s ease-in-out infinite alternate;
+  border-color: var(--color-gold);
+}
+
+@keyframes elegantFloat {
+  0% {
+    transform: translateY(-8px);
+  }
+  100% {
+    transform: translateY(-13px);
+  }
+}
+
+/* Pulse animation for active badges (Cart & Wishlist) */
+.cart-count, #wishlist-badge-count {
+  animation: badgePulse 2s infinite ease-in-out;
+}
+
+@keyframes badgePulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.7);
+  }
+  50% {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 6px rgba(243, 156, 18, 0);
+  }
+}
+
+/* Classic initial drop-caps for story sections */
+.dropcap::first-letter {
+  font-family: var(--font-heading);
+  font-size: 3.5rem;
+  float: left;
+  margin-right: 8px;
+  line-height: 1;
+  color: var(--color-gold);
+  font-weight: 700;
+}
+
+/* Transition improvements for luxury feel */
+.btn-primary:hover, .btn-accent:hover {
+  animation: goldGlow 2s infinite ease-in-out;
+  transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   COCOCART FLOATING CHECKOUT BAR
+   ========================================================================== */
+#floating-cart-bar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--color-charcoal);
+  color: var(--color-white);
+  padding: 12px 24px;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 90%;
+  max-width: 480px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.15);
+  z-index: 1001;
+  animation: slideUpFloating 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideUpFloating {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 40px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.floating-cart-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+}
+
+.floating-cart-count {
+  background-color: var(--color-gold);
+  color: var(--color-charcoal);
+  padding: 4px 10px;
+  border-radius: 30px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.floating-cart-divider {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.floating-cart-total {
+  font-size: 1rem;
+}
+
+.floating-cart-btn {
+  background-color: var(--color-gold);
+  color: var(--color-charcoal);
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: var(--transition-smooth);
+}
+
+.floating-cart-btn:hover {
+  background-color: var(--color-white);
+  color: var(--color-charcoal);
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+}
+
+/* ==========================================================================
+   CINEMATIC PAGE TRANSITIONS (CANDLE IGNITION & LIGHT GLOW)
+   ========================================================================== */
+body {
+  overflow-x: hidden;
+  background-color: #0b0907; /* Dark wax charcoal backdrop behind page wrapper */
+}
+
+#app-wrapper {
+  transform-origin: center center;
+  transition: opacity 1.8s ease, transform 1.8s ease;
+  will-change: transform, opacity, filter;
+  background-color: var(--color-cream);
+  min-height: 100vh;
+}
+
+body.transitioning-out #app-wrapper {
+  animation: fadeToDark 0.8s ease forwards;
+  pointer-events: none;
+}
+
+@keyframes fadeToDark {
+  to {
+    opacity: 0;
+    transform: scale(0.97);
+    filter: blur(4px);
+  }
+}
+
+body.transitioning-in #app-wrapper {
+  animation: growFromVoid 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes growFromVoid {
+  0% {
+    transform: scale(0.95);
+    opacity: 0;
+    filter: blur(10px);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    filter: blur(0px);
+  }
+}
+
+/* Candle Portal Container */
+#candle-portal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #0b0907;
+  z-index: 99999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  will-change: opacity;
+}
+
+#candle-portal.active {
+  display: flex;
+  animation: fadeInDark 0.4s ease forwards;
+}
+
+#candle-portal.active.entrance {
+  animation: fadeOutLight 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInDark {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOutLight {
+  0% {
+    opacity: 1;
+    background-color: #FFF1C5;
+  }
+  100% {
+    opacity: 0;
+    background-color: transparent;
+  }
+}
+
+/* Candle Container */
+.candle-container {
+  position: relative;
+  width: 80px;
+  height: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* Wick */
+.candle-wick {
+  width: 4px;
+  height: 20px;
+  background-color: #2c2520;
+  border-radius: 2px;
+  margin-bottom: -4px;
+  z-index: 10;
+}
+
+/* Layered Flame Elements */
+.flame-outer-wrap {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  width: 36px;
+  height: 70px;
+  transform: translateX(-50%) scale(0);
+  transform-origin: center bottom;
+  z-index: 8;
+  will-change: transform;
+}
+
+.flame-inner-wrap {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  width: 18px;
+  height: 44px;
+  transform: translateX(-50%) scale(0);
+  transform-origin: center bottom;
+  z-index: 9;
+  will-change: transform;
+}
+
+/* Outer Flame: Orange/Blue base */
+.flame-outer {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to top, rgba(0, 20, 120, 0.9) 0%, rgba(0, 80, 220, 0.5) 15%, rgba(235, 110, 15, 0.95) 35%, rgba(245, 197, 24, 0.9) 70%, transparent 100%);
+  border-radius: 50% 50% 35% 35% / 60% 60% 40% 40%;
+  filter: blur(1px);
+  will-change: transform;
+}
+
+/* Inner Flame: Bright Yellow/White core */
+.flame-inner {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to top, rgba(20, 10, 5, 0.8) 0%, rgba(245, 180, 20, 0.5) 25%, rgba(255, 240, 180, 0.95) 55%, rgba(255, 255, 255, 1) 85%, transparent 100%);
+  border-radius: 50% 50% 35% 35% / 60% 60% 40% 40%;
+  filter: blur(0.5px);
+  will-change: transform;
+}
+
+/* Flame Glow: Expanding light wash */
+.flame-glow {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 235, 180, 0.6) 0%, rgba(245, 197, 24, 0.12) 45%, rgba(243, 156, 18, 0.02) 70%, transparent 95%);
+  filter: blur(12px);
+  z-index: 5;
+  transform: translateX(-50%) scale(0);
+  transform-origin: center bottom;
+  will-change: transform;
+}
+
+/* Outer wrapper handles the ignition scale and zoom */
+#candle-portal.active.igniting .flame-outer-wrap {
+  animation: igniteOuter 1.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+#candle-portal.active.igniting .flame-inner-wrap {
+  animation: igniteInner 1.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+#candle-portal.active.igniting .flame-glow {
+  animation: igniteGlow 1.8s cubic-bezier(0.5, 0, 0.5, 1) forwards;
+}
+
+/* Inner element handles only the micro-flickering loop */
+#candle-portal.active.igniting .flame-outer {
+  animation: flickerOuter 0.15s infinite alternate 0.9s;
+}
+#candle-portal.active.igniting .flame-inner {
+  animation: flickerInner 0.12s infinite alternate 0.9s;
+}
+
+@keyframes igniteOuter {
+  0% { transform: translateX(-50%) scale(0); }
+  25% { transform: translateX(-50%) scale(1.5); } /* Spark burst */
+  35% { transform: translateX(-50%) scale(0.6); } /* Drop down */
+  55% { transform: translateX(-50%) scale(1); } /* Stable flicker */
+  100% { transform: translateX(-50%) scale(30); } /* Expand to cover view */
+}
+
+@keyframes igniteInner {
+  0% { transform: translateX(-50%) scale(0); }
+  25% { transform: translateX(-50%) scale(1.6); }
+  35% { transform: translateX(-50%) scale(0.5); }
+  55% { transform: translateX(-50%) scale(1); }
+  100% { transform: translateX(-50%) scale(0); } /* Disappear as outer expands */
+}
+
+@keyframes igniteGlow {
+  0% { transform: translateX(-50%) scale(0); opacity: 0; }
+  55% { transform: translateX(-50%) scale(1.6); opacity: 1; }
+  100% { transform: translateX(-50%) scale(45); opacity: 0; } /* Wash of light */
+}
+
+/* Flickering animations during the stable phase (now pure rotation, no scaling conflicts) */
+@keyframes flickerOuter {
+  0% { transform: rotate(-1.5deg); }
+  100% { transform: rotate(1.5deg); }
+}
+@keyframes flickerInner {
+  0% { transform: rotate(0.8deg); }
+  100% { transform: rotate(-0.8deg); }
+}
+
+/* Match striking spark line */
+.match-spark {
+  position: absolute;
+  width: 0;
+  height: 6px;
+  background: linear-gradient(90deg, transparent, #FFFFFF 50%, var(--color-amber) 80%, transparent);
+  box-shadow: 0 0 20px var(--color-gold);
+  border-radius: 50%;
+  left: 10%;
+  top: 50%;
+}
+
+#candle-portal.active.igniting .match-spark {
+  animation: strikeMatch 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes strikeMatch {
+  0% { width: 0; left: 15%; opacity: 1; }
+  45% { width: 100px; left: 42%; opacity: 1; }
+  65% { width: 0; left: 50%; opacity: 0; }
+  100% { width: 0; left: 50%; opacity: 0; }
 }
 
 /* Alert Styles */
