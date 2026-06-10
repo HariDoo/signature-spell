@@ -441,6 +441,51 @@ function initAuthModal() {
   const userBtn = document.getElementById("user-btn");
   const overlay = document.getElementById("auth-modal-overlay");
   const closeBtn = document.getElementById("auth-modal-close");
+
+  const getAlertContainer = () => {
+    let alertContainer = document.getElementById("auth-alert-container");
+    if (!alertContainer && overlay) {
+      const modal = overlay.querySelector(".auth-modal");
+      if (modal) {
+        alertContainer = document.createElement("div");
+        alertContainer.id = "auth-alert-container";
+        const form = document.getElementById("auth-email-form");
+        if (form) {
+          modal.insertBefore(alertContainer, form);
+        } else {
+          modal.appendChild(alertContainer);
+        }
+      }
+    }
+    return alertContainer;
+  };
+
+  const showAuthError = (message) => {
+    let friendlyMessage = message;
+    if (message && (
+      message.includes("invalid-credential") || 
+      message.includes("wrong-password") || 
+      message.includes("user-not-found") ||
+      message.includes("invalid-email")
+    )) {
+      friendlyMessage = "Given username / password wrong try once again";
+    }
+    const container = getAlertContainer();
+    if (container) {
+      container.innerHTML = `
+        <div class="alert alert-danger" style="margin-top: 10px; margin-bottom: 15px;">
+          ${friendlyMessage}
+        </div>
+      `;
+    }
+  };
+
+  const clearAuthError = () => {
+    const container = document.getElementById("auth-alert-container");
+    if (container) {
+      container.innerHTML = "";
+    }
+  };
   
   if (userBtn && overlay) {
     userBtn.addEventListener("click", (e) => {
@@ -448,9 +493,7 @@ function initAuthModal() {
       const user = UserSession.get();
       if (user) {
         // Route admins to admin dashboard, standard users to profile settings
-        if (user.isAdmin && getPageName() !== "admin.html") {
-          window.location.href = "admin.html";
-        } else if (!user.isAdmin && getPageName() !== "profile.html") {
+        if (getPageName() !== "profile.html") {
           window.location.href = "profile.html";
         } else {
           if (confirm(`Logged in as ${user.name}. Would you like to log out?`)) {
@@ -463,8 +506,7 @@ function initAuthModal() {
           }
         }
       } else {
-        // Open modal
-        overlay.classList.add("active");
+        window.triggerLoginModal();
       }
     });
   }
@@ -472,11 +514,20 @@ function initAuthModal() {
   if (closeBtn && overlay) {
     closeBtn.addEventListener("click", () => {
       overlay.classList.remove("active");
+      clearAuthError();
     });
     overlay.addEventListener("click", (e) => {
-      if (e.target === overlay) overlay.classList.remove("active");
+      if (e.target === overlay) {
+        overlay.classList.remove("active");
+        clearAuthError();
+      }
     });
   }
+
+  window.triggerLoginModal = () => {
+    clearAuthError();
+    if (overlay) overlay.classList.add("active");
+  };
   
   // Tab/Forms toggle inside modal
   const tabToggle = document.getElementById("auth-switch-link");
@@ -489,6 +540,7 @@ function initAuthModal() {
   if (tabToggle && formTitle && submitBtn) {
     tabToggle.addEventListener("click", (e) => {
       e.preventDefault();
+      clearAuthError();
       isLoginState = !isLoginState;
       if (isLoginState) {
         formTitle.textContent = "Welcome Back";
@@ -519,6 +571,7 @@ function initAuthModal() {
   if (authForm) {
     authForm.addEventListener("submit", (e) => {
       e.preventDefault();
+      clearAuthError();
       const email = document.getElementById("auth-email-input").value.trim();
       const pass = document.getElementById("auth-pass-input").value;
       
@@ -529,17 +582,17 @@ function initAuthModal() {
               overlay.classList.remove("active");
               showToast("Welcome back!");
             })
-            .catch(err => alert(err.message));
+            .catch(err => showAuthError(err.message));
         } else {
           auth.createUserWithEmailAndPassword(email, pass)
             .then(() => {
               overlay.classList.remove("active");
               showToast("Account created!");
             })
-            .catch(err => alert(err.message));
+            .catch(err => showAuthError(err.message));
         }
       } else {
-        alert("Firebase is not initialized. Please connect your credentials.");
+        showAuthError("Firebase is not initialized. Please connect your credentials.");
       }
       authForm.reset();
     });
@@ -549,15 +602,16 @@ function initAuthModal() {
   const googleBtn = document.getElementById("google-sso-btn");
   if (googleBtn) {
     googleBtn.addEventListener("click", () => {
+      clearAuthError();
       if (isFirebaseInitialized) {
         auth.signInWithPopup(googleProvider)
           .then(() => {
             overlay.classList.remove("active");
             showToast("Welcome!");
           })
-          .catch(err => alert(err.message));
+          .catch(err => showAuthError(err.message));
       } else {
-        alert("Firebase is not initialized. Please connect your credentials.");
+        showAuthError("Firebase is not initialized. Please connect your credentials.");
       }
     });
   }

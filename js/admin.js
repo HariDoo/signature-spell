@@ -24,19 +24,32 @@ function initAdminConsole() {
         if (isAdminUser) {
           if (loadingOverlay) loadingOverlay.style.display = "none";
           if (deniedOverlay) deniedOverlay.style.display = "none";
+          root.style.display = "block";
           document.getElementById("admin-user-fullname").textContent = user.displayName || user.email.split("@")[0];
           initializeDashboard();
         } else {
           if (loadingOverlay) loadingOverlay.style.display = "none";
+          root.style.display = "none";
+          document.getElementById("access-denied-title").textContent = "Access Denied";
+          document.getElementById("access-denied-desc").textContent = "You do not possess the required administrator credentials to view this page.";
           if (deniedOverlay) deniedOverlay.style.display = "flex";
         }
       } else {
         if (loadingOverlay) loadingOverlay.style.display = "none";
+        root.style.display = "none";
+        document.getElementById("access-denied-title").textContent = "Authentication Required";
+        document.getElementById("access-denied-desc").textContent = "Please log in with administrator credentials.";
         if (deniedOverlay) deniedOverlay.style.display = "flex";
+        if (typeof window.triggerLoginModal === "function") {
+          window.triggerLoginModal();
+        }
       }
     });
   } else {
     if (loadingOverlay) loadingOverlay.style.display = "none";
+    root.style.display = "none";
+    document.getElementById("access-denied-title").textContent = "Service Unavailable";
+    document.getElementById("access-denied-desc").textContent = "Firebase is not initialized. Please verify configuration.";
     if (deniedOverlay) deniedOverlay.style.display = "flex";
   }
 
