@@ -1,0 +1,26 @@
+/* Button Alignment Styles for Admin Table Action Buttons */
+/* --------------------------------------------------- */
+/* Ensures consistent spacing, vertical alignment, and sizing of the Manage and Edit
+   buttons within the Actions column of the admin user registry table. */
+
+/* Add spacing between adjacent buttons */
+.admin-table td button + button {
+  margin-left: 0.5rem; /* 8px */
+}
+
+/* Prevent line‑wrap on narrow screens */
+@media (max-width: 600px) {
+  .admin-table td {
+    white-space: nowrap;
+  }
+}
+
+/* Ensure buttons share the same height and vertical alignment */
+.admin-table td button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.75rem; /* Adjusted for a compact look */
+  line-height: 1;
+  vertical-align: middle;
+}
