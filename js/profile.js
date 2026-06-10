@@ -1,3 +1,5 @@
+"use strict";
+
 let firebaseUser = null;
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -292,11 +294,4 @@ window.triggerDeleteAccountModal = function() {
   if (deleteOverlay) deleteOverlay.classList.add("active");
 };
 
-function showInlineAlert(container, message, type = "danger") {
-  if (!container) return;
-  container.innerHTML = `
-    <div class="alert alert-${type}">
-      ${message}
-    </div>
-  `;
-}
+

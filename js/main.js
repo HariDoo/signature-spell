@@ -2,6 +2,8 @@
    SIGNATURE SPELL - CORE JAVASCRIPT LOGIC
    ========================================================================== */
 
+"use strict";
+
 // Firebase Configuration Block
 // Paste your Firebase web app keys below to connect Auth and Realtime Database:
 const firebaseConfig = {
@@ -228,7 +230,7 @@ const WishlistStorage = {
   }
 };
 
-// Helper: Orders Storage Utilities (mock order database)
+// Helper: Orders Storage Utilities (local fallback order database)
 const OrderDb = {
   get: function() {
     const stored = localStorage.getItem("signature_spell_orders");
@@ -1672,3 +1674,13 @@ window.handleAdminUpdateOrderStatus = function(orderId, newStatus) {
     showToast(`Order status set to ${newStatus}`);
   }
 };
+
+window.showInlineAlert = function(container, message, type = "danger") {
+  if (!container) return;
+  container.innerHTML = `
+    <div class="alert alert-${type}">
+      ${message}
+    </div>
+  `;
+};
+

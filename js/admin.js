@@ -1,3 +1,5 @@
+"use strict";
+
 let allUsers = [];
 let filteredUsers = [];
 let selectedUserId = null;
@@ -810,11 +812,4 @@ window.handleAdminPageLogout = function() {
   }
 };
 
-function showInlineAlert(container, message, type = "danger") {
-  if (!container) return;
-  container.innerHTML = `
-    <div class="alert alert-${type}">
-      ${message}
-    </div>
-  `;
-}
+
