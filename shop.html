@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Explore Signature Spell's collection of soy candles, including tea lights, glass jar candles, and coconut shell candles.">
+  <title>Shop Fragrances | Signature Spell</title>
+  
+  <!-- CSS Link -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Sticky Luxury Header -->
+  <header class="header">
+    <div class="promo-bar">
+      Free Delivery on All Orders Over ₹500
+    </div>
+    <div class="container header-container">
+      <a href="index.html" class="logo" id="logo-link">
+        Signature <span class="logo-gold">Spell</span>
+      </a>
+      
+      <!-- Search bar -->
+      <form class="search-form" id="header-search-form">
+        <input type="text" class="search-input" id="header-search-input" placeholder="Search scents..." required aria-label="Search">
+        <button type="submit" class="search-btn" id="header-search-btn" aria-label="Search Submit">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+      </form>
+      
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html" id="nav-home">Home</a></li>
+          <li><a href="shop.html" class="active" id="nav-shop">Shop</a></li>
+          <li><a href="about.html" id="nav-about">Our Story</a></li>
+          <li><a href="contact.html" id="nav-contact">Contact</a></li>
+          <li><a href="order-tracking.html" id="nav-tracking">Track Order</a></li>
+        </ul>
+      </nav>
+      
+      <div class="nav-icons">
+        <!-- Wishlist -->
+        <a href="shop.html" class="icon-btn" id="wishlist-btn" aria-label="Wishlist" style="position: relative;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <span class="wishlist-count" id="wishlist-badge-count" style="display: none;">0</span>
+        </a>
+        
+        <!-- Cart -->
+        <a href="cart.html" class="icon-btn" id="cart-btn" aria-label="Shopping Cart">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <span class="cart-count" id="cart-badge-count">0</span>
+        </a>
+        
+        <!-- User Account -->
+        <a href="#" class="icon-btn" id="user-btn" aria-label="User Account">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </a>
+        
+        <button class="hamburger" id="hamburger-toggle" aria-label="Toggle Menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Navigation Drawer -->
+  <div class="mobile-nav-overlay" id="mobile-overlay"></div>
+  <aside class="mobile-nav" id="mobile-drawer">
+    <button class="mobile-nav-close" id="mobile-close-btn">&times;</button>
+    <ul class="mobile-nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="shop.html">Shop</a></li>
+      <li><a href="about.html">Our Story</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="order-tracking.html">Track Order</a></li>
+      <li><a href="cart.html">Cart</a></li>
+    </ul>
+  </aside>
+
+  <!-- Page Header -->
+  <section class="page-header" id="shop-header">
+    <div class="container">
+      <h1>The Scent <span>Wardrobe</span></h1>
+      <div class="breadcrumbs">
+        <a href="index.html">Home</a> &nbsp;/&nbsp; <span>Shop All</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filter & Sort sticky bar -->
+  <nav class="filter-bar" id="shop-filter-bar">
+    <div class="container filter-container">
+      <div class="filter-groups">
+        <button class="filter-btn active" data-filter="All" id="filter-all">All</button>
+        <button class="filter-btn" data-filter="Tea Lights" id="filter-tlights">Tea Lights</button>
+        <button class="filter-btn" data-filter="Jars" id="filter-jars">Glass Jars</button>
+        <button class="filter-btn" data-filter="Shells" id="filter-shells">Coconuts</button>
+      </div>
+      <div class="sort-group">
+        <label for="sort-select" class="sort-label">Sort By</label>
+        <select id="sort-select" class="sort-select">
+          <option value="default">Featured</option>
+          <option value="price-low">Price: Low to High</option>
+          <option value="price-high">Price: High to Low</option>
+        </select>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Product Grid -->
+  <section class="shop-products" id="shop-items-section">
+    <div class="container">
+      <div class="product-grid shop-grid" id="shop-items-grid">
+        <!-- Rendered dynamically by main.js -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Newsletter Signup Strip -->
+  <section class="newsletter-strip" id="newsletter-bar">
+    <div class="container newsletter-content">
+      <div class="newsletter-text">
+        <h3>Join the Scent Circle</h3>
+        <p>Subscribe for fragrance releases, styling tips, and 10% off your first candle order.</p>
+      </div>
+      <form class="newsletter-form" onsubmit="event.preventDefault(); alert('Welcome to the Scent Circle! Your 10% discount code has been sent.'); this.reset();">
+        <input type="email" class="newsletter-input" placeholder="Enter your email address" required aria-label="Email address">
+        <button type="submit" class="newsletter-btn" id="newsletter-submit-btn">Subscribe</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Auth Login/Signup Modal -->
+  <div class="modal-overlay" id="auth-modal-overlay">
+    <div class="auth-modal">
+      <button class="modal-close" id="auth-modal-close">&times;</button>
+      <h3 class="auth-title" id="auth-form-title">Welcome Back</h3>
+      
+      <form id="auth-email-form">
+        <div class="form-group">
+          <label for="auth-email-input">Email Address</label>
+          <input type="email" id="auth-email-input" required placeholder="E.g., name@example.com">
+        </div>
+        <div class="form-group">
+          <label for="auth-pass-input">Password</label>
+          <input type="password" id="auth-pass-input" required placeholder="Enter password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="auth-submit-btn">Sign In</button>
+      </form>
+      
+      <div class="sso-divider">Or SSO</div>
+      
+      <button class="btn btn-google-sso" id="google-sso-btn">
+        <svg viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5.04c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 1.84 14.96 1 12 1 7.35 1 3.37 3.68 1.41 7.59l3.79 2.94C6.11 7.25 8.84 5.04 12 5.04z"/><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.46c-.29 1.48-1.14 2.73-2.4 3.58l3.76 2.91c2.2-2.03 3.67-5.02 3.67-8.64z"/><path fill="#FBBC05" d="M5.2 14.75c-.24-.72-.38-1.49-.38-2.3c0-.81.14-1.59.38-2.3L1.41 7.21C.51 9.02 0 11.01 0 13.1c0 2.09.51 4.08 1.41 5.89l3.79-3.24z"/><path fill="#34A853" d="M12 23c3.24 0 5.97-1.09 7.96-2.96l-3.76-2.91c-1.11.75-2.53 1.21-4.2 1.21-3.16 0-5.89-2.21-6.84-5.49L1.36 16.1C3.32 20.02 7.3 23 12 23z"/></svg>
+        Sign In with Google
+      </button>
+      
+      <p class="auth-switch" id="auth-switch-desc">Don't have an account? <a href="#" id="auth-switch-link">Sign Up</a></p>
+    </div>
+  </div>
+
+  <!-- Shared Footer -->
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <h3>Signature <span class="logo-gold">Spell</span></h3>
+        <p>Luxury hand-poured soy candles crafted to fill your space with warmth, comfort, and premium aromatic harmony.</p>
+        <div class="footer-socials">
+          <a href="#" class="social-link" aria-label="Instagram">IG</a>
+          <a href="#" class="social-link" aria-label="Facebook">FB</a>
+          <a href="#" class="social-link" aria-label="Pinterest">PI</a>
+        </div>
+      </div>
+      
+      <div class="footer-col">
+        <h4>Shop</h4>
+        <ul class="footer-links">
+          <li><a href="shop.html">All Candles</a></li>
+          <li><a href="shop.html">Tea Lights</a></li>
+          <li><a href="shop.html">Apothecary Jars</a></li>
+          <li><a href="shop.html">Coconut Shells</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-col">
+        <h4>Support</h4>
+        <ul class="footer-links">
+          <li><a href="contact.html">Contact Us</a></li>
+          <li><a href="order-tracking.html">Track Your Order</a></li>
+          <li><a href="contact.html?tab=bulk">Bulk & Wholesale</a></li>
+          <li><a href="terms.html">Terms & Conditions</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-col">
+        <h4>Philosophy</h4>
+        <ul class="footer-links">
+          <li><a href="about.html">Our Sourcing</a></li>
+          <li><a href="about.html">Sustainability</a></li>
+          <li><a href="about.html">The Pour Method</a></li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="container footer-bottom">
+      <p>&copy; 2026 Signature Spell Candles. All rights reserved. Designed for clean, warm homes.</p>
+      <div class="footer-cards">
+        <span>Pay</span>
+        <span>💳Visa</span>
+        <span>💳MC</span>
+        <span>💳Amex</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Firebase SDK CDNs (v10 Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+  <!-- Core JavaScript -->
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Signature Spell offers premium hand-poured soy fragrance candles. Scent the moment and bring cozy warmth into your home.">
+  <title>Signature Spell | Premium Scented Soy Candles</title>
+  
+  <!-- CSS Link -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Sticky Luxury Header -->
+  <header class="header">
+    <div class="promo-bar">
+      Free Delivery on All Orders Over ₹500
+    </div>
+    <div class="container header-container">
+      <a href="index.html" class="logo" id="logo-link">
+        Signature <span class="logo-gold">Spell</span>
+      </a>
+      
+      <!-- Search bar -->
+      <form class="search-form" id="header-search-form">
+        <input type="text" class="search-input" id="header-search-input" placeholder="Search scents..." required aria-label="Search">
+        <button type="submit" class="search-btn" id="header-search-btn" aria-label="Search Submit">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+      </form>
+      
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html" class="active" id="nav-home">Home</a></li>
+          <li><a href="shop.html" id="nav-shop">Shop</a></li>
+          <li><a href="about.html" id="nav-about">Our Story</a></li>
+          <li><a href="contact.html" id="nav-contact">Contact</a></li>
+          <li><a href="order-tracking.html" id="nav-tracking">Track Order</a></li>
+        </ul>
+      </nav>
+      
+      <div class="nav-icons">
+        <!-- Wishlist -->
+        <a href="shop.html" class="icon-btn" id="wishlist-btn" aria-label="Wishlist" style="position: relative;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <span class="wishlist-count" id="wishlist-badge-count" style="display: none;">0</span>
+        </a>
+        
+        <!-- Cart -->
+        <a href="cart.html" class="icon-btn" id="cart-btn" aria-label="Shopping Cart">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <span class="cart-count" id="cart-badge-count">0</span>
+        </a>
+        
+        <!-- User Account -->
+        <a href="#" class="icon-btn" id="user-btn" aria-label="User Account">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </a>
+        
+        <button class="hamburger" id="hamburger-toggle" aria-label="Toggle Menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Navigation Drawer -->
+  <div class="mobile-nav-overlay" id="mobile-overlay"></div>
+  <aside class="mobile-nav" id="mobile-drawer">
+    <button class="mobile-nav-close" id="mobile-close-btn">&times;</button>
+    <ul class="mobile-nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="shop.html">Shop</a></li>
+      <li><a href="about.html">Our Story</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="order-tracking.html">Track Order</a></li>
+      <li><a href="cart.html">Cart</a></li>
+    </ul>
+  </aside>
+
+  <!-- Hero Banner Section -->
+  <section class="hero" id="hero-banner">
+    <div class="hero-bg">
+      <img src="assets/hero_candle.png" alt="A lit candle with a warm amber glow in a minimalist space">
+    </div>
+    <div class="container">
+      <div class="hero-content">
+        <span class="hero-tagline">Hand-Poured Soy Wax</span>
+        <h1>Scent the <span>Moment</span></h1>
+        <p class="hero-desc">Elegant, organic, slow-burning luxury candles designed to turn everyday rooms into sanctuary spaces filled with warmth.</p>
+        <div class="hero-cta">
+          <a href="shop.html" class="btn btn-accent" id="hero-shop-cta">Explore the Collection</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Products Section -->
+  <section class="featured-products" id="featured-sec">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-subtitle">Curated Scents</span>
+        <h2 class="section-title">Featured <span>Creations</span></h2>
+      </div>
+      <div class="product-grid featured-grid" id="featured-items-grid">
+        <!-- Rendered dynamically by main.js -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Editorial Brand Narrative Section -->
+  <section class="brand-story" id="about-snippet">
+    <div class="container">
+      <div class="brand-story-grid">
+        <div class="brand-story-content">
+          <span class="section-subtitle">Our Philosophy</span>
+          <h2>A slow, clean <span>burn</span> for a peaceful mind</h2>
+          <p class="brand-story-lead">"We believe the simple act of lighting a wick can anchor your day, providing a sensory boundary between stress and calm."</p>
+          <p>Every Signature Spell candle is crafted with care using 100% natural, biodegradable soy and coconut wax blends. Infused with rich botanicals, premium aromatherapy oils, and natural wood wicks that crackle like a mini-hearth, our candles burn slowly and cleanly, free from paraffin or synthetic fillers.</p>
+          <a href="about.html" class="btn btn-secondary" id="story-read-cta">Discover Our Process</a>
+        </div>
+        <div class="brand-story-img">
+          <img src="assets/coconut_shell.png" alt="Handcrafted soy candle in a natural coconut shell">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Categories / Collections highlights -->
+  <section class="categories" id="collections-sec">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-subtitle">The Collection</span>
+        <h2 class="section-title">Browse by <span>Vessel</span></h2>
+      </div>
+      <div class="categories-grid">
+        <a href="shop.html" class="category-card" id="cat-tlight-card">
+          <img src="assets/regular_tlight.png" alt="Tea Light candles in brass cups">
+          <div class="category-card-overlay">
+            <h3>Tea <span>Lights</span></h3>
+            <span class="category-link">Shop tea lights &rarr;</span>
+          </div>
+        </a>
+        <a href="shop.html" class="category-card" id="cat-glass-card">
+          <img src="assets/small_glass.png" alt="Sleek glass jar candles">
+          <div class="category-card-overlay">
+            <h3>Apothecary <span>Jars</span></h3>
+            <span class="category-link">Shop jars &rarr;</span>
+          </div>
+        </a>
+        <a href="shop.html" class="category-card" id="cat-shell-card">
+          <img src="assets/coconut_shell.png" alt="Candle in a polished coconut shell">
+          <div class="category-card-overlay">
+            <h3>Coconut <span>Shells</span></h3>
+            <span class="category-link">Shop shells &rarr;</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section class="testimonials" id="reviews-sec">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-subtitle">Kind Words</span>
+        <h2 class="section-title">Loved by <span>Homemakers</span></h2>
+      </div>
+      <div class="testimonial-slider">
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-quote">"The Coconut Shell candle smells like heaven. It has this soft crackle that reminds me of sitting by a fireplace. Extremely cozy and gorgeous packaging!"</p>
+          <h4 class="testimonial-author">Sophia Mercer</h4>
+          <span class="testimonial-title">Home Decor Curator</span>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-quote">"I bought the Small Glass Amber & Patchouli candle for my home office. It burns so cleanly and leaves a soft, relaxing scent that isn't overpowering at all."</p>
+          <h4 class="testimonial-author">Liam Harrison</h4>
+          <span class="testimonial-title">Remote Architect</span>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-quote">"We ordered a bulk set of the Golden Tea Lights for our corporate holiday gift baskets. The client response was incredible. The gold cups look so premium."</p>
+          <h4 class="testimonial-author">Clara Sterling</h4>
+          <span class="testimonial-title">Corporate Accounts VP</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Newsletter Signup Strip -->
+  <section class="newsletter-strip" id="newsletter-bar">
+    <div class="container newsletter-content">
+      <div class="newsletter-text">
+        <h3>Join the Scent Circle</h3>
+        <p>Subscribe for fragrance releases, styling tips, and 10% off your first candle order.</p>
+      </div>
+      <form class="newsletter-form" onsubmit="event.preventDefault(); alert('Welcome to the Scent Circle! Your 10% discount code has been sent.'); this.reset();">
+        <input type="email" class="newsletter-input" placeholder="Enter your email address" required aria-label="Email address">
+        <button type="submit" class="newsletter-btn" id="newsletter-submit-btn">Subscribe</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Auth Login/Signup Modal -->
+  <div class="modal-overlay" id="auth-modal-overlay">
+    <div class="auth-modal">
+      <button class="modal-close" id="auth-modal-close">&times;</button>
+      <h3 class="auth-title" id="auth-form-title">Welcome Back</h3>
+      
+      <form id="auth-email-form">
+        <div class="form-group">
+          <label for="auth-email-input">Email Address</label>
+          <input type="email" id="auth-email-input" required placeholder="E.g., name@example.com">
+        </div>
+        <div class="form-group">
+          <label for="auth-pass-input">Password</label>
+          <input type="password" id="auth-pass-input" required placeholder="Enter password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="auth-submit-btn">Sign In</button>
+      </form>
+      
+      <div class="sso-divider">Or SSO</div>
+      
+      <button class="btn btn-google-sso" id="google-sso-btn">
+        <svg viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5.04c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 1.84 14.96 1 12 1 7.35 1 3.37 3.68 1.41 7.59l3.79 2.94C6.11 7.25 8.84 5.04 12 5.04z"/><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.46c-.29 1.48-1.14 2.73-2.4 3.58l3.76 2.91c2.2-2.03 3.67-5.02 3.67-8.64z"/><path fill="#FBBC05" d="M5.2 14.75c-.24-.72-.38-1.49-.38-2.3c0-.81.14-1.59.38-2.3L1.41 7.21C.51 9.02 0 11.01 0 13.1c0 2.09.51 4.08 1.41 5.89l3.79-3.24z"/><path fill="#34A853" d="M12 23c3.24 0 5.97-1.09 7.96-2.96l-3.76-2.91c-1.11.75-2.53 1.21-4.2 1.21-3.16 0-5.89-2.21-6.84-5.49L1.36 16.1C3.32 20.02 7.3 23 12 23z"/></svg>
+        Sign In with Google
+      </button>
+      
+      <p class="auth-switch" id="auth-switch-desc">Don't have an account? <a href="#" id="auth-switch-link">Sign Up</a></p>
+    </div>
+  </div>
+
+  <!-- Shared Footer -->
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <h3>Signature <span class="logo-gold">Spell</span></h3>
+        <p>Luxury hand-poured soy candles crafted to fill your space with warmth, comfort, and premium aromatic harmony.</p>
+        <div class="footer-socials">
+          <a href="#" class="social-link" aria-label="Instagram">IG</a>
+          <a href="#" class="social-link" aria-label="Facebook">FB</a>
+          <a href="#" class="social-link" aria-label="Pinterest">PI</a>
+        </div>
+      </div>
+      
+      <div class="footer-col">
+        <h4>Shop</h4>
+        <ul class="footer-links">
+          <li><a href="shop.html">All Candles</a></li>
+          <li><a href="shop.html">Tea Lights</a></li>
+          <li><a href="shop.html">Apothecary Jars</a></li>
+          <li><a href="shop.html">Coconut Shells</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-col">
+        <h4>Support</h4>
+        <ul class="footer-links">
+          <li><a href="contact.html">Contact Us</a></li>
+          <li><a href="order-tracking.html">Track Your Order</a></li>
+          <li><a href="contact.html?tab=bulk">Bulk & Wholesale</a></li>
+          <li><a href="terms.html">Terms & Conditions</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-col">
+        <h4>Philosophy</h4>
+        <ul class="footer-links">
+          <li><a href="about.html">Our Sourcing</a></li>
+          <li><a href="about.html">Sustainability</a></li>
+          <li><a href="about.html">The Pour Method</a></li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="container footer-bottom">
+      <p>&copy; 2026 Signature Spell Candles. All rights reserved. Designed for clean, warm homes.</p>
+      <div class="footer-cards">
+        <span>Pay</span>
+        <span>💳Visa</span>
+        <span>💳MC</span>
+        <span>💳Amex</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Firebase SDK CDNs (v10 Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+  <!-- Core JavaScript -->
+  <script src="js/main.js"></script>
+</body>
+</html>

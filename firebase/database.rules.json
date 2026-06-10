@@ -1,0 +1,18 @@
+{
+  "rules": {
+    "products": {
+      // Anyone can view the catalog of candles
+      ".read": true,
+      // Only administrators can add/edit/delete fragrances
+      ".write": "auth != null && (auth.token.email.beginsWith('admin') || auth.token.email === 'admin@signaturespell.com')"
+    },
+    "orders": {
+      // Anyone can query tracking status
+      ".read": true,
+      // Anyone can submit a new order, but updating/modifying existing orders requires authentication
+      "$orderId": {
+        ".write": "!data.exists() || auth != null"
+      }
+    }
+  }
+}
