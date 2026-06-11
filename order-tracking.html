@@ -128,9 +128,12 @@
           </div>
           <div style="text-align: right;">
             <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--color-muted-gray); display: block; margin-bottom: 4px;">Status</span>
-            <span class="btn btn-accent" style="padding: 6px 16px; font-size: 0.75rem; pointer-events: none; border-radius: 20px;">Active Tracking</span>
+            <span id="tracking-status-badge" class="btn btn-accent" style="padding: 6px 16px; font-size: 0.75rem; pointer-events: none; border-radius: 20px;">Active Tracking</span>
           </div>
         </div>
+        
+        <!-- Cancelled Order Banner -->
+        <div id="tracking-status-banner" style="display: none; margin-bottom: 30px;"></div>
         
         <!-- Graphical Progress Steps Bar -->
         <div class="tracker-steps-container">

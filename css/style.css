@@ -2502,6 +2502,12 @@ h6 {
   color: #1f4e78;
 }
 
+.status-badge.cancelled {
+  background-color: #ffebe9;
+  color: #cf222e;
+}
+
+
 .admin-status-select {
   border: 1px solid var(--color-light-gray);
   background-color: var(--color-white);
