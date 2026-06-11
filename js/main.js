@@ -4,6 +4,7 @@
 
 "use strict";
 
+
 // Firebase Configuration Block
 // Paste your Firebase web app keys below to connect Auth and Realtime Database:
 const firebaseConfig = {
