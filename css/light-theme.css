@@ -1,0 +1,805 @@
+/* ==========================================================================
+   SIGNATURE SPELL - LIGHT THEME (COZY GOLDEN HOUR)
+   ========================================================================== */
+
+/* 1. Global Custom Theme Settings */
+:root {
+  /* Core Variable Overrides for style.css integration */
+  --color-charcoal: #2d241e; /* Warm chocolate text */
+  --color-dark-gray: #4a403a;
+  --color-gold: #c58f00; /* Warm Gold accent */
+  --color-gold-hover: #fef3c7;
+  --color-gold-antique: #b45309;
+  --color-amber: #d97706;
+  --color-cream: #faf8f5; /* Warm cream background */
+  --color-cream-dark: #f2efe9; /* Sand container backdrop */
+  --color-white: #ffffff;
+  --color-off-white: #faf8f5;
+  --color-light-gray: #e6e2db; /* Soft borders */
+  --color-muted-gray: #6b5e54; /* Muted brown */
+
+  --shadow-subtle: 0 4px 20px rgba(45, 36, 30, 0.04);
+  --shadow-luxury: 0 16px 40px rgba(45, 36, 30, 0.08);
+  --border-neutral-light: 1px solid #e6e2db;
+
+  --theme-bg: #faf8f5; /* Cozy warm cream beige background */
+  --theme-bg-container: #ffffff; /* Soft warm white containers */
+  --theme-bg-nested: #f3efe9; /* Warm sand elements */
+
+  --theme-text-primary: #2d241e; /* Rich warm chocolate charcoal */
+  --theme-text-secondary: #6b5e54; /* Muted brown/gray */
+  --theme-text-gold: #c58f00; /* Warm gold accent */
+  --theme-text-white: #ffffff;
+
+  --theme-border: #e6e2db; /* Soft beige border */
+  --theme-border-gold: rgba(197, 143, 0, 0.3);
+
+  --theme-shadow-subtle: 0 4px 20px rgba(45, 36, 30, 0.04);
+  --theme-shadow-luxury: 0 16px 40px rgba(45, 36, 30, 0.08);
+
+  --theme-glass-bg: rgba(250, 248, 245, 0.85);
+  --theme-glass-border: rgba(230, 226, 219, 0.6);
+  --theme-glass-blur: blur(12px) saturate(180%);
+}
+
+/* 2. Base Typography & Resets */
+body {
+  background-color: var(--theme-bg) !important;
+  color: var(--theme-text-primary) !important;
+  font-family: "Montserrat", sans-serif !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Cormorant", serif !important;
+  color: var(--theme-text-primary) !important;
+}
+
+/* 3. Header & Navigation (Liquid Glass Light) */
+.header {
+  background-color: var(--theme-glass-bg) !important;
+  backdrop-filter: var(--theme-glass-blur) !important;
+  -webkit-backdrop-filter: var(--theme-glass-blur) !important;
+  border-bottom: 1px solid var(--theme-glass-border) !important;
+}
+
+.logo {
+  color: var(--theme-text-primary) !important;
+}
+
+.logo-gold {
+  color: var(--theme-text-gold) !important;
+}
+
+.nav-links a {
+  color: var(--theme-text-primary) !important;
+}
+
+.nav-links a::after {
+  background-color: var(--theme-text-gold) !important;
+}
+
+.icon-btn {
+  color: var(--theme-text-primary) !important;
+}
+
+.icon-btn:hover {
+  color: var(--theme-text-gold) !important;
+}
+
+.cart-count {
+  background-color: var(--theme-text-gold) !important;
+  color: var(--theme-text-white) !important;
+}
+
+/* Search input in header */
+.search-input {
+  background-color: var(--theme-bg-container) !important;
+  border: 1px solid var(--theme-border) !important;
+  color: var(--theme-text-primary) !important;
+}
+
+.search-input::placeholder {
+  color: var(--theme-text-secondary) !important;
+}
+
+.search-btn {
+  color: var(--theme-text-primary) !important;
+}
+
+.search-btn:hover {
+  color: var(--theme-text-gold) !important;
+}
+
+/* Mobile drawer navigation */
+.mobile-nav {
+  background-color: var(--theme-bg) !important;
+  border-left: 1px solid var(--theme-border) !important;
+}
+
+.mobile-nav-close {
+  color: var(--theme-text-primary) !important;
+}
+
+.mobile-nav-links a {
+  color: var(--theme-text-primary) !important;
+}
+
+.mobile-nav-links a:hover {
+  color: var(--theme-text-gold) !important;
+}
+
+/* 4. Luxury Buttons */
+.btn-primary {
+  background-color: var(--theme-text-primary) !important;
+  color: var(--theme-text-white) !important;
+}
+
+.btn-primary:hover {
+  background-color: var(--theme-text-gold) !important;
+  color: var(--theme-text-white) !important;
+  box-shadow: 0 4px 15px rgba(197, 143, 0, 0.3) !important;
+}
+
+.btn-secondary {
+  background-color: transparent !important;
+  color: var(--theme-text-primary) !important;
+  border: 1.5px solid var(--theme-text-primary) !important;
+}
+
+.btn-secondary:hover {
+  background-color: var(--theme-text-primary) !important;
+  color: var(--theme-text-white) !important;
+}
+
+.btn-accent {
+  background-color: var(--theme-text-gold) !important;
+  color: var(--theme-text-white) !important;
+}
+
+.btn-accent:hover {
+  background-color: var(--theme-text-primary) !important;
+  color: var(--theme-text-white) !important;
+  box-shadow: 0 4px 15px rgba(45, 36, 30, 0.2) !important;
+}
+
+.btn:disabled {
+  background-color: var(--theme-bg-nested) !important;
+  color: var(--theme-text-secondary) !important;
+  border-color: var(--theme-border) !important;
+}
+
+/* 5. Inputs & Forms */
+input,
+select,
+textarea {
+  background-color: var(--theme-bg-container) !important;
+  border: 1px solid var(--theme-border) !important;
+  color: var(--theme-text-primary) !important;
+  font-family: "Montserrat", sans-serif !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--theme-text-gold) !important;
+  box-shadow: 0 0 0 3px rgba(197, 143, 0, 0.15) !important;
+}
+
+.form-group label {
+  color: var(--theme-text-primary) !important;
+}
+
+/* 6. Products Page & Cards */
+.product-card {
+  background-color: var(--theme-bg-container) !important;
+  border: 1px solid var(--theme-border) !important;
+  box-shadow: var(--theme-shadow-subtle) !important;
+}
+
+.product-card:hover {
+  border-color: var(--theme-text-gold) !important;
+  box-shadow: var(--theme-shadow-luxury) !important;
+}
+
+.product-img-wrap {
+  background-color: var(--theme-bg-nested) !important;
+}
+
+.product-label {
+  background-color: var(--theme-text-primary) !important;
+  color: var(--theme-text-white) !important;
+}
+
+.product-category {
+  color: var(--theme-text-secondary) !important;
+}
+
+.product-price {
+  color: var(--theme-text-gold) !important;
+}
+
+/* Product Detail Page elements */
+.product-details h1 {
+  color: var(--theme-text-primary) !important;
+}
+
+.product-desc {
+  color: var(--theme-text-secondary) !important;
+  border-bottom-color: var(--theme-border) !important;
+}
+
+.spec-item {
+  border-bottom-color: var(--theme-border) !important;
+}
+
+.spec-label {
+  color: var(--theme-text-secondary) !important;
+}
+
+.spec-value {
+  color: var(--theme-text-primary) !important;
+}
+
+/* 7. Home Layout & Banners */
+.hero {
+  background-color: #1c1917 !important; /* Keep hero banner dark for dramatic lighting */
+}
+
+.hero-tagline {
+  color: var(--theme-text-gold) !important;
+}
+
+.hero h1 {
+  color: var(--theme-text-white) !important;
+}
+
+.hero-desc {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Section headers */
+.section-subtitle {
+  color: var(--theme-text-gold) !important;
+}
+
+/* Brand Story narrative section */
+.brand-story {
+  background-color: var(--theme-bg-nested) !important;
+}
+
+.brand-story-lead {
+  color: var(--theme-text-primary) !important;
+}
+
+.brand-story p {
+  color: var(--theme-text-secondary) !important;
+}
+
+.brand-story-img {
+  border: 1px solid var(--theme-border-gold) !important;
+  background-color: var(--theme-bg-container) !important;
+}
+
+/* Category grid highlights */
+.category-card {
+  border: 1px solid var(--theme-border) !important;
+}
+
+.category-link {
+  color: var(--theme-text-gold) !important;
+}
+
+/* Testimonials Layout */
+.testimonials {
+  background-color: var(--theme-bg-container) !important;
+}
+
+.testimonial-card {
+  background-color: var(--theme-bg) !important;
+  border-top-color: var(--theme-text-gold) !important;
+  box-shadow: var(--theme-shadow-subtle) !important;
+}
+
+.testimonial-stars {
+  color: var(--theme-text-gold) !important;
+}
+
+.testimonial-quote {
+  color: var(--theme-text-primary) !important;
+}
+
+.testimonial-title {
+  color: var(--theme-text-secondary) !important;
+}
+
+/* 8. Newsletter Subscription Banner */
+.newsletter-strip {
+  background-color: var(--theme-text-primary) !important;
+  color: var(--theme-text-white) !important;
+}
+
+.newsletter-text h3 {
+  color: var(--theme-text-white) !important;
+}
+
+.newsletter-text p {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.newsletter-input {
+  color: var(--theme-text-white) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.newsletter-input:focus {
+  border-bottom-color: var(--theme-text-gold) !important;
+}
+
+.newsletter-btn {
+  color: var(--theme-text-gold) !important;
+}
+
+.newsletter-btn:hover {
+  color: var(--theme-text-white) !important;
+}
+
+/* 9. Shared Footer (Elegant, Dark Styled) */
+.footer {
+  background-color: #241a14 !important; /* Extremely dark warm brown footer for light mode */
+  color: rgba(255, 255, 255, 0.7) !important;
+  border-top: 1px solid var(--theme-border) !important;
+}
+
+.footer-col h4 {
+  color: var(--theme-text-white) !important;
+}
+
+.footer-brand h3 {
+  color: var(--theme-text-white) !important;
+}
+
+.footer-brand p {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.footer-links a {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.footer-links a:hover {
+  color: var(--theme-text-gold) !important;
+}
+
+.footer-bottom p {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* 10. Modals & Account login portal */
+.modal-overlay {
+  background-color: rgba(45, 36, 30, 0.6) !important;
+}
+
+.auth-modal {
+  background-color: var(--theme-bg-container) !important;
+  border: 1px solid var(--theme-border) !important;
+  color: var(--theme-text-primary) !important;
+  box-shadow: var(--theme-shadow-luxury) !important;
+}
+
+.modal-close {
+  color: var(--theme-text-secondary) !important;
+}
+
+.modal-close:hover {
+  color: var(--theme-text-primary) !important;
+}
+
+.sso-divider::before,
+.sso-divider::after {
+  background-color: var(--theme-border) !important;
+}
+
+.btn-google-sso {
+  border: 1.5px solid var(--theme-border) !important;
+  background-color: var(--theme-bg-container) !important;
+  color: var(--theme-text-primary) !important;
+}
+
+.btn-google-sso:hover {
+  background-color: var(--theme-bg-nested) !important;
+}
+
+/* 11. Shopping Cart & Checkout Workspace */
+.cart-items-container {
+  background-color: var(--theme-bg-container) !important;
+  border: 1px solid var(--theme-border) !important;
+}
+
+.cart-item {
+  border-bottom: 1px solid var(--theme-border) !important;
+}
+
+.cart-item-name {
+  color: var(--theme-text-primary) !important;
+}
+
+.cart-item-details {
+  color: var(--theme-text-secondary) !important;
+}
+
+.qty-btn {
+  background-color: var(--theme-bg-nested) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text-primary) !important;
+}
+
+.qty-val {
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text-primary) !important;
+}
+
+/* Summary Sidebars */
+.summary-sidebar {
+  background-color: var(--theme-bg-container) !important;
+  border: 1px solid var(--theme-border) !important;
+  color: var(--theme-text-primary) !important;
+  box-shadow: var(--theme-shadow-subtle) !important;
+}
+
+.summary-row {
+  border-bottom: 1px dashed var(--theme-border) !important;
+  color: var(--theme-text-primary) !important;
+}
+
+.summary-row.total {
+  border-top: 1.5px solid var(--theme-text-primary) !important;
+  color: var(--theme-text-primary) !important;
+}
+
+/* Checkout blocks */
+.checkout-section {
+  border: 1px solid var(--theme-border) !important;
+  background-color: var(--theme-bg-container) !important;
+}
+
+/* 12. Order Tracking Milestone Layout */
+.order-tracking-card {
+  background-color: var(--theme-bg-container) !important;
+  border: 1px solid var(--theme-border) !important;
+  box-shadow: var(--theme-shadow-subtle) !important;
+}
+
+.tracker-details-section p {
+  color: var(--theme-text-secondary) !important;
+}
+
+.tracking-step.active .step-marker {
+  background-color: var(--theme-text-gold) !important;
+  color: var(--theme-text-white) !important;
+}
+
+.step-marker {
+  background-color: var(--theme-bg-nested) !important;
+  color: var(--theme-text-secondary) !important;
+}
+
+.tracking-step.active .step-info h4 {
+  color: var(--theme-text-primary) !important;
+}
+
+.tracking-step .step-info h4 {
+  color: var(--theme-text-secondary) !important;
+}
+
+/* 13. Profile Layout Dashboard */
+.profile-card {
+  background-color: var(--theme-bg-container) !important;
+  border: 1px solid var(--theme-border) !important;
+  box-shadow: var(--theme-shadow-subtle) !important;
+}
+
+.profile-card-header {
+  border-bottom-color: var(--theme-border) !important;
+}
+
+.profile-avatar-large {
+  background-color: var(--theme-bg-nested) !important;
+  border-color: var(--theme-text-gold) !important;
+  color: var(--theme-text-primary) !important;
+}
+
+.profile-email-text {
+  color: var(--theme-text-secondary) !important;
+}
+
+.badge-success {
+  background-color: #e2f5ea !important;
+  color: #1a7f37 !important;
+}
+.badge-warning {
+  background-color: #fff8e6 !important;
+  color: #b06000 !important;
+}
+.badge-info {
+  background-color: #e8f2ff !important;
+  color: #0969da !important;
+}
+.badge-danger {
+  background-color: #ffebe9 !important;
+  color: #cf222e !important;
+}
+
+.account-info {
+  border-top-color: var(--theme-border) !important;
+  color: var(--theme-text-secondary) !important;
+}
+
+.password-strength .progress-bar {
+  background-color: var(--theme-bg-nested) !important;
+}
+
+.danger-zone {
+  border-color: #cf222e !important;
+}
+
+.danger-zone .profile-card-header {
+  border-bottom-color: #cf222e !important;
+}
+
+.btn-danger-outline {
+  border: 1.5px solid #cf222e !important;
+  color: #cf222e !important;
+  background-color: transparent !important;
+}
+
+.btn-danger-outline:hover {
+  background-color: #cf222e !important;
+  color: var(--theme-text-white) !important;
+}
+
+/* 14. Admin Control Center Portal */
+.admin-workspace-section {
+  background-color: var(--theme-bg) !important;
+}
+
+.admin-header {
+  border-bottom-color: var(--theme-border) !important;
+}
+
+.stats-card {
+  background-color: var(--theme-bg-container) !important;
+  border: 1px solid var(--theme-border) !important;
+  box-shadow: var(--theme-shadow-subtle) !important;
+}
+
+.stats-icon {
+  background-color: var(--theme-bg-nested) !important;
+  color: var(--theme-text-gold) !important;
+}
+
+.stats-info p {
+  color: var(--theme-text-secondary) !important;
+}
+
+.admin-card {
+  background-color: var(--theme-bg-container) !important;
+  border: 1px solid var(--theme-border) !important;
+  box-shadow: var(--theme-shadow-subtle) !important;
+}
+
+.admin-card-header {
+  border-bottom-color: var(--theme-border) !important;
+}
+
+.admin-filters input,
+.admin-filters select {
+  border-color: var(--theme-border) !important;
+  background-color: var(--theme-bg-container) !important;
+}
+
+.admin-table-container {
+  border-color: var(--theme-border) !important;
+}
+
+.admin-table th {
+  background-color: var(--theme-bg-nested) !important;
+  color: var(--theme-text-primary) !important;
+  border-bottom-color: var(--theme-border) !important;
+}
+
+.admin-table td {
+  border-bottom-color: var(--theme-border) !important;
+}
+
+.admin-table tr:hover {
+  background-color: rgba(45, 36, 30, 0.02) !important;
+}
+
+.quick-action-btn {
+  background-color: var(--theme-bg-container) !important;
+  border-color: var(--theme-border) !important;
+}
+
+.quick-action-btn:hover {
+  border-color: var(--theme-text-gold) !important;
+  background-color: var(--theme-bg-nested) !important;
+}
+
+.quick-action-btn i {
+  color: var(--theme-text-gold) !important;
+}
+
+.admin-modal {
+  background-color: var(--theme-bg-container) !important;
+  border: 1px solid var(--theme-border) !important;
+  box-shadow: var(--theme-shadow-luxury) !important;
+}
+
+.modal-title {
+  border-bottom-color: var(--theme-border) !important;
+}
+
+.modal-footer {
+  border-top-color: var(--theme-border) !important;
+}
+
+.impersonation-banner {
+  background-color: #fff8e6 !important;
+  border-bottom: 1px solid #ffe194 !important;
+  color: #b06000 !important;
+}
+
+.impersonation-banner button {
+  background-color: #b06000 !important;
+  color: white !important;
+}
+
+.action-btn {
+  background-color: var(--theme-bg) !important;
+  border: 1px solid var(--theme-border) !important;
+}
+
+.action-btn:hover {
+  background-color: var(--theme-bg-nested) !important;
+  border-color: var(--theme-text-gold) !important;
+}
+
+.action-btn small {
+  color: var(--theme-text-secondary) !important;
+}
+
+.action-btn-danger:hover {
+  background-color: #ffebe9 !important;
+  border-color: #cf222e !important;
+  color: #cf222e !important;
+}
+
+.tabs-nav {
+  border-bottom-color: var(--theme-border) !important;
+}
+
+.tab-link {
+  color: var(--theme-text-secondary) !important;
+}
+
+.tab-link.active {
+  color: var(--theme-text-gold) !important;
+  border-bottom-color: var(--theme-text-gold) !important;
+}
+
+.pagination button {
+  background-color: var(--theme-bg-container) !important;
+  border-color: var(--theme-border) !important;
+}
+
+.pagination button.active,
+.pagination button:hover {
+  background-color: var(--theme-text-gold) !important;
+  border-color: var(--theme-text-gold) !important;
+  color: var(--theme-text-white) !important;
+}
+
+.pagination button:disabled {
+  background-color: var(--theme-bg) !important;
+  color: var(--theme-text-secondary) !important;
+}
+
+.loading-overlay {
+  background-color: rgba(250, 248, 245, 0.95) !important;
+}
+
+.spinner {
+  border-color: var(--theme-border) !important;
+  border-top-color: var(--theme-text-gold) !important;
+}
+
+#accessDeniedOverlay div {
+  background: var(--theme-bg-container) !important;
+  border-color: var(--theme-border) !important;
+}
+
+#floating-cart-bar {
+  background-color: var(--theme-text-primary) !important;
+  color: var(--theme-text-white) !important;
+}
+
+#floating-cart-bar .floating-cart-count {
+  background-color: var(--theme-text-gold) !important;
+  color: var(--theme-text-white) !important;
+}
+
+.theme-toggle-btn {
+  color: var(--theme-text-primary) !important;
+  border-radius: 50% !important;
+  width: 40px !important;
+  height: 40px !important;
+  transition:
+    background-color 0.3s ease,
+    transform 0.3s ease !important;
+}
+
+.theme-toggle-btn:hover {
+  background-color: rgba(197, 143, 0, 0.12) !important;
+  transform: scale(1.05) !important;
+}
+
+.theme-toggle-btn i {
+  color: var(--theme-text-gold) !important;
+  font-size: 1.25rem !important;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  display: inline-block !important;
+}
+
+.theme-toggle-btn:hover i {
+  transform: rotate(20deg) scale(1.1) !important;
+}
+
+/* 15. Subpage Page Header Banners */
+.page-header {
+  background-color: var(--theme-bg-nested) !important;
+  background-image: radial-gradient(
+    circle at top right,
+    rgba(197, 143, 0, 0.05),
+    transparent 60%
+  ) !important;
+  color: var(--theme-text-primary) !important;
+  padding: 80px 0 !important;
+  text-align: center !important;
+  border-bottom: 1px solid var(--theme-border) !important;
+}
+
+.page-header h1 {
+  color: var(--theme-text-primary) !important;
+  font-size: 3rem !important;
+  font-weight: 400 !important;
+  margin-bottom: 12px !important;
+}
+
+.page-header h1 span {
+  font-style: italic !important;
+  color: var(--theme-text-gold) !important;
+}
+
+.breadcrumbs {
+  margin-top: 12px !important;
+  font-size: 0.85rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+  color: var(--theme-text-secondary) !important;
+}
+
+.breadcrumbs a {
+  color: var(--theme-text-gold) !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+  transition: var(--transition-smooth) !important;
+}
+
+.breadcrumbs a:hover {
+  color: var(--theme-text-primary) !important;
+}

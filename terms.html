@@ -5,10 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Terms and conditions, fire safety warnings, and consumer legal guidelines for Signature Spell candles in India.">
   <title>Terms & Conditions | Signature Spell India</title>
-  
   <!-- CSS Link -->
+
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/transitions.css">
+  <link rel="stylesheet" href="css/light-theme.css" id="theme-light">
+  <link rel="stylesheet" href="css/dark-theme.css" id="theme-dark" disabled>
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem("theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", savedTheme);
+      document.documentElement.setAttribute("data-bs-theme", savedTheme);
+      document.getElementById("theme-light").disabled = (savedTheme === "dark");
+      document.getElementById("theme-dark").disabled = (savedTheme === "light");
+    })();
+  </script>
+  <script src="js/theme.js" defer></script>
 </head>
 <body>
 
