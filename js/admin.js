@@ -57,6 +57,9 @@ function initAdminConsole() {
 
   checkImpersonationStatus();
   setupAdminFormBindings();
+  document.addEventListener("ordersUpdated", () => {
+    syncOrdersTable();
+  });
 }
 
 async function verifyAdminRole(user) {
@@ -102,7 +105,7 @@ function loadStats() {
     if (orders) {
       const arr = Object.values(orders);
       document.getElementById("stat-total-orders").textContent = arr.length.toString();
-      const pending = arr.filter(o => o.status !== "Delivered").length;
+      const pending = arr.filter(o => o.status !== "Delivered" && o.status !== "Cancelled").length;
       document.getElementById("stat-pending-shipments").textContent = pending.toString();
     }
   });
@@ -227,6 +230,7 @@ function syncOrdersTable() {
                 <option value="Processing" ${o.status === 'Processing' ? 'selected' : ''}>Processing</option>
                 <option value="Shipped" ${o.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
                 <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                <option value="Cancelled" ${o.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
               </select>
             </td>
           </tr>

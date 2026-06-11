@@ -501,6 +501,10 @@ function initNavigation() {
       }
     }
   }
+  const wishlistBtn = document.getElementById("wishlist-btn");
+  if (wishlistBtn) {
+    wishlistBtn.setAttribute("href", "shop.html?filter=wishlist");
+  }
 }
 
 function updateCartBadge() {
@@ -893,12 +897,21 @@ function initShopPage() {
   
   const urlParams = new URLSearchParams(window.location.search);
   let activeSearch = urlParams.get("search") || "";
-  let activeFilter = "All";
+  let activeFilter = urlParams.get("filter") === "wishlist" ? "Wishlist" : "All";
   let activeSort = "default";
   
   if (activeSearch) {
     if (pageBreadcrumb) {
       pageBreadcrumb.textContent = `Search results for: "${activeSearch}"`;
+    }
+  } else if (activeFilter === "Wishlist") {
+    if (pageBreadcrumb) {
+      pageBreadcrumb.textContent = "My Wishlist";
+    }
+    const wishFilterBtn = Array.from(filterBtns).find(btn => btn.dataset.filter === "Wishlist");
+    if (wishFilterBtn) {
+      filterBtns.forEach(b => b.classList.remove("active"));
+      wishFilterBtn.classList.add("active");
     }
   }
 
@@ -910,8 +923,11 @@ function initShopPage() {
       filtered = PRODUCTS.filter(p => p.name.toLowerCase().includes(activeSearch.toLowerCase()) || p.description.toLowerCase().includes(activeSearch.toLowerCase()));
     }
     
-    // 2. Category Filter
-    if (activeFilter !== "All") {
+    // 2. Category/Wishlist Filter
+    if (activeFilter === "Wishlist") {
+      const wishes = WishlistStorage.get();
+      filtered = filtered.filter(p => wishes.includes(p.id));
+    } else if (activeFilter !== "All") {
       filtered = filtered.filter(p => p.category.toLowerCase().includes(activeFilter.toLowerCase().replace("s", "")));
     }
     
@@ -924,13 +940,23 @@ function initShopPage() {
     
     // 4. Render Layout
     if (filtered.length === 0) {
-      shopGrid.innerHTML = `
-        <div style="grid-column: 1/-1; text-align: center; padding: 60px 0;">
-          <h3 style="font-family: var(--font-heading); font-size: 1.8rem; margin-bottom: 12px; font-weight: 400;">No fragrances match your search</h3>
-          <p style="color: var(--color-muted-gray); margin-bottom: 24px;">Try searching for elements like 'T-Light', 'Glass', 'Coconut', or 'Oudh'.</p>
-          <a href="shop.html" class="btn btn-primary">View All Scents</a>
-        </div>
-      `;
+      if (activeFilter === "Wishlist") {
+        shopGrid.innerHTML = `
+          <div style="grid-column: 1/-1; text-align: center; padding: 60px 0;">
+            <h3 style="font-family: var(--font-heading); font-size: 1.8rem; margin-bottom: 12px; font-weight: 400;">Your wishlist is empty</h3>
+            <p style="color: var(--color-muted-gray); margin-bottom: 24px;">Explore our catalog of premium hand-poured scents and add your favorites!</p>
+            <a href="shop.html" class="btn btn-primary">Browse Scents</a>
+          </div>
+        `;
+      } else {
+        shopGrid.innerHTML = `
+          <div style="grid-column: 1/-1; text-align: center; padding: 60px 0;">
+            <h3 style="font-family: var(--font-heading); font-size: 1.8rem; margin-bottom: 12px; font-weight: 400;">No fragrances match your search</h3>
+            <p style="color: var(--color-muted-gray); margin-bottom: 24px;">Try searching for elements like 'T-Light', 'Glass', 'Coconut', or 'Oudh'.</p>
+            <a href="shop.html" class="btn btn-primary">View All Scents</a>
+          </div>
+        `;
+      }
     } else {
       shopGrid.innerHTML = filtered.map(p => createProductCardHTML(p)).join("");
     }
@@ -1150,7 +1176,7 @@ function initCartPage() {
     const shipping = subtotal >= 500 ? 0 : 50;
     const gstRate = 0.18;
     const estimatedTax = subtotal * gstRate;
-    const grandTotal = subtotal + shipping + estimatedTax;
+    const grandTotal = subtotal;
     
     const subtotalEl = document.getElementById("cart-subtotal");
     const shippingEl = document.getElementById("cart-shipping");
@@ -1247,13 +1273,41 @@ function initCheckoutPage() {
   if (taxEl) taxEl.textContent = `₹${tax.toFixed(2)}`;
   if (totalEl) totalEl.textContent = `₹${total.toFixed(2)}`;
   
+  // Auto-populate & lock email address if logged in
+  const emailInput = document.getElementById("shipping-email");
+  if (emailInput) {
+    let activeEmail = "";
+    if (typeof firebase !== "undefined" && isFirebaseInitialized && auth && auth.currentUser) {
+      activeEmail = auth.currentUser.email;
+    } else {
+      const sessionUser = UserSession.get();
+      if (sessionUser && sessionUser.email) activeEmail = sessionUser.email;
+    }
+    if (activeEmail) {
+      emailInput.value = activeEmail;
+      emailInput.readOnly = true;
+      emailInput.style.backgroundColor = "var(--color-cream-dark)";
+      emailInput.style.color = "var(--color-muted-gray)";
+    }
+  }
+
   // Form checkout submits
   const checkoutForm = document.getElementById("checkout-form");
   if (checkoutForm) {
     checkoutForm.addEventListener("submit", (e) => {
       e.preventDefault();
       
-      const email = document.getElementById("shipping-email").value.trim();
+      // Determine capture email (always prioritize logged-in user email over input value)
+      let email = document.getElementById("shipping-email").value.trim();
+      if (typeof firebase !== "undefined" && isFirebaseInitialized && auth && auth.currentUser) {
+        email = auth.currentUser.email;
+      } else {
+        const sessionUser = UserSession.get();
+        if (sessionUser && sessionUser.email) {
+          email = sessionUser.email;
+        }
+      }
+      
       const first = document.getElementById("shipping-first-name").value.trim();
       const last = document.getElementById("shipping-last-name").value.trim();
       const address = document.getElementById("shipping-address").value.trim();
@@ -1381,8 +1435,23 @@ function initOrderTrackingPage() {
       `).join("");
     }
     
+    const statusBadge = document.getElementById("tracking-status-badge");
+    if (statusBadge) {
+      if (order.status === "Cancelled") {
+        statusBadge.textContent = "Cancelled";
+        statusBadge.style.backgroundColor = "#cf222e";
+        statusBadge.style.borderColor = "#cf222e";
+        statusBadge.style.color = "#ffffff";
+      } else {
+        statusBadge.textContent = "Active Tracking";
+        statusBadge.style.backgroundColor = "";
+        statusBadge.style.borderColor = "";
+        statusBadge.style.color = "";
+      }
+    }
+
     if (trackCarrier) {
-      trackCarrier.textContent = order.status === "Delivered" ? "Delivered at Doorstep" : "In Transit via India Post BlueDart";
+      trackCarrier.textContent = order.status === "Delivered" ? "Delivered at Doorstep" : (order.status === "Cancelled" ? "Shipment Cancelled" : "In Transit via India Post BlueDart");
     }
     
     // Set Steps Activation based on status
@@ -1391,27 +1460,46 @@ function initOrderTrackingPage() {
       const steps = document.querySelectorAll(".tracker-step");
       steps.forEach(s => s.classList.remove("completed", "active"));
       
+      const banner = document.getElementById("tracking-status-banner");
+      const stepsContainer = document.querySelector(".tracker-steps-container");
+      
       let fillPercent = 0;
       const status = order.status ? order.status.toLowerCase() : "confirmed";
       
-      if (status === "confirmed") {
-        steps[0].classList.add("active");
-        fillPercent = 0;
-      } else if (status === "processing") {
-        steps[0].classList.add("completed");
-        steps[1].classList.add("active");
-        fillPercent = 33;
-      } else if (status === "shipped") {
-        steps[0].classList.add("completed");
-        steps[1].classList.add("completed");
-        steps[2].classList.add("active");
-        fillPercent = 66;
-      } else if (status === "delivered") {
-        steps[0].classList.add("completed");
-        steps[1].classList.add("completed");
-        steps[2].classList.add("completed");
-        steps[3].classList.add("completed");
-        fillPercent = 100;
+      if (status === "cancelled") {
+        if (banner) {
+          banner.innerHTML = `
+            <div class="alert alert-danger" style="margin-bottom: 0; display: flex; align-items: center; gap: 12px; font-weight: 500;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              This order has been cancelled by the administrator. If you have any questions, please contact our support team.
+            </div>
+          `;
+          banner.style.display = "block";
+        }
+        if (stepsContainer) stepsContainer.style.display = "none";
+      } else {
+        if (banner) banner.style.display = "none";
+        if (stepsContainer) stepsContainer.style.display = "flex";
+
+        if (status === "confirmed") {
+          steps[0].classList.add("active");
+          fillPercent = 0;
+        } else if (status === "processing") {
+          steps[0].classList.add("completed");
+          steps[1].classList.add("active");
+          fillPercent = 33;
+        } else if (status === "shipped") {
+          steps[0].classList.add("completed");
+          steps[1].classList.add("completed");
+          steps[2].classList.add("active");
+          fillPercent = 66;
+        } else if (status === "delivered") {
+          steps[0].classList.add("completed");
+          steps[1].classList.add("completed");
+          steps[2].classList.add("completed");
+          steps[3].classList.add("completed");
+          fillPercent = 100;
+        }
       }
       
       const isMobile = window.innerWidth <= 768;
@@ -1701,6 +1789,7 @@ function renderAdminDashboard() {
                 <option value="Processing" ${o.status === 'Processing' ? 'selected' : ''}>Processing</option>
                 <option value="Shipped" ${o.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
                 <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                <option value="Cancelled" ${o.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
               </select>
             </td>
           </tr>
