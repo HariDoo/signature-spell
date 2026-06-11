@@ -1,0 +1,97 @@
+/* ==========================================================================
+   SIGNATURE SPELL - 3D TILT CARDS & PARALLAX GLOW ENGINE
+   ========================================================================== */
+
+/* Grid and slider parents container perspective */
+.product-grid,
+.categories-grid,
+.testimonial-slider,
+.related-grid,
+.cert-cards-grid {
+  perspective: 1000px !important;
+}
+
+/* Individual card 3D structures */
+.product-card,
+.category-card,
+.testimonial-card {
+  transform-style: preserve-3d !important;
+  transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.4s ease, border-color 0.4s ease !important;
+  will-change: transform;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Dynamic Spotlight Glow Overlay inside cards */
+.product-card .card-glow,
+.category-card .card-glow,
+.testimonial-card .card-glow {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+}
+
+/* Light Theme Glow (Warm Gold Spotlight) */
+[data-theme="light"] .product-card .card-glow,
+[data-theme="light"] .category-card .card-glow,
+[data-theme="light"] .testimonial-card .card-glow {
+  background: radial-gradient(circle, rgba(197, 143, 0, 0.15) 0%, transparent 70%) !important;
+}
+
+/* Dark Theme Glow (Cosmic Lavender Spotlight) */
+[data-theme="dark"] .product-card .card-glow,
+[data-theme="dark"] .category-card .card-glow,
+[data-theme="dark"] .testimonial-card .card-glow {
+  background: radial-gradient(circle, rgba(192, 132, 252, 0.2) 0%, transparent 70%) !important;
+}
+
+/* 3D Layered Parallax Depth on Hover */
+.product-card:hover .product-img-wrap {
+  transform: translateZ(25px) scale(1.03) !important;
+}
+
+.product-card .product-img-wrap {
+  transition: transform 0.4s ease, box-shadow 0.4s ease !important;
+}
+
+.product-card .product-title,
+.product-card .product-price,
+.product-card .product-category,
+.product-card .product-rating {
+  transform: translateZ(15px) !important;
+  transition: transform 0.4s ease !important;
+}
+
+.product-card .product-label {
+  transform: translateZ(35px) !important;
+  transition: transform 0.4s ease !important;
+}
+
+/* Category Cards 3D Hover Parallax */
+.category-card img {
+  transition: transform 0.4s ease !important;
+}
+
+.category-card:hover img {
+  transform: translateZ(20px) scale(1.05) !important;
+}
+
+.category-card-overlay {
+  transform: translateZ(30px) !important;
+  transition: transform 0.4s ease !important;
+}
+
+/* Testimonial Cards 3D Hover Parallax */
+.testimonial-card .testimonial-stars,
+.testimonial-card .testimonial-quote,
+.testimonial-card .testimonial-author,
+.testimonial-card .testimonial-title {
+  transform: translateZ(15px) !important;
+  transition: transform 0.4s ease !important;
+}
