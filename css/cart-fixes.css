@@ -1,0 +1,130 @@
+/* ==========================================================================
+   SIGNATURE SPELL - CART LAYOUT ALIGNMENT & REMOVE BUTTON STYLING
+   ========================================================================== */
+
+/* Change display grid to 5 columns instead of 4 to accommodate the remove cell */
+.cart-header-row {
+  grid-template-columns: 2.5fr 1.2fr 1.2fr 1.2fr 0.5fr !important;
+}
+
+.cart-item-row {
+  grid-template-columns: 2.5fr 1.2fr 1.2fr 1.2fr 0.5fr !important;
+  align-items: center;
+}
+
+/* Premium styled remove button */
+.cart-item-remove {
+  background: rgba(220, 53, 69, 0.05) !important;
+  border: 1px solid rgba(220, 53, 69, 0.15) !important;
+  color: var(--color-muted-gray) !important;
+  border-radius: 50% !important;
+  width: 32px !important;
+  height: 32px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  font-size: 0.85rem !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  outline: none !important;
+}
+
+/* Dark theme border/bg adjustments for remove button */
+[data-theme="dark"] .cart-item-remove {
+  background: rgba(239, 68, 68, 0.08) !important;
+  border: 1px solid rgba(239, 68, 68, 0.2) !important;
+  color: #a1a1aa !important;
+}
+
+/* Premium Hover Transitions */
+.cart-item-remove:hover {
+  background: #dc3545 !important;
+  color: #ffffff !important;
+  border-color: #dc3545 !important;
+  transform: rotate(90deg) scale(1.1) !important;
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3) !important;
+}
+
+[data-theme="dark"] .cart-item-remove:hover {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+  border-color: #ef4444 !important;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4) !important;
+}
+
+/* Style subtotal cell same as price cell, but bigger and bolder */
+.cart-item-row .subtotal-cell {
+  color: var(--color-gold) !important;
+  font-size: 1.15rem !important;
+  font-weight: 800 !important;
+  font-family: inherit !important;
+  text-align: right !important;
+  letter-spacing: 0.02em !important;
+}
+
+/* Premium styling for "Add more items +" link */
+.add-more-items-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  color: var(--color-gold) !important;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  text-decoration: none !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  padding: 6px 0 !important;
+  border-bottom: 2px solid transparent !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+}
+
+.add-more-items-link:hover {
+  color: var(--color-dark) !important;
+  border-bottom-color: var(--color-gold) !important;
+  transform: translateX(4px) !important;
+}
+
+[data-theme="dark"] .add-more-items-link:hover {
+  color: #ffffff !important;
+}
+
+/* Reduced size and single-line override for checkout CTA */
+#proceed-checkout-cta {
+  width: 100% !important;
+  max-width: 260px !important;
+  margin: 16px auto 0 auto !important;
+  padding: 12px 16px !important;
+  font-size: 0.9rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  display: block !important;
+  text-align: center !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+}
+
+/* Free Delivery Banner Celebration Styling */
+.free-ship-banner {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+.celebration-particle {
+  position: absolute !important;
+  pointer-events: none !important;
+  z-index: 9999 !important;
+  opacity: 1 !important;
+  animation: particle-burst 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) forwards !important;
+}
+
+@keyframes particle-burst {
+  0% {
+    transform: translate(-50%, -50%) translate(0, 0) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) translate(var(--tx), var(--ty)) scale(0) rotate(var(--rot));
+    opacity: 0;
+  }
+}

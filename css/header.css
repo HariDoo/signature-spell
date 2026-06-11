@@ -1,0 +1,117 @@
+/* ==========================================================================
+   SIGNATURE SPELL - HEADER POSITIONING & PROFILE DROPDOWN STYLING
+   ========================================================================== */
+
+/* Header positioning: site name left, icons right */
+.header-container {
+  max-width: 100% !important;
+  padding: 0 40px !important;
+  overflow: visible !important; /* Crucial to prevent dropdown menu from being clipped */
+}
+
+.header {
+  overflow: visible !important;
+}
+
+/* User Profile Dropdown Menu */
+.user-dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+.user-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 12px;
+  background-color: var(--color-white);
+  border: var(--border-neutral-light);
+  border-radius: 8px;
+  box-shadow: var(--shadow-luxury);
+  min-width: 170px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 9999 !important; /* Ensure overlay above banners and cards */
+  padding: 8px 0;
+}
+
+.user-dropdown-menu.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.user-dropdown-item {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px !important;
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  color: var(--color-charcoal) !important;
+  transition: var(--transition-smooth) !important;
+  text-align: left !important;
+  cursor: pointer;
+  border: none !important;
+  background: none !important;
+  width: 100% !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+
+.user-dropdown-item:hover {
+  background-color: var(--color-cream-dark) !important;
+  color: var(--color-gold) !important;
+}
+
+/* Dark theme overrides for dropdown */
+[data-theme="dark"] .user-dropdown-menu {
+  background-color: #171428;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 16px 48px 0 rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .user-dropdown-item {
+  color: #a1a1aa !important;
+}
+
+[data-theme="dark"] .user-dropdown-item:hover {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  color: #ef4444 !important;
+}
+
+/* Header Login/Signup Text Link */
+.header-login-text {
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.85rem !important;
+  font-weight: 700 !important;
+  color: var(--color-charcoal) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  text-decoration: none !important;
+  transition: var(--transition-smooth) !important;
+  cursor: pointer !important;
+  display: inline-block;
+  padding: 6px 12px;
+  border: 1px solid var(--color-charcoal);
+  border-radius: 4px;
+}
+
+.header-login-text:hover {
+  background-color: var(--color-charcoal) !important;
+  color: var(--color-white) !important;
+  border-color: var(--color-charcoal) !important;
+}
+
+[data-theme="dark"] .header-login-text {
+  color: #e4e4e7 !important;
+  border-color: #e4e4e7 !important;
+}
+
+[data-theme="dark"] .header-login-text:hover {
+  background-color: #e4e4e7 !important;
+  color: #171428 !important;
+  border-color: #e4e4e7 !important;
+}

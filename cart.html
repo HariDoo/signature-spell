@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/transitions.css">
   <link rel="stylesheet" href="css/cards-3d.css">
+  <link rel="stylesheet" href="css/cart-fixes.css">
+  <link rel="stylesheet" href="css/header.css">
   <link rel="stylesheet" href="css/light-theme.css" id="theme-light">
   <link rel="stylesheet" href="css/dark-theme.css" id="theme-dark" disabled>
   <script>
@@ -120,30 +122,13 @@
           
           <div id="free-ship-banner-container">
             <!-- Populated dynamically by main.js -->
-          </div>
-          
-          <div class="summary-row">
-            <span>Subtotal</span>
-            <span id="cart-subtotal">₹0.00</span>
-          </div>
-          
-          <div class="summary-row" style="display: none;">
-            <span>Estimated Delivery</span>
-            <span id="cart-shipping">₹0.00</span>
-          </div>
-          
-          <div class="summary-row" style="display: none;">
-            <span>Estimated GST (18%)</span>
-            <span id="cart-tax">₹0.00</span>
-          </div>
-          
+          </div>          
           <div class="summary-row total">
             <span>Estimated Total</span>
             <span id="cart-total">₹0.00</span>
           </div>
           
           <a href="checkout.html" class="btn btn-primary btn-block" id="proceed-checkout-cta" style="margin-bottom: 16px;">Proceed to Checkout</a>
-          <a href="shop.html" class="btn btn-secondary btn-block" id="continue-shopping-cta">Continue Shopping</a>
         </aside>
         
       </div>
@@ -242,5 +227,7 @@
   <script src="js/main.js"></script>
   <script src="js/transitions.js"></script>
   <script src="js/cards-3d.js"></script>
+  <script src="js/cart-fixes.js"></script>
+  <script src="js/header.js"></script>
 </body>
 </html>
