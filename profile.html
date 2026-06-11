@@ -171,6 +171,20 @@
           </form>
         </div>
 
+        <!-- Section: My Orders -->
+        <div class="profile-card">
+          <div class="profile-card-header">
+            <h3>My Orders</h3>
+          </div>
+          <div id="orders-loading-state" class="orders-loading" style="text-align: center; padding: 20px 0;">
+            <div class="spinner" style="margin: 0 auto 10px auto; width: 30px; height: 30px;"></div>
+            <p style="font-size: 0.9rem; color: var(--color-muted-gray);">Retrieving your order history...</p>
+          </div>
+          <div id="profile-orders-container" style="display: none;">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
         <!-- Section: Email Verification -->
         <div class="profile-card">
           <div class="profile-card-header">

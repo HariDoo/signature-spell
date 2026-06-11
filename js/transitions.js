@@ -17,10 +17,18 @@ function initPageTransitions() {
   const wrapper = document.createElement("div");
   wrapper.id = "app-wrapper";
   
+  const modals = [];
   while (document.body.firstChild) {
-    wrapper.appendChild(document.body.firstChild);
+    const child = document.body.firstChild;
+    if (child.nodeType === 1 && (child.classList.contains("modal-overlay") || child.classList.contains("loading-overlay") || child.id === "candle-portal")) {
+      modals.push(child);
+      document.body.removeChild(child);
+    } else {
+      wrapper.appendChild(child);
+    }
   }
   document.body.appendChild(wrapper);
+  modals.forEach(m => document.body.appendChild(m));
 
   if (playEntrance) {
     document.body.classList.add("transitioning-in");

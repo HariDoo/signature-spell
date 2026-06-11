@@ -156,6 +156,11 @@ const CartStorage = {
     try {
       localStorage.setItem("signature_spell_cart", JSON.stringify(cart));
       document.dispatchEvent(new CustomEvent("cartUpdated"));
+      
+      // Sync to Firebase if logged in
+      if (typeof firebase !== "undefined" && isFirebaseInitialized && auth && auth.currentUser) {
+        db.ref("users/" + auth.currentUser.uid + "/cart").set(cart);
+      }
     } catch (e) {
       console.error("Error saving cart", e);
     }
@@ -206,6 +211,11 @@ const WishlistStorage = {
     try {
       localStorage.setItem("signature_spell_wishlist", JSON.stringify(list));
       document.dispatchEvent(new CustomEvent("wishlistUpdated"));
+
+      // Sync to Firebase if logged in
+      if (typeof firebase !== "undefined" && isFirebaseInitialized && auth && auth.currentUser) {
+        db.ref("users/" + auth.currentUser.uid + "/wishlist").set(list);
+      }
     } catch (e) {
       console.error("Error saving wishlist", e);
     }
@@ -370,8 +380,47 @@ function tryInitFirebase() {
               });
             }
           } catch(e) {}
+
+          // Synchronize User-specific Cart from Firebase Realtime Database
+          try {
+            const cartSnap = await db.ref("users/" + user.uid + "/cart").once("value");
+            if (cartSnap.exists()) {
+              localStorage.setItem("signature_spell_cart", JSON.stringify(cartSnap.val()));
+            } else {
+              // Upload local cart if any
+              const localCart = localStorage.getItem("signature_spell_cart");
+              if (localCart && JSON.parse(localCart).length > 0) {
+                await db.ref("users/" + user.uid + "/cart").set(JSON.parse(localCart));
+              }
+            }
+            document.dispatchEvent(new CustomEvent("cartUpdated"));
+          } catch (e) {
+            console.error("Error syncing cart from DB:", e);
+          }
+
+          // Synchronize User-specific Wishlist from Firebase Realtime Database
+          try {
+            const wishSnap = await db.ref("users/" + user.uid + "/wishlist").once("value");
+            if (wishSnap.exists()) {
+              localStorage.setItem("signature_spell_wishlist", JSON.stringify(wishSnap.val()));
+            } else {
+              // Upload local wishlist if any
+              const localWish = localStorage.getItem("signature_spell_wishlist");
+              if (localWish && JSON.parse(localWish).length > 0) {
+                await db.ref("users/" + user.uid + "/wishlist").set(JSON.parse(localWish));
+              }
+            }
+            document.dispatchEvent(new CustomEvent("wishlistUpdated"));
+          } catch (e) {
+            console.error("Error syncing wishlist from DB:", e);
+          }
+
         } else {
           UserSession.clear();
+          localStorage.removeItem("signature_spell_cart");
+          localStorage.removeItem("signature_spell_wishlist");
+          document.dispatchEvent(new CustomEvent("cartUpdated"));
+          document.dispatchEvent(new CustomEvent("wishlistUpdated"));
         }
       });
 
