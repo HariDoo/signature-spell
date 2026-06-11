@@ -156,6 +156,11 @@ const CartStorage = {
     try {
       localStorage.setItem("signature_spell_cart", JSON.stringify(cart));
       document.dispatchEvent(new CustomEvent("cartUpdated"));
+      
+      // Sync to Firebase if logged in
+      if (typeof firebase !== "undefined" && isFirebaseInitialized && auth && auth.currentUser) {
+        db.ref("users/" + auth.currentUser.uid + "/cart").set(cart);
+      }
     } catch (e) {
       console.error("Error saving cart", e);
     }
@@ -206,6 +211,11 @@ const WishlistStorage = {
     try {
       localStorage.setItem("signature_spell_wishlist", JSON.stringify(list));
       document.dispatchEvent(new CustomEvent("wishlistUpdated"));
+
+      // Sync to Firebase if logged in
+      if (typeof firebase !== "undefined" && isFirebaseInitialized && auth && auth.currentUser) {
+        db.ref("users/" + auth.currentUser.uid + "/wishlist").set(list);
+      }
     } catch (e) {
       console.error("Error saving wishlist", e);
     }
@@ -370,8 +380,47 @@ function tryInitFirebase() {
               });
             }
           } catch(e) {}
+
+          // Synchronize User-specific Cart from Firebase Realtime Database
+          try {
+            const cartSnap = await db.ref("users/" + user.uid + "/cart").once("value");
+            if (cartSnap.exists()) {
+              localStorage.setItem("signature_spell_cart", JSON.stringify(cartSnap.val()));
+            } else {
+              // Upload local cart if any
+              const localCart = localStorage.getItem("signature_spell_cart");
+              if (localCart && JSON.parse(localCart).length > 0) {
+                await db.ref("users/" + user.uid + "/cart").set(JSON.parse(localCart));
+              }
+            }
+            document.dispatchEvent(new CustomEvent("cartUpdated"));
+          } catch (e) {
+            console.error("Error syncing cart from DB:", e);
+          }
+
+          // Synchronize User-specific Wishlist from Firebase Realtime Database
+          try {
+            const wishSnap = await db.ref("users/" + user.uid + "/wishlist").once("value");
+            if (wishSnap.exists()) {
+              localStorage.setItem("signature_spell_wishlist", JSON.stringify(wishSnap.val()));
+            } else {
+              // Upload local wishlist if any
+              const localWish = localStorage.getItem("signature_spell_wishlist");
+              if (localWish && JSON.parse(localWish).length > 0) {
+                await db.ref("users/" + user.uid + "/wishlist").set(JSON.parse(localWish));
+              }
+            }
+            document.dispatchEvent(new CustomEvent("wishlistUpdated"));
+          } catch (e) {
+            console.error("Error syncing wishlist from DB:", e);
+          }
+
         } else {
           UserSession.clear();
+          localStorage.removeItem("signature_spell_cart");
+          localStorage.removeItem("signature_spell_wishlist");
+          document.dispatchEvent(new CustomEvent("cartUpdated"));
+          document.dispatchEvent(new CustomEvent("wishlistUpdated"));
         }
       });
 
@@ -417,6 +466,40 @@ function initNavigation() {
     hamburger.addEventListener("click", toggleMenu);
     overlay.addEventListener("click", toggleMenu);
     if (closeBtn) closeBtn.addEventListener("click", toggleMenu);
+
+    // Dynamically insert mobile search bar inside hamburger menu drawer
+    if (!document.getElementById("mobile-search-form")) {
+      const mobileSearchContainer = document.createElement("div");
+      mobileSearchContainer.style.padding = "0 0 20px 0";
+      mobileSearchContainer.innerHTML = `
+        <form class="mobile-search-form" id="mobile-search-form">
+          <div style="position: relative; display: flex; align-items: center; background-color: var(--color-cream-dark); border: var(--border-neutral-light); border-radius: 4px; width: 100%;">
+            <input type="text" id="mobile-search-input" placeholder="Search scents..." required style="width: 100%; padding: 10px 40px 10px 12px; border: none; background: transparent; font-family: var(--font-body); font-size: 0.9rem; outline: none; color: var(--color-charcoal);">
+            <button type="submit" style="position: absolute; right: 10px; background: none; border: none; cursor: pointer; color: var(--color-charcoal);">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </button>
+          </div>
+        </form>
+      `;
+      const navLinks = mobileNav.querySelector(".mobile-nav-links");
+      if (navLinks) {
+        mobileNav.insertBefore(mobileSearchContainer, navLinks);
+      } else {
+        mobileNav.appendChild(mobileSearchContainer);
+      }
+
+      const mobileSearchForm = document.getElementById("mobile-search-form");
+      const mobileSearchInput = document.getElementById("mobile-search-input");
+      if (mobileSearchForm && mobileSearchInput) {
+        mobileSearchForm.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const query = mobileSearchInput.value.trim();
+          if (query) {
+            window.location.href = `shop.html?search=${encodeURIComponent(query)}`;
+          }
+        });
+      }
+    }
   }
 }
 
@@ -684,8 +767,16 @@ function updateUserSessionUI() {
 function initSearch() {
   const searchForm = document.getElementById("header-search-form");
   const searchInput = document.getElementById("header-search-input");
+  const nav = document.querySelector("header.header nav");
+  const navIcons = document.querySelector(".nav-icons");
+  
+  if (searchForm && nav && navIcons) {
+    // Move the search bar after the nav links and before the nav icons on desktop view
+    nav.parentNode.insertBefore(searchForm, navIcons);
+  }
   
   if (searchForm && searchInput) {
+    searchInput.placeholder = "Search scents...";
     searchForm.addEventListener("submit", (e) => {
       e.preventDefault();
       const query = searchInput.value.trim();

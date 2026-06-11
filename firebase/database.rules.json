@@ -2,46 +2,47 @@
   "rules": {
     "products": {
       ".read": true,
-      ".write": "auth != null && (auth.token.email.beginsWith('admin') || auth.token.email === 'admin@signaturespell.com' || auth.token.email === 'nandheswara21@gmail.com' || root.child('users/' + auth.uid + '/role').val() === 'admin')"
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.email === 'admin@signaturespell.com' || auth.token.email === 'nandheswara21@gmail.com')"
     },
     "orders": {
-      ".read": true,
+      ".write": true,
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.email === 'admin@signaturespell.com' || auth.token.email === 'nandheswara21@gmail.com')",
       "$orderId": {
-        ".write": "!data.exists() || auth != null"
+        ".read": true
       }
     },
     "adminUsers": {
       ".read": "auth != null",
-      ".write": "auth != null && (auth.token.email === 'nandheswara21@gmail.com' || auth.token.email === 'admin@signaturespell.com' || root.child('users/' + auth.uid + '/role').val() === 'admin')",
+      ".write": "auth != null && (auth.token.email === 'nandheswara21@gmail.com' || auth.token.email === 'admin@signaturespell.com' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
       ".indexOn": ["email", "active"]
     },
     "adminLogs": {
-      ".read": "auth != null && (auth.token.email === 'nandheswara21@gmail.com' || auth.token.email === 'admin@signaturespell.com' || root.child('users/' + auth.uid + '/role').val() === 'admin')",
+      ".read": "auth != null && (auth.token.email === 'nandheswara21@gmail.com' || auth.token.email === 'admin@signaturespell.com' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
       ".write": "auth != null",
       ".indexOn": ["timestamp", "action", "adminId"]
     },
     "systemSettings": {
       ".read": "auth != null",
-      ".write": "auth != null && (auth.token.email === 'nandheswara21@gmail.com' || auth.token.email === 'admin@signaturespell.com' || root.child('users/' + auth.uid + '/role').val() === 'admin')",
+      ".write": "auth != null && (auth.token.email === 'nandheswara21@gmail.com' || auth.token.email === 'admin@signaturespell.com' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
       "allowRegistration": {
         ".read": true
       }
     },
     "maintenanceMode": {
       ".read": true,
-      ".write": "auth != null && (auth.token.email === 'nandheswara21@gmail.com' || auth.token.email === 'admin@signaturespell.com' || root.child('users/' + auth.uid + '/role').val() === 'admin')"
+      ".write": "auth != null && (auth.token.email === 'nandheswara21@gmail.com' || auth.token.email === 'admin@signaturespell.com' || root.child('users').child(auth.uid).child('role').val() === 'admin')"
     },
     "announcements": {
       ".read": "auth != null",
-      ".write": "auth != null && (auth.token.email === 'nandheswara21@gmail.com' || auth.token.email === 'admin@signaturespell.com' || root.child('users/' + auth.uid + '/role').val() === 'admin')"
+      ".write": "auth != null && (auth.token.email === 'nandheswara21@gmail.com' || auth.token.email === 'admin@signaturespell.com' || root.child('users').child(auth.uid).child('role').val() === 'admin')"
     },
     "emailQueue": {
-      ".read": "auth != null && (auth.token.email === 'nandheswara21@gmail.com' || auth.token.email === 'admin@signaturespell.com' || root.child('users/' + auth.uid + '/role').val() === 'admin')",
+      ".read": "auth != null && (auth.token.email === 'nandheswara21@gmail.com' || auth.token.email === 'admin@signaturespell.com' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
       ".write": "auth != null"
     },
     "users": {
-      ".read": "auth != null && (auth.token.email === 'nandheswara21@gmail.com' || auth.token.email === 'admin@signaturespell.com' || root.child('users/' + auth.uid + '/role').val() === 'admin')",
-      ".write": "auth != null && (auth.token.email === 'nandheswara21@gmail.com' || auth.token.email === 'admin@signaturespell.com' || root.child('users/' + auth.uid + '/role').val() === 'admin')",
+      ".read": "auth != null && (auth.token.email === 'nandheswara21@gmail.com' || auth.token.email === 'admin@signaturespell.com' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+      ".write": "auth != null && (auth.token.email === 'nandheswara21@gmail.com' || auth.token.email === 'admin@signaturespell.com' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
       "$uid": {
         ".read": "auth.uid === $uid",
         ".write": "auth.uid === $uid",
@@ -70,6 +71,12 @@
           ".validate": "newData.isNumber()"
         },
         "metadata": {
+          ".validate": true
+        },
+        "cart": {
+          ".validate": true
+        },
+        "wishlist": {
           ".validate": true
         }
       }

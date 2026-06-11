@@ -252,7 +252,7 @@ function loadAdminManagers() {
       const m = managers[key];
       const isPrimary = m.email === "nandheswara21@gmail.com" || m.email === "admin@signaturespell.com";
       html += `
-        <div style="background-color: var(--color-white); border: 1px solid var(--color-light-gray); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center;">
+        <div class="admin-manager-item">
           <div>
             <span style="font-weight: 700; font-size:0.9rem;">${m.email}</span>
             <small style="display:block; color:var(--color-muted-gray); font-size:0.75rem;">Added by ${m.addedByEmail || 'system'}</small>
@@ -328,7 +328,7 @@ function loadBulletins() {
         const b = bulletins[key];
         html += `
           <div style="background-color: var(--color-white); border: 1px solid var(--color-light-gray); padding: 12px; border-left: 3px solid var(--color-gold);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <div class="bulletin-header">
               <strong style="font-size:0.95rem;">${b.title}</strong>
               <button onclick="handleDeleteBulletin('${key}')" style="background:none; border:none; cursor:pointer; color:#cf222e; font-size:0.8rem;">Remove</button>
             </div>

@@ -252,3 +252,117 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* User Orders Section Styles */
+.user-order-item {
+  border: 1px solid var(--color-light-gray);
+  border-radius: 4px;
+  padding: 20px;
+  margin-bottom: 20px;
+  background-color: var(--color-off-white);
+  transition: var(--transition-smooth);
+}
+
+.user-order-item:hover {
+  box-shadow: var(--shadow-subtle);
+  border-color: var(--color-gold);
+}
+
+.user-order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px dashed var(--color-light-gray);
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.user-order-id {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: var(--color-charcoal);
+  font-size: 1.1rem;
+}
+
+.user-order-date {
+  font-size: 0.85rem;
+  color: var(--color-muted-gray);
+}
+
+.user-order-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 12px;
+}
+
+.user-order-products {
+  font-size: 0.9rem;
+  color: var(--color-charcoal);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.user-order-products li {
+  margin-bottom: 4px;
+}
+
+.user-order-products li span.qty {
+  color: var(--color-muted-gray);
+  margin-left: 5px;
+}
+
+.user-order-summary {
+  text-align: right;
+}
+
+.user-order-total {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--color-charcoal);
+  margin-top: 4px;
+}
+
+.user-order-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--color-light-gray);
+  padding-top: 12px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.user-order-tracking-btn {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-gold);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: var(--transition-smooth);
+}
+
+.user-order-tracking-btn:hover {
+  color: var(--color-charcoal);
+}
+
+.empty-orders-state {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.empty-orders-state p {
+  color: var(--color-muted-gray);
+  margin-bottom: 20px;
+}
+

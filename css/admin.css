@@ -82,6 +82,10 @@
   margin-bottom: 40px;
 }
 
+.admin-main-grid > div {
+  min-width: 0;
+}
+
 @media (max-width: 1000px) {
   .admin-main-grid {
     grid-template-columns: 1fr;
@@ -95,6 +99,8 @@
   padding: 24px;
   box-shadow: var(--shadow-subtle);
   margin-bottom: 30px;
+  width: 100%;
+  max-width: 100%;
 }
 
 .admin-card-header {
@@ -144,6 +150,8 @@
 .admin-table-container {
   overflow-x: auto;
   border: 1px solid var(--color-light-gray);
+  width: 100%;
+  max-width: 100%;
 }
 
 .admin-table {
@@ -235,8 +243,8 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   background-color: rgba(18, 18, 18, 0.6);
   z-index: 4000;
   display: none;
@@ -468,3 +476,90 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* Responsive & Mobile Layout Improvements */
+.admin-filters.grid-3 {
+  grid-template-columns: 2fr 1fr 1fr;
+}
+
+.admin-filters.grid-2 {
+  grid-template-columns: 2fr 1fr;
+}
+
+.user-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 20px 0;
+}
+
+.admin-manager-item {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-light-gray);
+  padding: 10px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-manager-item span {
+  word-break: break-all;
+}
+
+.bulletin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.bulletin-header strong {
+  word-break: break-word;
+}
+
+@media (max-width: 768px) {
+  .admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .admin-user-info {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-filters.grid-3,
+  .admin-filters.grid-2 {
+    grid-template-columns: 1fr;
+  }
+  
+  .admin-card {
+    padding: 16px;
+  }
+  
+  .admin-modal {
+    padding: 20px 15px;
+  }
+}
+
+@media (max-width: 500px) {
+  .user-stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .admin-manager-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .admin-manager-item button {
+    align-self: flex-end;
+  }
+}
+

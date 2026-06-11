@@ -8,9 +8,9 @@
   margin-left: 0.5rem; /* 8px */
 }
 
-/* Prevent line‑wrap on narrow screens */
+/* Prevent line‑wrap on action buttons inside the last column on narrow screens */
 @media (max-width: 600px) {
-  .admin-table td {
+  .admin-table td:last-child {
     white-space: nowrap;
   }
 }
