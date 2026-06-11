@@ -159,8 +159,8 @@ function renderUserRegistryTable() {
         <td><span class="badge ${u.status === 'disabled' ? 'badge-danger' : 'badge-success'}">${u.status || 'active'}</span></td>
         <td>${createdStr}</td>
         <td>
-          <button class="btn btn-secondary btn-small" onclick="openUserActionOptions('${u.uid}')">Manage</button>
-          <button class="btn btn-primary btn-small" onclick="openEditUserModal('${u.uid}')">Edit</button>
+          <button class="btn btn-secondary btn-small" onclick="openUserActionOptions('${u.uid}')" title="Settings"><span aria-hidden="true">⚙️</span></button>
+          <button class="btn btn-primary btn-small" onclick="openEditUserModal('${u.uid}')" title="Edit"><span aria-hidden="true">✏️</span></button>
         </td>
       </tr>
     `;
