@@ -1966,6 +1966,14 @@ h6 {
     display: none;
   }
 
+  .search-form {
+    display: none !important;
+  }
+
+  .nav-icons {
+    gap: 16px;
+  }
+
   .hamburger {
     display: flex;
   }
@@ -2059,6 +2067,14 @@ h6 {
 
 /* Very Small Mobile Devices (Max-width: 480px) */
 @media (max-width: 480px) {
+  .logo {
+    font-size: 1.3rem;
+  }
+
+  .nav-icons {
+    gap: 12px;
+  }
+
   .product-grid {
     grid-template-columns: 1fr;
   }
