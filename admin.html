@@ -197,12 +197,12 @@
             
             <div class="admin-filters">
               <input type="text" id="admin-user-search" placeholder="Search by email...">
-              <select id="admin-role-filter">
+              <select id="admin-role-filter" data-ss-select="compact">
                 <option value="all">All Roles</option>
                 <option value="admin">Admins</option>
                 <option value="user">Users</option>
               </select>
-              <select id="admin-status-filter">
+              <select id="admin-status-filter" data-ss-select="compact">
                 <option value="all">All Statuses</option>
                 <option value="active">Active</option>
                 <option value="disabled">Disabled</option>
@@ -246,7 +246,7 @@
               <div class="admin-filters grid-3" style="margin-bottom: 10px;">
                 <input type="text" id="add-prod-name" required placeholder="E.g., Vanilla Wood Candle">
                 <input type="number" id="add-prod-price" required placeholder="INR Price (₹)">
-                <select id="add-prod-category" required>
+                <select id="add-prod-category" required data-ss-select="normal">
                   <option value="Tea Lights">Tea Lights</option>
                   <option value="Jars">Glass Jars</option>
                   <option value="Shells">Coconut Shells</option>
@@ -445,7 +445,7 @@
         </div>
         <div class="form-group">
           <label for="add-user-role">Account Privilege</label>
-          <select id="add-user-role">
+          <select id="add-user-role" data-ss-select="normal">
             <option value="user">Standard Client</option>
             <option value="admin">Administrator</option>
           </select>
@@ -499,14 +499,14 @@
         </div>
         <div class="form-group">
           <label for="edit-user-role">Role</label>
-          <select id="edit-user-role">
+          <select id="edit-user-role" data-ss-select="normal">
             <option value="user">User</option>
             <option value="admin">Admin</option>
           </select>
         </div>
         <div class="form-group">
           <label for="edit-user-status">Status</label>
-          <select id="edit-user-status">
+          <select id="edit-user-status" data-ss-select="normal">
             <option value="active">Active</option>
             <option value="disabled">Disabled</option>
           </select>
@@ -689,6 +689,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
   <!-- Core JavaScript -->
+  <script src="js/ui-components.js"></script>
   <script src="js/main.js"></script>
   <script src="js/transitions.js"></script>
   <script src="js/cards-3d.js"></script>

@@ -626,6 +626,7 @@ textarea:focus {
 .quick-action-btn {
   background-color: var(--theme-bg-container) !important;
   border-color: var(--theme-border) !important;
+  color: var(--theme-text-primary) !important;
 }
 
 .quick-action-btn:hover {
@@ -635,6 +636,23 @@ textarea:focus {
 
 .quick-action-btn i {
   color: var(--theme-text-gold) !important;
+}
+
+.quick-action-btn span {
+  color: var(--theme-text-primary) !important;
+}
+
+.admin-manager-item {
+  background-color: var(--theme-bg-nested) !important;
+  border-color: var(--theme-border) !important;
+}
+
+.admin-manager-item span {
+  color: var(--theme-text-primary) !important;
+}
+
+.admin-manager-item small {
+  color: var(--theme-text-secondary) !important;
 }
 
 .admin-modal {

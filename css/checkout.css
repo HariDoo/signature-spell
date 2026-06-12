@@ -1,0 +1,114 @@
+/* ==========================================================================
+   CHECKOUT PAGE (checkout.html)
+   ========================================================================== */
+
+.checkout-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 48px;
+  align-items: start;
+}
+
+.checkout-forms {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.checkout-section {
+  background-color: var(--color-white);
+  padding: 32px;
+  border: var(--border-neutral-light);
+  box-shadow: var(--shadow-subtle);
+}
+
+.checkout-section h3 {
+  font-size: 1.3rem;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--color-light-gray);
+  padding-bottom: 12px;
+}
+
+.form-group-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--color-charcoal);
+}
+
+.form-group input,
+.form-group select {
+  border: 1px solid var(--color-light-gray);
+  padding: 12px;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  background-color: var(--color-off-white);
+  transition: var(--transition-smooth);
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--color-gold);
+  background-color: var(--color-white);
+  box-shadow: 0 0 5px rgba(212, 175, 55, 0.15);
+}
+
+.checkout-item-list {
+  max-height: 250px;
+  overflow-y: auto;
+  margin-bottom: 24px;
+}
+
+.checkout-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-light-gray);
+  font-size: 0.9rem;
+}
+
+.checkout-item:last-child {
+  border-bottom: none;
+}
+
+.checkout-item-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.checkout-item-thumb {
+  width: 40px;
+  aspect-ratio: 1/1;
+  background-color: var(--color-cream-dark);
+}
+
+.checkout-item-title {
+  font-weight: 600;
+}
+
+.checkout-item-qty {
+  font-size: 0.75rem;
+  color: var(--color-muted-gray);
+}
+
+.checkout-item-price {
+  font-family: var(--font-heading);
+  font-weight: 700;
+}

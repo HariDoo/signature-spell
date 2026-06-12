@@ -1,0 +1,124 @@
+/* js/product.js - Product details page initializers and handlers */
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (typeof PRODUCTS === "undefined") return;
+
+  const urlParams = new URLSearchParams(window.location.search);
+  let productId = parseInt(urlParams.get("id")) || 1;
+  const product = PRODUCTS.find(p => p.id === productId) || PRODUCTS[0];
+  
+  // Dynamic text fields
+  const title = document.querySelector(".product-name");
+  const price = document.querySelector(".product-price");
+  const desc = document.querySelector(".product-desc");
+  const categoryLink = document.getElementById("detail-category-link");
+  const productBreadcrumb = document.getElementById("detail-breadcrumb-name");
+  
+  if (title) title.textContent = product.name;
+  if (price) price.textContent = `₹${product.price}`;
+  if (desc) desc.textContent = product.description;
+  if (categoryLink) {
+    categoryLink.textContent = product.category;
+    categoryLink.href = `shop.html`;
+  }
+  if (productBreadcrumb) productBreadcrumb.textContent = product.name;
+  
+  // Gallery image loads
+  const mainImg = document.getElementById("main-product-img");
+  const thumbStrip = document.querySelector(".thumbnail-strip");
+  if (mainImg) mainImg.src = product.image;
+  if (thumbStrip) {
+    thumbStrip.innerHTML = `
+      <div class="thumbnail active" onclick="swapMainImage('${product.image}', this)"><img src="${product.image}" alt="${product.name}"></div>
+      <div class="thumbnail" onclick="swapMainImage('assets/hero_candle.png', this)"><img src="assets/hero_candle.png" alt="Mood Candle Ambient"></div>
+    `;
+  }
+  
+  // Tab scent notes loading
+  const noteTop = document.getElementById("note-top");
+  const noteHeart = document.getElementById("note-heart");
+  const noteBase = document.getElementById("note-base");
+  if (noteTop) noteTop.textContent = product.notes.top;
+  if (noteHeart) noteHeart.textContent = product.notes.heart;
+  if (noteBase) noteBase.textContent = product.notes.base;
+  
+  // Tab spec burn details
+  const specBurn = document.getElementById("spec-burn");
+  const specWax = document.getElementById("spec-wax");
+  if (specBurn) specBurn.textContent = product.burnTime;
+  if (specWax) specWax.textContent = product.waxType;
+  
+  // Tab navigation triggers
+  const tabHeaders = document.querySelectorAll(".tab-header");
+  const tabContents = document.querySelectorAll(".tab-content");
+  tabHeaders.forEach(tab => {
+    tab.addEventListener("click", () => {
+      tabHeaders.forEach(t => t.classList.remove("active"));
+      tabContents.forEach(c => c.classList.remove("active"));
+      tab.classList.add("active");
+      const activeContent = document.getElementById(tab.dataset.tab);
+      if (activeContent) activeContent.classList.add("active");
+    });
+  });
+  
+  // Quantity Selector
+  const qtyInput = document.querySelector(".qty-input");
+  const btnMinus = document.querySelector(".qty-minus");
+  const btnPlus = document.querySelector(".qty-plus");
+  if (qtyInput && btnMinus && btnPlus) {
+    btnMinus.addEventListener("click", () => {
+      let val = parseInt(qtyInput.value) || 1;
+      if (val > 1) qtyInput.value = val - 1;
+    });
+    btnPlus.addEventListener("click", () => {
+      let val = parseInt(qtyInput.value) || 1;
+      qtyInput.value = val + 1;
+    });
+  }
+  
+  // Add to Cart Action
+  const addToCartBtn = document.getElementById("detail-add-to-cart-btn");
+  if (addToCartBtn) {
+    addToCartBtn.addEventListener("click", () => {
+      if (typeof CartStorage !== "undefined") {
+        const qty = parseInt(qtyInput.value) || 1;
+        CartStorage.add(product.id, qty);
+        if (typeof showToast === "function") {
+          showToast(`${qty} x ${product.name} added to cart!`);
+        }
+      }
+    });
+  }
+  
+  // Wishlist Action Toggle
+  const detailWishlistBtn = document.getElementById("detail-wishlist-btn");
+  if (detailWishlistBtn && typeof WishlistStorage !== "undefined") {
+    const isWished = WishlistStorage.has(product.id);
+    detailWishlistBtn.classList.toggle("active", isWished);
+    detailWishlistBtn.addEventListener("click", () => {
+      const added = WishlistStorage.toggle(product.id);
+      detailWishlistBtn.classList.toggle("active", added);
+      if (typeof showToast === "function") {
+        showToast(added ? "Added to wishlist!" : "Removed from wishlist.");
+      }
+    });
+  }
+  
+  // Related Products Grid
+  const relatedGrid = document.querySelector(".related-grid");
+  if (relatedGrid && typeof createProductCardHTML === "function") {
+    const related = PRODUCTS.filter(p => p.id !== product.id && p.category === product.category).slice(0, 4);
+    relatedGrid.innerHTML = related.map(p => createProductCardHTML(p)).join("");
+  }
+});
+
+// Image Gallery Swap function
+window.swapMainImage = function(src, thumbElement) {
+  const mainImg = document.getElementById("main-product-img");
+  if (mainImg) {
+    mainImg.src = src;
+    const thumbs = document.querySelectorAll(".thumbnail");
+    thumbs.forEach(t => t.classList.remove("active"));
+    thumbElement.classList.add("active");
+  }
+};

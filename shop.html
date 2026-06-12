@@ -8,6 +8,7 @@
   <!-- CSS Link -->
 
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/shop.css">
   <link rel="stylesheet" href="css/transitions.css">
   <link rel="stylesheet" href="css/cards-3d.css">
   <link rel="stylesheet" href="css/cart-fixes.css">
@@ -120,7 +121,7 @@
       </div>
       <div class="sort-group">
         <label for="sort-select" class="sort-label">Sort By</label>
-        <select id="sort-select" class="sort-select">
+        <select id="sort-select" class="sort-select" data-ss-select="compact">
           <option value="default">Featured</option>
           <option value="price-low">Price: Low to High</option>
           <option value="price-high">Price: High to Low</option>
@@ -145,7 +146,7 @@
         <h3>Join the Scent Circle</h3>
         <p>Subscribe for fragrance releases, styling tips, and 10% off your first candle order.</p>
       </div>
-      <form class="newsletter-form" onsubmit="event.preventDefault(); alert('Welcome to the Scent Circle! Your 10% discount code has been sent.'); this.reset();">
+      <form class="newsletter-form" onsubmit="event.preventDefault(); showModal('Your 10% discount code has been sent to your inbox! Welcome to the Scent Circle.', {title: 'Welcome!', type: 'success', icon: '✨', confirmText: 'Lovely!'}); this.reset();">
         <input type="email" class="newsletter-input" placeholder="Enter your email address" required aria-label="Email address">
         <button type="submit" class="newsletter-btn" id="newsletter-submit-btn">Subscribe</button>
       </form>
@@ -241,11 +242,13 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
   <!-- Core JavaScript -->
+  <script src="js/ui-components.js"></script>
   <script src="js/main.js"></script>
   <script src="js/transitions.js"></script>
   <script src="js/cards-3d.js"></script>
   <script src="js/cart-fixes.js"></script>
   <script src="js/header.js"></script>
   <script src="js/fragrance.js"></script>
+  <script src="js/shop.js" defer></script>
 </body>
 </html>

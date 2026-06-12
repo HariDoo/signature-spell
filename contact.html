@@ -26,6 +26,7 @@
   </script>
   <script src="js/theme.js" defer></script>
   <link rel="stylesheet" href="css/fragrance.css">
+  <link rel="stylesheet" href="css/contact.css">
 </head>
 <body>
 
@@ -155,17 +156,21 @@
           <!-- Pane 1: General Contact -->
           <div class="contact-form-pane active" id="pane-general">
             <form id="general-contact-form">
+              <div class="form-alert-container"></div>
+              <!-- Honeypot Field to prevent spam -->
+              <input type="text" name="_honeypot" class="contact-hp-field" tabindex="-1" autocomplete="off">
+              
               <div class="form-group">
                 <label for="contact-name">Full Name</label>
-                <input type="text" id="contact-name" required placeholder="E.g., Jane Smith">
+                <input type="text" id="contact-name" name="name" required placeholder="E.g., Jane Smith">
               </div>
               <div class="form-group">
                 <label for="contact-email">Email Address</label>
-                <input type="email" id="contact-email" required placeholder="E.g., jane@example.com">
+                <input type="email" id="contact-email" name="email" required placeholder="E.g., jane@example.com">
               </div>
               <div class="form-group">
                 <label for="contact-message">Your Message</label>
-                <textarea id="contact-message" required rows="6" placeholder="How can we help scent your space?" style="border: 1px solid var(--color-light-gray); padding: 12px; font-family: var(--font-body); font-size: 0.9rem; background-color: var(--color-off-white); resize: vertical;"></textarea>
+                <textarea id="contact-message" name="message" required rows="6" placeholder="How can we help scent your space?"></textarea>
               </div>
               <button type="submit" class="btn btn-primary btn-block">Send Message</button>
             </form>
@@ -174,32 +179,36 @@
           <!-- Pane 2: Bulk Wholesale Inquiry -->
           <div class="contact-form-pane" id="pane-bulk">
             <form id="bulk-order-form">
+              <div class="form-alert-container"></div>
+              <!-- Honeypot Field to prevent spam -->
+              <input type="text" name="_honeypot" class="contact-hp-field" tabindex="-1" autocomplete="off">
+
               <div class="form-group-row">
                 <div class="form-group">
                   <label for="bulk-company">Company Name</label>
-                  <input type="text" id="bulk-company" required placeholder="E.g., Hearth and Home Boutique">
+                  <input type="text" id="bulk-company" name="company" required placeholder="E.g., Hearth and Home Boutique">
                 </div>
                 <div class="form-group">
                   <label for="bulk-contact">Contact Person</label>
-                  <input type="text" id="bulk-contact" required placeholder="E.g., Sarah Jenkins">
+                  <input type="text" id="bulk-contact" name="contactPerson" required placeholder="E.g., Sarah Jenkins">
                 </div>
               </div>
               
               <div class="form-group-row">
                 <div class="form-group">
                   <label for="bulk-email">Email Address</label>
-                  <input type="email" id="bulk-email" required placeholder="E.g., buyer@company.com">
+                  <input type="email" id="bulk-email" name="email" required placeholder="E.g., buyer@company.com">
                 </div>
                 <div class="form-group">
                   <label for="bulk-phone">Phone Number</label>
-                  <input type="tel" id="bulk-phone" required placeholder="E.g., 9876543210">
+                  <input type="tel" id="bulk-phone" name="phone" required placeholder="E.g., 9876543210">
                 </div>
               </div>
               
               <div class="form-group-row">
                 <div class="form-group">
                   <label for="bulk-product">Product Interest</label>
-                  <select id="bulk-product" required>
+                  <select id="bulk-product" name="product" required data-ss-select="normal">
                     <option value="" disabled selected>Select a candle line...</option>
                     <option value="Regular T-Light">Regular T-Light Candle (₹60)</option>
                     <option value="Star T-Light">Star T-Light Candle (₹70)</option>
@@ -214,13 +223,13 @@
                 </div>
                 <div class="form-group">
                   <label for="bulk-quantity">Estimated Quantity</label>
-                  <input type="number" id="bulk-quantity" min="20" required placeholder="Min. 20 candles">
+                  <input type="number" id="bulk-quantity" name="quantity" min="20" required placeholder="Min. 20 candles">
                 </div>
               </div>
               
               <div class="form-group">
                 <label for="bulk-message">Wholesale Details / Notes</label>
-                <textarea id="bulk-message" required rows="4" placeholder="Briefly describe your customization, branding, or wholesale packaging needs..." style="border: 1px solid var(--color-light-gray); padding: 12px; font-family: var(--font-body); font-size: 0.9rem; background-color: var(--color-off-white); resize: vertical;"></textarea>
+                <textarea id="bulk-message" name="message" required rows="4" placeholder="Briefly describe your customization, branding, or wholesale packaging needs..."></textarea>
               </div>
               
               <button type="submit" class="btn btn-primary btn-block">Submit Wholesale Request</button>
@@ -232,6 +241,17 @@
       </div>
     </div>
   </section>
+
+  <!-- Form Submission Feedback Modal -->
+  <div class="modal-overlay" id="contact-modal-overlay">
+    <div class="auth-modal" style="text-align: center; max-width: 420px; padding: 40px 30px;">
+      <button class="modal-close" id="contact-modal-close">&times;</button>
+      <div id="contact-modal-icon" style="font-size: 3.5rem; margin-bottom: 15px; line-height: 1;"></div>
+      <h3 class="auth-title" id="contact-modal-title" style="font-size: 1.6rem; margin-bottom: 12px; font-weight: 500; font-family: var(--font-heading);"></h3>
+      <p id="contact-modal-message" style="color: var(--color-muted-gray); font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px; font-family: var(--font-body);"></p>
+      <button class="btn btn-primary" id="contact-modal-btn" style="min-width: 140px; padding: 10px 24px; margin: 0 auto; display: block;">Close</button>
+    </div>
+  </div>
 
   <!-- Auth Login/Signup Modal -->
   <div class="modal-overlay" id="auth-modal-overlay">
@@ -322,11 +342,13 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
   <!-- Core JavaScript -->
+  <script src="js/ui-components.js"></script>
   <script src="js/main.js"></script>
   <script src="js/transitions.js"></script>
   <script src="js/cards-3d.js"></script>
   <script src="js/cart-fixes.js"></script>
   <script src="js/header.js"></script>
   <script src="js/fragrance.js"></script>
+  <script src="js/contact.js" defer></script>
 </body>
 </html>

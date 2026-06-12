@@ -1,0 +1,164 @@
+/* ==========================================================================
+   ORDER TRACKING PAGE (order-tracking.html)
+   ========================================================================== */
+
+.tracker-search {
+  max-width: 600px;
+  margin: 0 auto 48px auto;
+  text-align: center;
+  background-color: var(--color-white);
+  padding: 32px;
+  border: var(--border-neutral-light);
+  box-shadow: var(--shadow-subtle);
+}
+
+.tracker-search p {
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+  color: var(--color-muted-gray);
+}
+
+.tracker-search-form {
+  display: flex;
+  gap: 12px;
+}
+
+.tracker-search-form input {
+  flex-grow: 1;
+  border: 1px solid var(--color-light-gray);
+  padding: 12px 16px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+}
+
+.tracker-search-form input:focus {
+  outline: none;
+  border-color: var(--color-gold);
+}
+
+.tracker-display {
+  background-color: var(--color-white);
+  padding: 48px;
+  border: var(--border-neutral-light);
+  box-shadow: var(--shadow-subtle);
+  margin-bottom: 40px;
+}
+
+.tracker-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 40px;
+  border-bottom: 1.5px solid var(--color-light-gray);
+  padding-bottom: 20px;
+}
+
+.order-id-label {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.order-date-label {
+  font-size: 0.85rem;
+  color: var(--color-muted-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-weight: 700;
+}
+
+/* Step Bar visual tracker */
+.tracker-steps-container {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 60px;
+  padding: 0 20px;
+}
+
+.tracker-progress-line {
+  position: absolute;
+  top: 25px;
+  left: 50px;
+  right: 50px;
+  height: 4px;
+  background-color: var(--color-light-gray);
+  z-index: 1;
+}
+
+.tracker-progress-fill {
+  height: 100%;
+  width: 0%;
+  background-color: var(--color-gold);
+  transition: width 1.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.tracker-step {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.tracker-step-circle {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background-color: var(--color-white);
+  border: 4px solid var(--color-light-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: var(--color-muted-gray);
+  margin-bottom: 12px;
+  transition: var(--transition-smooth);
+}
+
+.tracker-step.active .tracker-step-circle,
+.tracker-step.completed .tracker-step-circle {
+  border-color: var(--color-gold);
+  background-color: var(--color-gold);
+  color: var(--color-charcoal);
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+}
+
+.tracker-step-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  color: var(--color-muted-gray);
+  margin-bottom: 4px;
+}
+
+.tracker-step.active .tracker-step-label {
+  color: var(--color-charcoal);
+}
+
+.tracker-step-date {
+  font-size: 0.75rem;
+  color: var(--color-muted-gray);
+}
+
+.tracker-details-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+.tracker-details-section h4 {
+  font-size: 1.1rem;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--color-light-gray);
+  padding-bottom: 8px;
+}
+
+.tracker-details-section p {
+  font-size: 0.9rem;
+  color: #444;
+}
