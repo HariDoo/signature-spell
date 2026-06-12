@@ -120,7 +120,15 @@ const ProductDb = {
       localStorage.setItem("signature_spell_products", JSON.stringify(DEFAULT_PRODUCTS));
       return DEFAULT_PRODUCTS;
     }
-    return JSON.parse(stored);
+    try {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) {
+        return parsed.filter(p => p !== null && typeof p === "object" && p.id && p.name);
+      }
+      return parsed || [];
+    } catch (e) {
+      return DEFAULT_PRODUCTS;
+    }
   },
   save: function(list) {
     localStorage.setItem("signature_spell_products", JSON.stringify(list));
@@ -428,8 +436,8 @@ function tryInitFirebase() {
       db.ref("products").on("value", (snapshot) => {
         const val = snapshot.val();
         if (val) {
-          // Convert object list to array
-          const arr = Object.values(val);
+          // Convert object list to array and filter out nulls/invalid objects
+          const arr = Object.values(val).filter(p => p !== null && typeof p === "object" && p.id && p.name);
           ProductDb.save(arr);
         }
       });

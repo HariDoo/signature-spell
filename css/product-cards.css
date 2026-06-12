@@ -1,0 +1,232 @@
+/* ==========================================================================
+   SIGNATURE SPELL - PRODUCT CARDS UI REDESIGN OVERRIDES
+   ========================================================================== */
+
+/* Outer card layout */
+.product-card {
+  background-color: var(--color-white) !important;
+  border: var(--border-neutral-light) !important;
+  border-radius: 28px !important;
+  padding: 4px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  position: relative !important;
+  transition: var(--transition-smooth) !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02) !important;
+}
+
+html body .product-card:hover {
+  transform: translateY(-6px) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.06) !important;
+  border-color: var(--theme-border, #e7e5e4) !important; /* Forces neutral theme border instead of gold */
+}
+
+/* Image wrapper container */
+.product-img-wrap {
+  width: 100% !important;
+  aspect-ratio: 1 / 1 !important;
+  background-color: var(--color-cream-dark) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  margin-bottom: 16px !important;
+  border-radius: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important; /* No padding to allow image to fill width/height */
+}
+
+.product-img-wrap img {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  object-fit: cover !important; /* Fills container fully as requested */
+  transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+
+.product-card:hover .product-img-wrap img {
+  transform: scale(1.08) rotate(-2deg) !important;
+}
+
+/* Wishlist Button */
+.wishlist-heart-btn {
+  position: absolute !important;
+  top: 28px !important;
+  right: 28px !important;
+  z-index: 10 !important;
+  background-color: var(--color-white) !important;
+  border: none !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+  transition: var(--transition-smooth) !important;
+  color: var(--color-muted-gray) !important;
+}
+
+.wishlist-heart-btn:hover {
+  transform: scale(1.1) !important;
+  color: #ff4b4b !important;
+}
+
+.wishlist-heart-btn.active {
+  color: #ff4b4b !important;
+  background-color: var(--color-white) !important;
+  border: none !important;
+}
+
+.wishlist-heart-btn svg {
+  width: 20px !important;
+  height: 20px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 2.5 !important;
+  transition: var(--transition-smooth) !important;
+}
+
+.wishlist-heart-btn.active svg {
+  fill: #ff4b4b !important;
+}
+
+/* Product Badges */
+.product-label {
+  position: absolute !important;
+  top: 28px !important;
+  left: 28px !important;
+  background-color: var(--color-white) !important;
+  color: var(--color-charcoal) !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  text-transform: capitalize !important;
+  letter-spacing: normal !important;
+  padding: 6px 14px !important;
+  border-radius: 30px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06) !important;
+  border: var(--border-neutral-light) !important;
+  z-index: 10 !important;
+}
+
+/* Card Information Block */
+.product-info {
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 4px 4px 8px 4px !important;
+  flex-grow: 1 !important;
+  gap: 6px !important;
+}
+
+.product-category {
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  color: var(--color-amber) !important;
+  text-transform: capitalize !important;
+  letter-spacing: normal !important;
+  margin-bottom: 2px !important;
+}
+
+.product-name {
+  font-family: var(--font-body), sans-serif !important;
+  font-size: 1.1rem !important;
+  font-weight: 700 !important;
+  color: var(--color-charcoal) !important;
+  line-height: 1.35 !important;
+  margin-bottom: 4px !important;
+}
+
+.product-name a {
+  color: inherit !important;
+}
+
+.product-price {
+  font-family: var(--font-body), sans-serif !important;
+  font-size: 1.2rem !important;
+  font-weight: 600 !important;
+  color: var(--color-charcoal) !important;
+  margin-top: 0 !important;
+  margin-bottom: 16px !important;
+}
+
+/* Add to Cart CTA Button */
+.product-card-cta {
+  width: 100% !important;
+  border-radius: 100px !important; /* Pill shaped */
+  padding: 13px 24px !important;
+  font-size: 0.9rem !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  letter-spacing: 0.02em !important;
+  background-color: var(--color-charcoal) !important;
+  color: var(--color-white) !important;
+  border: none !important;
+  transition: var(--transition-smooth) !important;
+  margin-top: auto !important;
+}
+
+.product-card:hover .product-card-cta {
+  background-color: var(--color-gold) !important;
+  color: var(--color-charcoal) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(161, 98, 7, 0.25) !important;
+}
+
+/* ==========================================================================
+   DARK THEME ADJUSTMENTS
+   ========================================================================== */
+
+[data-theme="dark"] .product-card {
+  background-color: #171428 !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+html[data-theme="dark"] body .product-card:hover {
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+[data-theme="dark"] .product-img-wrap {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+[data-theme="dark"] .wishlist-heart-btn {
+  background-color: #171428 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+  color: #a1a1aa !important;
+}
+
+[data-theme="dark"] .wishlist-heart-btn:hover {
+  color: #ff4b4b !important;
+}
+
+[data-theme="dark"] .wishlist-heart-btn.active {
+  background-color: #171428 !important;
+}
+
+[data-theme="dark"] .product-label {
+  background-color: #171428 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="dark"] .product-name {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .product-price {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .product-card-cta {
+  background-color: var(--color-gold) !important;
+  color: var(--color-charcoal) !important;
+}
+
+[data-theme="dark"] .product-card:hover .product-card-cta {
+  background-color: #ffffff !important;
+  color: #171428 !important;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15) !important;
+}

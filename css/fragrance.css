@@ -1,0 +1,122 @@
+/* ==========================================================================
+   SIGNATURE SPELL - FRAGRANCE STYLING OPTIONS
+   ========================================================================== */
+
+/* Storefront Dropdown Selector */
+.product-fragrance-select-wrapper {
+  margin-top: 4px;
+  margin-bottom: 12px;
+  width: 100%;
+}
+
+.product-fragrance-select {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 100px; /* Aligns with pill-style product card buttons */
+  border: 1px solid var(--color-light-gray, #e5e5e7);
+  background-color: var(--color-white, #ffffff);
+  color: var(--color-charcoal, #1c1c1e);
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition: all var(--transition-smooth, 0.3s ease);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 14px;
+}
+
+.product-fragrance-select:hover {
+  border-color: var(--color-gold, #c58f00);
+}
+
+.product-fragrance-select:focus {
+  border-color: var(--color-gold, #c58f00);
+  box-shadow: 0 0 0 2px rgba(197, 143, 0, 0.15);
+}
+
+/* Dark Theme overrides */
+[data-theme="dark"] .product-fragrance-select {
+  border-color: rgba(255, 255, 255, 0.1);
+  background-color: #171428;
+  color: #ffffff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+}
+
+[data-theme="dark"] .product-fragrance-select:hover {
+  border-color: var(--color-gold, #c58f00);
+}
+
+/* Cart Item Fragrance Meta Label */
+.cart-item-fragrance-label {
+  display: inline-block;
+  font-size: 0.75rem;
+  color: var(--color-muted-gray, #71717a);
+  background-color: var(--color-cream-dark, #f4ebe1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+[data-theme="dark"] .cart-item-fragrance-label {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #a1a1aa;
+}
+
+/* Admin Dashboard Panel layout */
+.fragrance-list-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--color-light-gray);
+  padding: 10px;
+  margin-bottom: 15px;
+  background-color: var(--color-off-white);
+}
+
+.fragrance-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-light-gray);
+  border-radius: 4px;
+}
+
+.fragrance-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.fragrance-checkbox-label:hover {
+  background-color: var(--color-cream-dark);
+}
+
+/* Dropdown Options List styling */
+.product-fragrance-select option {
+  background-color: var(--color-white, #ffffff) !important;
+  color: var(--color-charcoal, #1c1c1e) !important;
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.85rem;
+  padding: 10px;
+}
+
+[data-theme="dark"] .product-fragrance-select option {
+  background-color: #171428 !important;
+  color: #ffffff !important;
+}
