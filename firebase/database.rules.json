@@ -4,6 +4,10 @@
       ".read": true,
       ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.email === 'admin@signaturespell.com' || auth.token.email === 'nandheswara21@gmail.com')"
     },
+    "fragrances": {
+      ".read": true,
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.email === 'admin@signaturespell.com' || auth.token.email === 'nandheswara21@gmail.com')"
+    },
     "orders": {
       ".write": true,
       ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.token.email === 'admin@signaturespell.com' || auth.token.email === 'nandheswara21@gmail.com')",
