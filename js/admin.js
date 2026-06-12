@@ -236,6 +236,13 @@ function syncOrdersTable() {
           </tr>
         `;
       }).join("");
+
+      // Upgrade inline status selects to custom styled dropdowns
+      ordersTable.querySelectorAll("select.admin-status-select").forEach(sel => {
+        if (typeof window.initCustomSelect === "function") {
+          window.initCustomSelect(sel, { size: "small" });
+        }
+      });
     }
   }
 }
@@ -430,8 +437,8 @@ function setupAdminFormBindings() {
           await auth.signOut();
           closeAllAdminModals();
           addUserForm.reset();
-          alert("Account created successfully. Please login again to restore your admin session.");
-          window.location.reload();
+          showModal("Account created successfully. Please login again to restore your admin session.", { title: 'Account Created!', type: 'success', icon: '✅', confirmText: 'OK' });
+          setTimeout(() => window.location.reload(), 1200);
         } catch (err) {
           showInlineAlert(alertCont, err.message, "danger");
         }
@@ -623,7 +630,7 @@ window.triggerPasswordResetLink = function(email) {
         showToast(`Password reset link dispatched to ${email}`);
         closeAllAdminModals();
       })
-      .catch(err => alert(err.message));
+      .catch(err => showModal(err.message, { title: 'Firebase Error', type: 'error' }));
   }
 };
 
@@ -636,12 +643,19 @@ window.triggerUserStatusToggle = function(uid, currentStatus) {
         showToast(`User status set to ${newStatus}`);
         closeAllAdminModals();
       })
-      .catch(err => alert(err.message));
+      .catch(err => showModal(err.message, { title: 'Firebase Error', type: 'error' }));
   }
 };
 
 window.triggerDeleteUserAccount = function(uid, email) {
-  if (confirm(`Are you absolutely sure you want to permanently erase user account ${email}? This action is irreversible.`)) {
+  showConfirm(`Are you absolutely sure you want to permanently erase the account for <strong>${email}</strong>? This action is irreversible.`, {
+    title: 'Delete User Account',
+    icon: '🗑️',
+    confirmText: 'Yes, Delete',
+    cancelText: 'Cancel',
+    dangerous: true
+  }).then(function(confirmed) {
+    if (!confirmed) return;
     if (isFirebaseInitialized) {
       db.ref("users/" + uid).remove()
         .then(() => {
@@ -649,9 +663,9 @@ window.triggerDeleteUserAccount = function(uid, email) {
           showToast(`Deleted registry entry for ${email}`);
           closeAllAdminModals();
         })
-        .catch(err => alert(err.message));
+        .catch(err => showModal(err.message, { title: 'Delete Error', type: 'error' }));
     }
-  }
+  });
 };
 
 window.triggerViewUserOrders = function(uid, email) {
@@ -718,7 +732,14 @@ window.switchUserDataTab = function(tabId) {
 };
 
 window.revokeAdminPrivileges = function(key, email) {
-  if (confirm(`Revoke administrative access from ${email}?`)) {
+  showConfirm(`Revoke administrative access from ${email}?`, {
+    title: 'Revoke Admin Access',
+    icon: '🔐',
+    confirmText: 'Yes, Revoke',
+    cancelText: 'Cancel',
+    dangerous: true
+  }).then(function(confirmed) {
+    if (!confirmed) return;
     if (isFirebaseInitialized) {
       db.ref("adminUsers/" + key).remove()
         .then(() => {
@@ -731,20 +752,27 @@ window.revokeAdminPrivileges = function(key, email) {
           logAdminAction("admin_revoked", `Revoked admin privileges from ${email}`);
           showToast(`Revoked privileges from ${email}`);
         })
-        .catch(err => alert(err.message));
+        .catch(err => showModal(err.message, { title: 'Firebase Error', type: 'error' }));
     }
-  }
+  });
 };
 
 window.handleDeleteBulletin = function(key) {
-  if (confirm("Remove this announcement bulletin?")) {
+  showConfirm("Remove this announcement bulletin?", {
+    title: 'Delete Bulletin',
+    icon: '📢',
+    confirmText: 'Yes, Remove',
+    cancelText: 'Cancel',
+    dangerous: true
+  }).then(function(confirmed) {
+    if (!confirmed) return;
     if (isFirebaseInitialized) {
       db.ref("announcements/" + key).remove()
         .then(() => {
           showToast("Bulletin removed.");
         });
     }
-  }
+  });
 };
 
 window.toggleMaintenanceState = function() {
@@ -799,13 +827,20 @@ window.triggerExportUsers = function() {
 };
 
 window.triggerClearAuditLogs = function() {
-  if (confirm("Are you sure you want to clear old admin audit trails?")) {
+  showConfirm("Are you sure you want to clear all admin audit trail logs? This cannot be undone.", {
+    title: 'Clear Audit Logs',
+    icon: '🗂️',
+    confirmText: 'Yes, Clear All',
+    cancelText: 'Cancel',
+    dangerous: true
+  }).then(function(confirmed) {
+    if (!confirmed) return;
     if (isFirebaseInitialized) {
       db.ref("adminLogs").remove().then(() => {
         showToast("Audit trails cleared.");
       });
     }
-  }
+  });
 };
 
 window.handleAdminPageLogout = function() {

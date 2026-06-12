@@ -1,0 +1,186 @@
+/* ==========================================================================
+   SHOP PAGE (shop.html)
+   ========================================================================== */
+
+/* ==========================================================================
+   PRODUCT GRID & CARDS (shop-grid)
+   product-grid is the base, shop-grid scopes overrides for the shop page
+   ========================================================================== */
+
+.product-grid,
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+}
+
+/* On tablet, drop to 2-column layout */
+@media (max-width: 992px) {
+  .product-grid,
+  .shop-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+
+/* On mobile, single column */
+@media (max-width: 480px) {
+  .product-grid,
+  .shop-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Page Headers */
+.page-header {
+  background-color: var(--color-charcoal);
+  color: var(--color-white);
+  padding: 80px 0;
+  text-align: center;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.page-header h1 {
+  color: var(--color-white);
+  font-size: 3rem;
+  font-weight: 400;
+}
+
+.page-header h1 span {
+  font-style: italic;
+}
+
+.breadcrumbs {
+  margin-top: 12px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.breadcrumbs a {
+  color: var(--color-gold);
+}
+
+/* Filter / Sort bar */
+.filter-bar {
+  background-color: var(--color-white);
+  border-bottom: var(--border-neutral-light);
+  padding: 20px 0;
+  position: sticky;
+  top: 80px;
+  z-index: 900;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+}
+
+.filter-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.filter-groups {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  padding-bottom: 4px;
+}
+.filter-groups::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
+.filter-btn {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-light-gray);
+  padding: 10px 24px;
+  font-size: 0.85rem;
+  text-transform: capitalize;
+  border-radius: 30px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition-smooth);
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+  background-color: var(--color-gold);
+  color: var(--color-charcoal);
+  border-color: var(--color-gold);
+  box-shadow: 0 4px 12px rgba(245, 197, 24, 0.2);
+}
+
+.sort-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sort-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: var(--color-muted-gray);
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+
+.sort-select {
+  border: 1px solid var(--color-light-gray);
+  background-color: var(--color-white);
+  padding: 8px 12px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--color-charcoal);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: var(--color-gold);
+}
+
+/* ==========================================================================
+   DARK THEME OVERRIDES - SHOP PAGE
+   ========================================================================== */
+
+[data-theme="dark"] .filter-bar {
+  background-color: #1a1625;
+  border-bottom-color: rgba(255, 255, 255, 0.07);
+}
+
+[data-theme="dark"] .filter-btn {
+  background-color: #231d35;
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #e4e4e7;
+}
+
+[data-theme="dark"] .filter-btn:hover,
+[data-theme="dark"] .filter-btn.active {
+  background-color: var(--color-gold);
+  color: #1c1917;
+  border-color: var(--color-gold);
+}
+
+[data-theme="dark"] .sort-label {
+  color: #a1a1aa;
+}
+
+[data-theme="dark"] .sort-select {
+  background-color: #231d35;
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #e4e4e7;
+}
+
+[data-theme="dark"] .sort-select:focus {
+  border-color: var(--color-gold);
+}
+
+[data-theme="dark"] .sort-select option {
+  background-color: #1a1625;
+  color: #e4e4e7;
+}

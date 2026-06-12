@@ -503,6 +503,11 @@
   gap: 12px;
 }
 
+.admin-manager-item > div {
+  min-width: 0;
+  flex: 1;
+}
+
 .admin-manager-item span {
   word-break: break-all;
 }

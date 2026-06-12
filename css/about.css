@@ -1,0 +1,100 @@
+/* ==========================================================================
+   ABOUT PAGE (about.html)
+   ========================================================================== */
+
+.about-intro-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+
+.about-intro-text h2 {
+  font-size: 2.5rem;
+  font-weight: 400;
+  margin-bottom: 24px;
+}
+
+.about-intro-text h2 span {
+  font-style: italic;
+}
+
+.about-intro-text p {
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.about-values {
+  background-color: var(--color-white);
+}
+
+.values-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+}
+
+.value-item {
+  text-align: center;
+  padding: 24px;
+}
+
+.value-icon {
+  font-size: 2.2rem;
+  color: var(--color-gold);
+  margin-bottom: 20px;
+}
+
+.value-item h3 {
+  font-size: 1.3rem;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.value-item p {
+  color: var(--color-muted-gray);
+  font-size: 0.9rem;
+}
+
+.founder-section {
+  background-color: var(--color-cream-dark);
+}
+
+.founder-grid {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 60px;
+  align-items: center;
+}
+
+.founder-img {
+  border: var(--border-gold-light);
+  padding: 10px;
+  background-color: var(--color-white);
+}
+
+.founder-img img {
+  width: 100%;
+  box-shadow: var(--shadow-luxury);
+}
+
+.founder-content h3 {
+  font-size: 2rem;
+  font-weight: 400;
+  margin-bottom: 4px;
+}
+
+.founder-title {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-gold);
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+.founder-content p {
+  color: #444;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+}

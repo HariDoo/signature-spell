@@ -26,8 +26,39 @@
   document.addEventListener("DOMContentLoaded", () => {
     initializeFragranceDb();
     if (window.location.pathname.includes("product.html")) {
+      // Initial attempt after a short delay
       setTimeout(injectDetailsPageDropdown, 500);
+      // Re-inject when fragrances are fully loaded from Firebase
+      document.addEventListener("fragrancesUpdated", () => {
+        const existing = document.querySelector(".product-detail-fragrance-wrapper");
+        if (existing) existing.remove();
+        injectDetailsPageDropdown();
+      });
     }
+
+    // MutationObserver: upgrade any .product-fragrance-select elements
+    // that get injected into product grids (shop.html / index.html)
+    function upgradeCardSelects(container) {
+      container.querySelectorAll("select.product-fragrance-select").forEach(sel => {
+        if (!sel._ssInitialized && typeof window.initCustomSelect === "function") {
+          window.initCustomSelect(sel, { size: "small", placeholder: "Choose fragrance..." });
+        }
+      });
+    }
+
+    const grids = document.querySelectorAll(".shop-grid, .product-grid, .featured-grid");
+    grids.forEach(grid => {
+      upgradeCardSelects(grid); // Upgrade any already-present selects
+      const obs = new MutationObserver(() => upgradeCardSelects(grid));
+      obs.observe(grid, { childList: true, subtree: true });
+    });
+
+    // Also upgrade when products are re-rendered by shop.js / index.js
+    document.addEventListener("productsUpdated", () => {
+      document.querySelectorAll(".shop-grid, .product-grid, .featured-grid").forEach(grid => {
+        upgradeCardSelects(grid);
+      });
+    });
   });
 
   function initializeFragranceDb() {
@@ -193,6 +224,12 @@
     `;
 
     purchaseControls.parentNode.insertBefore(wrapper, purchaseControls);
+
+    // Upgrade to custom styled dropdown
+    const nativeSelect = wrapper.querySelector("select");
+    if (nativeSelect && typeof window.initCustomSelect === "function") {
+      window.initCustomSelect(nativeSelect, { size: "normal", placeholder: "Choose your fragrance..." });
+    }
 
     // Override the add to cart button listener on product details page
     const addToCartBtn = document.getElementById("detail-add-to-cart-btn");
@@ -619,11 +656,18 @@
 
     // Override product deletion (make it local first)
     window.handleAdminDeleteProduct = function(productId) {
-      if (confirm("Are you sure you want to delete this product locally?")) {
+      showConfirm("Are you sure you want to delete this product locally?", {
+        title: 'Delete Product',
+        icon: '🗑️',
+        confirmText: 'Yes, Delete',
+        cancelText: 'Cancel',
+        dangerous: true
+      }).then(function(confirmed) {
+        if (!confirmed) return;
         ProductDb.remove(productId);
         if (typeof syncCatalogTable === "function") syncCatalogTable();
         showToast("Product removed locally! Click 'Push Product Catalog to Firebase' to save changes.");
-      }
+      });
     };
 
     // Inject "Push Product Catalog to Firebase" button
@@ -686,25 +730,32 @@
   }
 
   window.handleDeleteGlobalFragrance = function(fid) {
-    if (!confirm("Are you sure you want to delete this fragrance? This will remove it from all products.")) return;
-    
-    if (typeof db !== "undefined" && isFirebaseInitialized) {
-      db.ref("fragrances/" + fid).remove()
-        .then(() => {
-          PRODUCTS.forEach(p => {
-            if (p.fragrances && p.fragrances[fid]) {
-              db.ref("products/" + p.id + "/fragrances/" + fid).remove();
-            }
+    showConfirm("Are you sure you want to delete this fragrance? This will remove it from all products.", {
+      title: 'Delete Fragrance',
+      icon: '🌸',
+      confirmText: 'Yes, Delete',
+      cancelText: 'Cancel',
+      dangerous: true
+    }).then(function(confirmed) {
+      if (!confirmed) return;
+      if (typeof db !== "undefined" && isFirebaseInitialized) {
+        db.ref("fragrances/" + fid).remove()
+          .then(() => {
+            PRODUCTS.forEach(p => {
+              if (p.fragrances && p.fragrances[fid]) {
+                db.ref("products/" + p.id + "/fragrances/" + fid).remove();
+              }
+            });
+            showToast("Fragrance removed from database.");
           });
-          showToast("Fragrance removed from database.");
+      } else {
+        delete window.allFragrances[fid];
+        PRODUCTS.forEach(p => {
+          if (p.fragrances) delete p.fragrances[fid];
         });
-    } else {
-      delete window.allFragrances[fid];
-      PRODUCTS.forEach(p => {
-        if (p.fragrances) delete p.fragrances[fid];
-      });
-      renderAdminFragranceList();
-      showToast("Local Fragrance deleted.");
-    }
+        renderAdminFragranceList();
+        showToast("Local Fragrance deleted.");
+      }
+    });
   };
 })();

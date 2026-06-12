@@ -1,0 +1,317 @@
+/* css/contact.css - Custom Styling for Contact Form Submissions */
+
+/* Honeypot field (hidden from screen/readers, but accessible to autofill bots) */
+.contact-hp-field {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+  height: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
+  z-index: -1 !important;
+}
+
+/* Alert Container Styling spacing */
+.form-alert-container {
+  margin-top: 15px;
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+.form-alert-container .alert {
+  margin-bottom: 0;
+  animation: fadeInAlert 0.3s ease-out;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+@keyframes fadeInAlert {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Button Spinner Loading State */
+.btn-loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.btn-loading::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  top: 50%;
+  left: 50%;
+  margin-top: -10px;
+  margin-left: -10px;
+  border: 2.5px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--color-white, #ffffff);
+  animation: btnSpinner 0.8s linear infinite;
+}
+
+@keyframes btnSpinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Transition enhancements on focus states */
+.contact-form-pane input,
+.contact-form-pane textarea,
+.contact-form-pane select {
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+}
+
+.contact-form-pane input:focus,
+.contact-form-pane textarea:focus,
+.contact-form-pane select:focus {
+  border-color: var(--color-gold) !important;
+  background-color: var(--color-white) !important;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15) !important;
+  outline: none;
+}
+
+/* ==========================================================================
+   CONTACT PAGE (contact.html) - BASELINE STYLES
+   ========================================================================== */
+
+.contact-layout {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 60px;
+}
+
+.contact-info-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.contact-info-block h3 {
+  font-size: 1.3rem;
+  margin-bottom: 16px;
+}
+
+.contact-info-block p {
+  color: #555;
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+}
+
+.contact-info-block a {
+  color: var(--color-gold);
+  font-weight: 700;
+}
+
+.map-container {
+  border: var(--border-gold-light);
+  padding: 8px;
+  background-color: var(--color-white);
+  box-shadow: var(--shadow-subtle);
+  aspect-ratio: 16 / 9;
+}
+
+.map-container iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.contact-form-tabs {
+  background-color: var(--color-white);
+  padding: 40px;
+  border: var(--border-neutral-light);
+  box-shadow: var(--shadow-luxury);
+}
+
+.contact-form-toggle {
+  display: flex;
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--color-light-gray);
+}
+
+.contact-tab {
+  flex-grow: 1;
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  padding: 12px;
+  cursor: pointer;
+  color: var(--color-muted-gray);
+  text-align: center;
+  position: relative;
+}
+
+.contact-tab.active {
+  color: var(--color-charcoal);
+}
+
+.contact-tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--color-gold);
+}
+
+.contact-form-pane {
+  display: none;
+}
+
+.contact-form-pane.active {
+  display: block;
+}
+
+/* ==========================================================================
+   CONTACT FORM — INPUT & FIELD STYLES
+   ========================================================================== */
+
+.form-group-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--color-charcoal);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  border: 1px solid var(--color-light-gray);
+  padding: 12px 14px;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  background-color: var(--color-off-white);
+  color: var(--color-charcoal);
+  border-radius: 6px;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--color-gold);
+  background-color: var(--color-white);
+  box-shadow: 0 0 0 3px rgba(161, 98, 7, 0.1);
+}
+
+/* ==========================================================================
+   DARK THEME OVERRIDES — CONTACT PAGE
+   ========================================================================== */
+
+[data-theme="dark"] .contact-form-tabs {
+  background-color: #1a1625;
+  border-color: rgba(255, 255, 255, 0.07);
+}
+
+[data-theme="dark"] .contact-form-toggle {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .contact-tab {
+  color: #71717a;
+}
+
+[data-theme="dark"] .contact-tab.active {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .contact-info-block h3 {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .contact-info-block p {
+  color: #a1a1aa;
+}
+
+[data-theme="dark"] .map-container {
+  background-color: #1a1625;
+  border-color: rgba(255, 255, 255, 0.07);
+}
+
+[data-theme="dark"] .form-group label {
+  color: #d4d4d8;
+}
+
+[data-theme="dark"] .form-group input,
+[data-theme="dark"] .form-group select,
+[data-theme="dark"] .form-group textarea {
+  background-color: #231d35;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #e4e4e7;
+}
+
+[data-theme="dark"] .form-group input::placeholder,
+[data-theme="dark"] .form-group textarea::placeholder {
+  color: #71717a;
+}
+
+[data-theme="dark"] .form-group input:focus,
+[data-theme="dark"] .form-group select:focus,
+[data-theme="dark"] .form-group textarea:focus {
+  background-color: #2d2545;
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 3px rgba(161, 98, 7, 0.15);
+}
+
+[data-theme="dark"] .form-group select option {
+  background-color: #1a1625;
+  color: #e4e4e7;
+}
+
+/* Responsive: stack form-group-row on mobile */
+@media (max-width: 768px) {
+  .form-group-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .contact-layout {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .contact-form-tabs {
+    padding: 24px 20px;
+  }
+}

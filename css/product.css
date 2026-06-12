@@ -1,0 +1,234 @@
+/* ==========================================================================
+   PRODUCT DETAIL PAGE (product.html)
+   ========================================================================== */
+
+.product-detail-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 60px;
+}
+
+.gallery-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.main-image {
+  background-color: var(--color-white);
+  border: var(--border-neutral-light);
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+}
+
+.main-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.thumbnail-strip {
+  display: flex;
+  gap: 12px;
+}
+
+.thumbnail {
+  aspect-ratio: 1 / 1;
+  width: 80px;
+  border: 1px solid var(--color-light-gray);
+  cursor: pointer;
+  overflow: hidden;
+  background-color: var(--color-white);
+  transition: var(--transition-smooth);
+}
+
+.thumbnail:hover,
+.thumbnail.active {
+  border-color: var(--color-gold);
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
+}
+
+.thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.product-details .product-category {
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+}
+
+.product-details .product-name {
+  font-size: 2.5rem;
+  font-weight: 400;
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+
+.product-details .product-price {
+  font-size: 1.8rem;
+  margin-bottom: 24px;
+}
+
+.product-desc {
+  font-size: 0.95rem;
+  color: #444;
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--color-light-gray);
+  padding-bottom: 24px;
+}
+
+.purchase-controls {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 40px;
+  align-items: center;
+}
+
+.quantity-selector {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid var(--color-charcoal);
+  height: 50px;
+}
+
+.qty-btn {
+  background: none;
+  border: none;
+  width: 40px;
+  height: 100%;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-smooth);
+}
+
+.qty-btn:hover {
+  background-color: var(--color-light-gray);
+}
+
+.qty-input {
+  border: none;
+  width: 50px;
+  height: 100%;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 700;
+  background: transparent;
+}
+
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.qty-input:focus {
+  outline: none;
+}
+
+.detail-tabs {
+  border-top: 1px solid var(--color-light-gray);
+  padding-top: 24px;
+}
+
+.tab-headers {
+  display: flex;
+  gap: 24px;
+  border-bottom: 1px solid var(--color-light-gray);
+  margin-bottom: 16px;
+}
+
+.tab-header {
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  padding: 8px 0;
+  cursor: pointer;
+  color: var(--color-muted-gray);
+  position: relative;
+}
+
+.tab-header.active {
+  color: var(--color-charcoal);
+}
+
+.tab-header.active::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--color-gold);
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.scent-notes-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  background-color: var(--color-white);
+  padding: 20px;
+  border: var(--border-neutral-light);
+}
+
+.scent-note-item {
+  text-align: center;
+}
+
+.scent-note-item h5 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  letter-spacing: 0.1em;
+  margin-bottom: 4px;
+}
+
+.scent-note-item p {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.specs-list {
+  list-style: none;
+}
+
+.specs-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 0.9rem;
+  border-bottom: 1px dashed var(--color-light-gray);
+}
+
+.specs-list li:last-child {
+  border-bottom: none;
+}
+
+.specs-list span:first-child {
+  font-weight: 700;
+  color: var(--color-muted-gray);
+}
