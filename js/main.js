@@ -363,16 +363,31 @@ function tryInitFirebase() {
             }
           } catch(e) {}
 
-          // Synchronize User-specific Cart from Firebase Realtime Database
+          // Synchronize and Merge User-specific Cart from Firebase Realtime Database
           try {
             const cartSnap = await db.ref("users/" + user.uid + "/cart").once("value");
+            const localCartStr = localStorage.getItem("signature_spell_cart");
+            let localCart = [];
+            try {
+              if (localCartStr) localCart = JSON.parse(localCartStr);
+            } catch(je) {}
+            if (!Array.isArray(localCart)) localCart = [];
+
             if (cartSnap.exists()) {
-              localStorage.setItem("signature_spell_cart", JSON.stringify(cartSnap.val()));
+              const dbCart = cartSnap.val() || [];
+              dbCart.forEach(dbItem => {
+                const existing = localCart.find(i => i.id === dbItem.id);
+                if (existing) {
+                  existing.qty += dbItem.qty;
+                } else {
+                  localCart.push(dbItem);
+                }
+              });
+              localStorage.setItem("signature_spell_cart", JSON.stringify(localCart));
+              await db.ref("users/" + user.uid + "/cart").set(localCart);
             } else {
-              // Upload local cart if any
-              const localCart = localStorage.getItem("signature_spell_cart");
-              if (localCart && JSON.parse(localCart).length > 0) {
-                await db.ref("users/" + user.uid + "/cart").set(JSON.parse(localCart));
+              if (localCart.length > 0) {
+                await db.ref("users/" + user.uid + "/cart").set(localCart);
               }
             }
             document.dispatchEvent(new CustomEvent("cartUpdated"));
@@ -380,16 +395,29 @@ function tryInitFirebase() {
             console.error("Error syncing cart from DB:", e);
           }
 
-          // Synchronize User-specific Wishlist from Firebase Realtime Database
+          // Synchronize and Merge User-specific Wishlist from Firebase Realtime Database
           try {
             const wishSnap = await db.ref("users/" + user.uid + "/wishlist").once("value");
+            const localWishStr = localStorage.getItem("signature_spell_wishlist");
+            let localWish = [];
+            try {
+              if (localWishStr) localWish = JSON.parse(localWishStr);
+            } catch(je) {}
+            if (!Array.isArray(localWish)) localWish = [];
+
             if (wishSnap.exists()) {
-              localStorage.setItem("signature_spell_wishlist", JSON.stringify(wishSnap.val()));
+              const dbWish = wishSnap.val() || [];
+              dbWish.forEach(dbItem => {
+                const existing = localWish.find(i => i.id === dbItem.id);
+                if (!existing) {
+                  localWish.push(dbItem);
+                }
+              });
+              localStorage.setItem("signature_spell_wishlist", JSON.stringify(localWish));
+              await db.ref("users/" + user.uid + "/wishlist").set(localWish);
             } else {
-              // Upload local wishlist if any
-              const localWish = localStorage.getItem("signature_spell_wishlist");
-              if (localWish && JSON.parse(localWish).length > 0) {
-                await db.ref("users/" + user.uid + "/wishlist").set(JSON.parse(localWish));
+              if (localWish.length > 0) {
+                await db.ref("users/" + user.uid + "/wishlist").set(localWish);
               }
             }
             document.dispatchEvent(new CustomEvent("wishlistUpdated"));

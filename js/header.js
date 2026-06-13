@@ -33,23 +33,7 @@
     };
   }
 
-  // Intercept CartStorage.add for guest users to prompt Login/Signup
-  if (typeof CartStorage !== "undefined" && CartStorage.add) {
-    const originalAdd = CartStorage.add;
-    CartStorage.add = function(id, qty = 1) {
-      const user = typeof UserSession !== "undefined" ? UserSession.get() : null;
-      if (!user) {
-        if (typeof showToast === "function") {
-          showToast("Please Login or Signup to add items to your cart.");
-        }
-        if (typeof window.triggerLoginModal === "function") {
-          window.triggerLoginModal();
-        }
-        return; // Do not add to cart
-      }
-      originalAdd.call(this, id, qty);
-    };
-  }
+
 
   // Prevent logout or unauthenticated sync from wiping guest cart items when Firebase triggers auth changes
   const originalRemoveItem = localStorage.removeItem;
@@ -98,6 +82,82 @@
       }
       loginTextLink.style.display = "inline-block";
       userBtn.style.display = "none";
+    }
+
+    // Update Mobile Nav links dynamically
+    const mobileDrawer = document.getElementById("mobile-drawer");
+    if (mobileDrawer) {
+      let authContainer = document.getElementById("mobile-auth-container");
+      if (!authContainer) {
+        authContainer = document.createElement("div");
+        authContainer.id = "mobile-auth-container";
+        authContainer.className = "mobile-auth-wrapper";
+        
+        const closeBtn = document.getElementById("mobile-close-btn");
+        if (closeBtn && closeBtn.nextSibling) {
+          mobileDrawer.insertBefore(authContainer, closeBtn.nextSibling);
+        } else if (mobileDrawer.firstChild) {
+          mobileDrawer.insertBefore(authContainer, mobileDrawer.firstChild);
+        } else {
+          mobileDrawer.appendChild(authContainer);
+        }
+      }
+
+      if (user) {
+        const userName = user.name || "User";
+        authContainer.innerHTML = `
+          <div class="mobile-user-info">
+            <span class="mobile-welcome-text">Hello, <strong>${userName}</strong></span>
+            <div class="mobile-auth-links">
+              <a href="profile.html" class="mobile-auth-sublink">My Profile</a>
+              <span class="divider">|</span>
+              <a href="#" class="mobile-auth-sublink" id="mobile-logout-btn">Log Out</a>
+            </div>
+          </div>
+        `;
+        
+        const logoutBtn = authContainer.querySelector("#mobile-logout-btn");
+        if (logoutBtn) {
+          logoutBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            const mobileOverlay = document.getElementById("mobile-overlay");
+            if (mobileOverlay) mobileOverlay.classList.remove("active");
+            mobileDrawer.classList.remove("active");
+            
+            if (typeof firebase !== "undefined" && typeof isFirebaseInitialized !== "undefined" && isFirebaseInitialized && auth) {
+              auth.signOut();
+            } else if (typeof UserSession !== "undefined") {
+              UserSession.clear();
+            }
+            if (typeof showToast !== "undefined") {
+              showToast("Logged out successfully.");
+            }
+            setTimeout(() => {
+              window.location.reload();
+            }, 500);
+          });
+        }
+      } else {
+        authContainer.innerHTML = `
+          <a href="#" class="mobile-auth-btn" id="mobile-login-btn">
+            <i class="bi bi-person-circle"></i> Login / Signup
+          </a>
+        `;
+        
+        const loginBtn = authContainer.querySelector("#mobile-login-btn");
+        if (loginBtn) {
+          loginBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            const mobileOverlay = document.getElementById("mobile-overlay");
+            if (mobileOverlay) mobileOverlay.classList.remove("active");
+            mobileDrawer.classList.remove("active");
+            
+            if (typeof window.triggerLoginModal === "function") {
+              window.triggerLoginModal();
+            }
+          });
+        }
+      }
     }
   }
 
