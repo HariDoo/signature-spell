@@ -283,6 +283,23 @@
             <div class="admin-card-header">
               <h2>Customer Orders</h2>
             </div>
+
+            <div class="admin-filters" style="margin-top: 15px; margin-bottom: 15px; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));">
+              <input type="text" id="admin-order-search" placeholder="Search ID or Customer..." oninput="filterOrders()">
+              <select id="admin-order-status-filter" data-ss-select="compact" onchange="filterOrders()">
+                <option value="all">All Statuses</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Processing">Processing</option>
+                <option value="Shipped">Shipped</option>
+                <option value="Delivered">Delivered</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+              <input type="date" id="admin-order-start-date" onchange="filterOrders()" title="Start Date" style="padding: 10px; font-family: inherit; font-size: 0.85rem; border: 1px solid var(--color-light-gray); background-color: var(--color-off-white); border-radius: 4px;">
+              <input type="date" id="admin-order-end-date" onchange="filterOrders()" title="End Date" style="padding: 10px; font-family: inherit; font-size: 0.85rem; border: 1px solid var(--color-light-gray); background-color: var(--color-off-white); border-radius: 4px;">
+              <button class="btn btn-secondary btn-small" onclick="triggerExportOrders()" style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 0.85rem; padding: 10px 15px; border-radius: 4px; gap: 6px; width: 100%;">
+                <span>💾</span> Export
+              </button>
+            </div>
             
             <div class="admin-table-container">
               <table class="admin-table">
@@ -292,7 +309,8 @@
                     <th>Date</th>
                     <th>Customer</th>
                     <th>Status</th>
-                    <th>Update Tracking</th>
+                    <th>Update Status</th>
+                    <th style="text-align:right;">Action</th>
                   </tr>
                 </thead>
                 <tbody id="admin-orders-table-body">

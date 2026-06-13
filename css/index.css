@@ -430,3 +430,35 @@
 .newsletter-btn:hover {
   color: var(--color-white);
 }
+
+@media (max-width: 768px) {
+  .brand-story h2 {
+    font-size: 2rem;
+  }
+  .brand-story-lead {
+    font-size: 1.1rem;
+  }
+  .brand-story-grid {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+  }
+  .brand-story-content {
+    padding-right: 0 !important;
+    text-align: center !important;
+  }
+  .testimonial-slider {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+  .newsletter-content {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 24px !important;
+  }
+  .newsletter-form {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+

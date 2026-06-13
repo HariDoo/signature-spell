@@ -27,9 +27,10 @@ document.addEventListener("DOMContentLoaded", () => {
     let html = `
       <div class="cart-header-row">
         <div>Product</div>
-        <div>Price</div>
-        <div>Quantity</div>
+        <div style="text-align: center;">Price</div>
+        <div style="text-align: center;">Quantity</div>
         <div style="text-align: right;">Total</div>
+        <div></div>
       </div>
     `;
     

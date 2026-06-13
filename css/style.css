@@ -234,7 +234,7 @@ section {
   box-shadow: -5px 0 30px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
-  padding: 40px;
+  padding: 24px 24px 40px 24px;
   transition: var(--transition-smooth);
 }
 
@@ -249,7 +249,8 @@ section {
   font-size: 2rem;
   cursor: pointer;
   color: var(--color-charcoal);
-  margin-bottom: 40px;
+  margin-bottom: 12px;
+  line-height: 1;
 }
 
 .mobile-nav-links {
@@ -577,6 +578,11 @@ h6 {
     display: none !important;
   }
 
+  #header-login-text-link,
+  #user-btn {
+    display: none !important;
+  }
+
   .nav-icons {
     gap: 16px;
   }
@@ -832,8 +838,8 @@ h6 {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   background-color: rgba(18, 18, 18, 0.6);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
@@ -844,7 +850,7 @@ h6 {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 20px;
   overflow-y: auto;
 }
 
@@ -855,15 +861,60 @@ h6 {
 
 .auth-modal {
   background-color: var(--color-white);
-  width: 100%;
+  width: calc(100% - 32px);
   max-width: 440px;
-  border: var(--border-gold-light);
+  border: 1px solid var(--color-light-gray);
+  border-radius: 8px;
   padding: 40px;
   box-shadow: var(--shadow-luxury);
   position: relative;
   transform: translateY(20px);
   transition: var(--transition-smooth);
   margin: auto;
+}
+
+.auth-modal .form-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.auth-modal .form-group label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+  color: var(--color-charcoal);
+}
+
+.auth-modal .form-group input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--color-light-gray);
+  border-radius: 4px;
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.95rem;
+  background-color: var(--color-off-white);
+  color: var(--color-charcoal);
+  transition: var(--transition-smooth);
+  box-sizing: border-box;
+}
+
+.auth-modal .form-group input:focus {
+  outline: none;
+  border-color: var(--color-gold);
+  background-color: var(--color-white);
+}
+
+.auth-modal .btn {
+  border-radius: 4px !important;
+  font-family: var(--font-body), sans-serif;
+}
+
+.auth-modal .btn-block {
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .modal-overlay.active .auth-modal {
@@ -959,6 +1010,96 @@ h6 {
   color: var(--color-gold);
   font-weight: 700;
   text-decoration: underline;
+}
+
+/* Mobile Hamburger Menu Auth Styling */
+.mobile-auth-wrapper {
+  padding: 0 0 16px 0;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--color-light-gray);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mobile-auth-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-charcoal);
+  text-decoration: none;
+  padding: 12px 16px;
+  border-radius: 4px;
+  background-color: var(--color-cream-dark);
+  transition: var(--transition-smooth);
+  width: 100%;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-sizing: border-box;
+}
+
+.mobile-auth-btn i {
+  font-size: 1.2rem;
+  color: var(--color-gold);
+}
+
+.mobile-auth-btn:hover {
+  background-color: var(--color-light-gray);
+  color: var(--color-gold);
+}
+
+.mobile-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mobile-welcome-text {
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.95rem;
+  color: var(--color-charcoal);
+}
+
+.mobile-welcome-text strong {
+  color: var(--color-gold);
+}
+
+.mobile-auth-links {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+}
+
+.mobile-auth-sublink {
+  color: var(--color-muted-gray);
+  text-decoration: none;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: var(--transition-smooth);
+}
+
+.mobile-auth-sublink:hover {
+  color: var(--color-gold);
+}
+
+.mobile-auth-links .divider {
+  color: var(--color-light-gray);
+  user-select: none;
+}
+
+@media (max-width: 480px) {
+  .auth-modal {
+    padding: 28px 20px;
+    margin: 20px auto;
+  }
+  .auth-title {
+    font-size: 1.6rem;
+    margin-bottom: 20px;
+  }
 }
 
 /* Admin Panel Styling */

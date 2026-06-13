@@ -213,10 +213,45 @@ function syncOrdersTable() {
   const ordersTable = document.getElementById("admin-orders-table-body");
   if (ordersTable) {
     const orders = OrderDb.get();
-    if (orders.length === 0) {
-      ordersTable.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--color-muted-gray);">No orders placed yet.</td></tr>`;
+    
+    // Read filter values
+    const query = document.getElementById("admin-order-search")?.value.toLowerCase() || "";
+    const statusFilter = document.getElementById("admin-order-status-filter")?.value || "all";
+    const startDateVal = document.getElementById("admin-order-start-date")?.value;
+    const endDateVal = document.getElementById("admin-order-end-date")?.value;
+    
+    let startMidnight = null;
+    let endMidnight = null;
+    if (startDateVal) {
+      startMidnight = new Date(startDateVal);
+      startMidnight.setHours(0, 0, 0, 0);
+    }
+    if (endDateVal) {
+      endMidnight = new Date(endDateVal);
+      endMidnight.setHours(23, 59, 59, 999);
+    }
+
+    // Filter orders
+    const filteredOrders = orders.filter(o => {
+      const matchQuery = (o.id && o.id.toLowerCase().includes(query)) || 
+                         (o.customer && o.customer.toLowerCase().includes(query)) ||
+                         (o.email && o.email.toLowerCase().includes(query));
+      const matchStatus = statusFilter === "all" ? true : o.status === statusFilter;
+      
+      let matchDate = true;
+      if (o.date) {
+        const orderDate = new Date(o.date);
+        if (startMidnight && orderDate < startMidnight) matchDate = false;
+        if (endMidnight && orderDate > endMidnight) matchDate = false;
+      }
+      
+      return matchQuery && matchStatus && matchDate;
+    });
+
+    if (filteredOrders.length === 0) {
+      ordersTable.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--color-muted-gray);">No matching orders found.</td></tr>`;
     } else {
-      ordersTable.innerHTML = orders.map(o => {
+      ordersTable.innerHTML = filteredOrders.map(o => {
         const d = new Date(o.date);
         return `
           <tr>
@@ -233,6 +268,9 @@ function syncOrdersTable() {
                 <option value="Cancelled" ${o.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
               </select>
             </td>
+            <td style="text-align:right;">
+              <button class="btn-danger-sm" onclick="handleAdminDeleteOrder('${o.id}')">Delete</button>
+            </td>
           </tr>
         `;
       }).join("");
@@ -246,6 +284,112 @@ function syncOrdersTable() {
     }
   }
 }
+
+window.filterOrders = function() {
+  syncOrdersTable();
+};
+
+window.handleAdminUpdateOrderStatus = function(orderId, status) {
+  if (isFirebaseInitialized) {
+    db.ref("orders/" + orderId).update({ status: status })
+      .then(() => {
+        logAdminAction("order_status_updated", `Updated order ${orderId} status to ${status}`);
+        showToast(`Order ${orderId} set to ${status}`);
+      })
+      .catch(err => showModal(err.message, { title: 'Update Error', type: 'error' }));
+  } else {
+    OrderDb.updateStatus(orderId, status);
+    showToast(`Order ${orderId} status updated locally to ${status}`);
+  }
+};
+
+window.handleAdminDeleteOrder = function(orderId) {
+  showConfirm(`Are you sure you want to permanently delete order <strong>${orderId}</strong>? This action is irreversible.`, {
+    title: 'Delete Order',
+    icon: '🗑️',
+    confirmText: 'Yes, Delete',
+    cancelText: 'Cancel',
+    dangerous: true
+  }).then(function(confirmed) {
+    if (!confirmed) return;
+    if (isFirebaseInitialized) {
+      db.ref("orders/" + orderId).remove()
+        .then(() => {
+          logAdminAction("order_deleted", `Deleted order record ${orderId}`);
+          showToast(`Deleted order ${orderId}`);
+        })
+        .catch(err => showModal(err.message, { title: 'Delete Error', type: 'error' }));
+    } else {
+      let orders = OrderDb.get();
+      orders = orders.filter(o => o.id !== orderId);
+      OrderDb.save(orders);
+      document.dispatchEvent(new CustomEvent("ordersUpdated"));
+      showToast(`Deleted order ${orderId} locally`);
+    }
+  });
+};
+
+window.triggerExportOrders = function() {
+  const orders = OrderDb.get();
+  
+  // Apply active filters
+  const query = document.getElementById("admin-order-search")?.value.toLowerCase() || "";
+  const statusFilter = document.getElementById("admin-order-status-filter")?.value || "all";
+  const startDateVal = document.getElementById("admin-order-start-date")?.value;
+  const endDateVal = document.getElementById("admin-order-end-date")?.value;
+  
+  let startMidnight = null;
+  let endMidnight = null;
+  if (startDateVal) {
+    startMidnight = new Date(startDateVal);
+    startMidnight.setHours(0, 0, 0, 0);
+  }
+  if (endDateVal) {
+    endMidnight = new Date(endDateVal);
+    endMidnight.setHours(23, 59, 59, 999);
+  }
+
+  const filteredOrders = orders.filter(o => {
+    const matchQuery = (o.id && o.id.toLowerCase().includes(query)) || 
+                       (o.customer && o.customer.toLowerCase().includes(query)) ||
+                       (o.email && o.email.toLowerCase().includes(query));
+    const matchStatus = statusFilter === "all" ? true : o.status === statusFilter;
+    
+    let matchDate = true;
+    if (o.date) {
+      const orderDate = new Date(o.date);
+      if (startMidnight && orderDate < startMidnight) matchDate = false;
+      if (endMidnight && orderDate > endMidnight) matchDate = false;
+    }
+    
+    return matchQuery && matchStatus && matchDate;
+  });
+
+  if (filteredOrders.length === 0) {
+    showModal("No matching orders found to export.", { title: "Export Orders", type: "info" });
+    return;
+  }
+
+  // Generate CSV
+  let csv = "Order ID,Date,Customer Name,Email,Phone,Shipping Address,Subtotal,Tax,Shipping Cost,Total,Items,Status\n";
+  filteredOrders.forEach(o => {
+    const itemsStr = o.items ? o.items.map(i => `${i.name} (x${i.qty})`).join(" | ") : "Package";
+    const d = new Date(o.date).toISOString().split('T')[0];
+    csv += `"${o.id}","${d}","${o.customer || ''}","${o.email || ''}","${o.phone || ''}","${(o.address || '').replace(/"/g, '""')}","₹${o.subtotal || 0}","₹${o.tax || 0}","₹${o.shipping || 0}","₹${o.total || 0}","${itemsStr.replace(/"/g, '""')}","${o.status}"\n`;
+  });
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `signature_spell_orders_export_${Date.now()}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  
+  logAdminAction("orders_exported", `Exported CSV file containing ${filteredOrders.length} customer order records`);
+  showToast(`CSV export generated for ${filteredOrders.length} orders`);
+};
 
 function loadAdminManagers() {
   db.ref("adminUsers").on("value", snapshot => {
