@@ -78,7 +78,7 @@
         }
 
         // Trigger updates in UI
-        if (window.location.pathname.includes("admin.html")) {
+        if (window.location.pathname.includes("admin.html") || window.location.pathname.includes("store-manager.html")) {
           renderAdminFragranceList();
           if (typeof updateFragranceCheckboxes === "function") {
             updateFragranceCheckboxes();
@@ -112,25 +112,36 @@
     }
   }
 
-  // Hook into admin console initialization
+  // Hook into admin/store manager console initialization
   const checkAdminInterval = setInterval(() => {
-    if (typeof window.initializeDashboard === "function" || typeof initializeDashboard === "function") {
+    const isDashboard = typeof window.initializeDashboard === "function" || typeof initializeDashboard === "function";
+    const isStoreManager = typeof window.initializeStoreManager === "function" || typeof initializeStoreManager === "function";
+    
+    if (isDashboard || isStoreManager) {
       clearInterval(checkAdminInterval);
-      const originalInitDash = window.initializeDashboard || initializeDashboard;
       
-      const newInitDash = function() {
-        originalInitDash();
-        injectAdminFragranceCard();
-        if (typeof populateAssignProductDropdown === "function") {
-          populateAssignProductDropdown();
-        }
-      };
+      if (isDashboard) {
+        const originalInitDash = window.initializeDashboard || initializeDashboard;
+        const newInitDash = function() {
+          originalInitDash();
+          injectAdminFragranceCard();
+          if (typeof populateAssignProductDropdown === "function") {
+            populateAssignProductDropdown();
+          }
+        };
+        window.initializeDashboard = newInitDash;
+      }
       
-      if (typeof window.initializeDashboard === "function") {
-        window.initializeDashboard = newInitDash;
-      } else {
-        // Override global
-        window.initializeDashboard = newInitDash;
+      if (isStoreManager) {
+        const originalInitSM = window.initializeStoreManager || initializeStoreManager;
+        const newInitSM = function() {
+          originalInitSM();
+          injectAdminFragranceCard();
+          if (typeof populateAssignProductDropdown === "function") {
+            populateAssignProductDropdown();
+          }
+        };
+        window.initializeStoreManager = newInitSM;
       }
     }
   }, 100);
@@ -586,11 +597,10 @@
 
   // Admin Panel: Injection of Fragrance Scent control panel
   function injectAdminFragranceCard() {
-    const catalogCard = document.querySelector("#admin-product-table-body") ? document.querySelector("#admin-product-table-body").closest(".admin-card") : null;
-    if (!catalogCard) return;
-
     let fragCard = document.getElementById("admin-fragrance-management-card");
     if (!fragCard) {
+      const catalogCard = document.querySelector("#admin-product-table-body") ? document.querySelector("#admin-product-table-body").closest(".admin-card") : null;
+      if (!catalogCard) return;
       fragCard = document.createElement("div");
       fragCard.id = "admin-fragrance-management-card";
       fragCard.className = "admin-card";
@@ -647,18 +657,22 @@
   // Safe handler to bind product addition/deletion on admin console
   function bindAdminProductActions() {
     const addProductForm = document.getElementById("admin-add-product-form");
-    if (addProductForm) {
-      const newAddProductForm = addProductForm.cloneNode(true);
-      addProductForm.parentNode.replaceChild(newAddProductForm, addProductForm);
+    if (addProductForm && !addProductForm._ssListenerBound) {
+      addProductForm._ssListenerBound = true;
 
-      newAddProductForm.addEventListener("submit", (e) => {
+      addProductForm.addEventListener("submit", (e) => {
         e.preventDefault();
         
+        const editIdVal = document.getElementById("edit-prod-id").value;
+        const isEditing = !!editIdVal;
+        const editId = isEditing ? parseInt(editIdVal) : null;
+
         const name = document.getElementById("add-prod-name").value.trim();
         const price = parseFloat(document.getElementById("add-prod-price").value) || 0;
         const category = document.getElementById("add-prod-category").value;
         const image = document.getElementById("add-prod-image").value.trim();
         const notesInput = document.getElementById("add-prod-notes").value;
+        const description = document.getElementById("add-prod-desc").value.trim();
         
         let notes = { top: "Bergamot", heart: "Rose", base: "Vanilla" };
         if (notesInput) {
@@ -668,29 +682,52 @@
           notes.base = arr[2] ? arr[2].trim() : "Vanilla";
         }
         
-        const newId = PRODUCTS.length > 0 ? Math.max(...PRODUCTS.map(p => p.id)) + 1 : 1;
-        const newProduct = {
-          id: newId,
+        const existingProduct = isEditing ? PRODUCTS.find(p => p.id == editId) : null;
+        const productDesc = description || (existingProduct ? existingProduct.description : "Handcrafted boutique candle released by our Master Pourers. Designed to build warm spaces.");
+        const burnTime = existingProduct ? existingProduct.burnTime : "20 Hours";
+        const waxType = existingProduct ? existingProduct.waxType : "Soy Blend";
+        const fragrances = existingProduct ? existingProduct.fragrances : { f1: true, f2: true };
+
+        const productData = {
+          id: isEditing ? editId : (PRODUCTS.length > 0 ? Math.max(...PRODUCTS.map(p => p.id)) + 1 : 1),
           name: name,
           price: price,
           image: image,
           category: category,
           notes: notes,
-          burnTime: "20 Hours",
-          waxType: "Soy Blend",
-          description: "Handcrafted boutique candle released by our Master Pourers. Designed to build warm spaces."
+          burnTime: burnTime,
+          waxType: waxType,
+          description: productDesc,
+          fragrances: fragrances
         };
         
-        ProductDb.add(newProduct);
-        if (typeof syncCatalogTable === "function") syncCatalogTable();
-        newAddProductForm.reset();
-        showToast("Candle added locally! Click 'Push Product Catalog to Firebase' to save changes.");
+        if (typeof db !== "undefined" && isFirebaseInitialized) {
+          db.ref("products/" + productData.id).set(productData)
+            .then(() => {
+              if (typeof closeAllAdminModals === "function") closeAllAdminModals();
+              showToast(isEditing ? "Candle updated and synced to Firebase!" : "Candle added and synced to Firebase!");
+            })
+            .catch(err => {
+              showToast("Firebase sync failed: " + err.message);
+            });
+        } else {
+          if (isEditing) {
+            let list = ProductDb.get();
+            list = list.map(p => p.id == editId ? productData : p);
+            ProductDb.save(list);
+          } else {
+            ProductDb.add(productData);
+          }
+          if (typeof syncCatalogTable === "function") syncCatalogTable();
+          if (typeof closeAllAdminModals === "function") closeAllAdminModals();
+          showToast(isEditing ? "Candle updated locally." : "Candle added locally.");
+        }
       });
     }
 
-    // Override product deletion (make it local first)
+    // Override product deletion (instant sync with Firebase if active)
     window.handleAdminDeleteProduct = function(productId) {
-      showConfirm("Are you sure you want to delete this product locally?", {
+      showConfirm("Are you sure you want to permanently delete this product?", {
         title: 'Delete Product',
         icon: '🗑️',
         confirmText: 'Yes, Delete',
@@ -698,48 +735,19 @@
         dangerous: true
       }).then(function(confirmed) {
         if (!confirmed) return;
-        ProductDb.remove(productId);
-        if (typeof syncCatalogTable === "function") syncCatalogTable();
-        showToast("Product removed locally! Click 'Push Product Catalog to Firebase' to save changes.");
-      });
-    };
-
-    // Inject "Push Product Catalog to Firebase" button
-    const catalogCard = document.querySelector("#admin-product-table-body") ? document.querySelector("#admin-product-table-body").closest(".admin-card") : null;
-    if (catalogCard) {
-      let pushBtn = document.getElementById("admin-push-products-btn");
-      if (!pushBtn) {
-        pushBtn = document.createElement("button");
-        pushBtn.id = "admin-push-products-btn";
-        pushBtn.className = "btn btn-primary btn-block";
-        pushBtn.style.cssText = "margin-top: 16px; padding: 10px; font-size: 0.85rem; font-weight: 700; background-color: var(--color-gold); color: var(--color-charcoal); border: none; border-radius: 4px; width: 100%; cursor: pointer;";
-        pushBtn.textContent = "Push Product Catalog to Firebase";
-        catalogCard.appendChild(pushBtn);
-      }
-      
-      const newPushBtn = pushBtn.cloneNode(true);
-      pushBtn.parentNode.replaceChild(newPushBtn, pushBtn);
-      
-      newPushBtn.addEventListener("click", () => {
         if (typeof db !== "undefined" && isFirebaseInitialized) {
-          const productsObj = {};
-          PRODUCTS.forEach(p => {
-            if (p && p.id && p.name) {
-              productsObj[p.id] = p;
-            }
-          });
-          db.ref("products").set(productsObj)
+          db.ref("products/" + productId).remove()
             .then(() => {
-              showToast("Product catalog successfully updated in Firebase DB!");
+              showToast("Product deleted and synced to Firebase!");
             })
-            .catch(err => {
-              showToast("Error pushing catalog: " + err.message);
-            });
+            .catch(err => showToast("Firebase delete failed: " + err.message));
         } else {
-          showToast("Firebase not initialized. Changes saved locally.");
+          ProductDb.remove(Number(productId));
+          if (typeof syncCatalogTable === "function") syncCatalogTable();
+          showToast("Product removed locally.");
         }
       });
-    }
+    };
   }
 
   function renderAdminFragranceList() {

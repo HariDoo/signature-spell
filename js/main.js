@@ -131,6 +131,7 @@ const ProductDb = {
     }
   },
   save: function(list) {
+    PRODUCTS = list;
     localStorage.setItem("signature_spell_products", JSON.stringify(list));
     document.dispatchEvent(new CustomEvent("productsUpdated"));
   },
@@ -248,7 +249,13 @@ const WishlistStorage = {
   get: function() {
     try {
       const wishStr = localStorage.getItem("signature_spell_wishlist");
-      return wishStr ? JSON.parse(wishStr) : [];
+      const list = wishStr ? JSON.parse(wishStr) : [];
+      if (!Array.isArray(list)) return [];
+      const cleanList = list.map(Number).filter(id => !isNaN(id) && id > 0);
+      if (typeof PRODUCTS !== "undefined" && Array.isArray(PRODUCTS) && PRODUCTS.length > 0) {
+        return cleanList.filter(id => PRODUCTS.some(p => p.id == id));
+      }
+      return cleanList;
     } catch (e) {
       console.error("Error reading wishlist", e);
       return [];
@@ -256,32 +263,35 @@ const WishlistStorage = {
   },
   save: function(list) {
     try {
-      localStorage.setItem("signature_spell_wishlist", JSON.stringify(list));
+      const cleanList = Array.isArray(list) ? list.map(Number).filter(id => !isNaN(id) && id > 0) : [];
+      localStorage.setItem("signature_spell_wishlist", JSON.stringify(cleanList));
       document.dispatchEvent(new CustomEvent("wishlistUpdated"));
 
       // Sync to Firebase if logged in
       if (typeof firebase !== "undefined" && isFirebaseInitialized && auth && auth.currentUser) {
-        db.ref("users/" + auth.currentUser.uid + "/wishlist").set(list);
+        db.ref("users/" + auth.currentUser.uid + "/wishlist").set(cleanList);
       }
     } catch (e) {
       console.error("Error saving wishlist", e);
     }
   },
   toggle: function(id) {
+    const numId = Number(id);
+    if (isNaN(numId)) return false;
     let list = this.get();
-    const index = list.indexOf(id);
+    const index = list.indexOf(numId);
     if (index > -1) {
       list.splice(index, 1);
       this.save(list);
       return false; // Removed
     } else {
-      list.push(id);
+      list.push(numId);
       this.save(list);
       return true; // Added
     }
   },
   has: function(id) {
-    return this.get().includes(id);
+    return this.get().includes(Number(id));
   },
   count: function() {
     return this.get().length;
@@ -456,11 +466,13 @@ function tryInitFirebase() {
             if (wishSnap.exists()) {
               const dbWish = wishSnap.val() || [];
               dbWish.forEach(dbItem => {
-                const existing = localWish.find(i => i.id == dbItem.id);
-                if (!existing) {
-                  localWish.push(dbItem);
+                const numId = Number(dbItem);
+                if (!isNaN(numId) && numId > 0 && !localWish.map(Number).includes(numId)) {
+                  localWish.push(numId);
                 }
               });
+              // Filter localWish to remove any legacy invalid values (like 0, null, etc.)
+              localWish = localWish.map(Number).filter(id => !isNaN(id) && id > 0);
               localStorage.setItem("signature_spell_wishlist", JSON.stringify(localWish));
               await db.ref("users/" + user.uid + "/wishlist").set(localWish);
             } else {
@@ -475,8 +487,6 @@ function tryInitFirebase() {
 
         } else {
           UserSession.clear();
-          localStorage.removeItem("signature_spell_cart");
-          localStorage.removeItem("signature_spell_wishlist");
           document.dispatchEvent(new CustomEvent("cartUpdated"));
           document.dispatchEvent(new CustomEvent("wishlistUpdated"));
         }
@@ -894,6 +904,8 @@ function createProductCardHTML(product) {
 
 // Global Wishlist actions
 window.handleCardWishlistToggle = function(productId, element) {
+  if (typeof WishlistStorage === "undefined") return;
+
   const added = WishlistStorage.toggle(productId);
   if (element) {
     element.classList.toggle("active", added);
@@ -977,5 +989,19 @@ document.addEventListener("click", function(e) {
     sessionStorage.setItem("selected_order_id", trackingMatch[1]);
     window.location.href = "order-tracking.html";
     return;
+  }
+
+  // Intercept shop.html?filter=...
+  const shopFilterMatch = href.match(/shop\.html\?filter=([^&]+)/);
+  if (shopFilterMatch) {
+    e.preventDefault();
+    sessionStorage.setItem("selected_shop_filter", shopFilterMatch[1]);
+    window.location.href = "shop.html";
+    return;
+  }
+
+  // If clicking on shop.html with no parameters, clear the shop filter
+  if (href === "shop.html" || href.endsWith("/shop.html")) {
+    sessionStorage.removeItem("selected_shop_filter");
   }
 }, true);

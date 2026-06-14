@@ -4,12 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Administration panel for Signature Spell. Authenticate with Google SSO, manage users, add/remove product inventory, and update order statuses.">
+  <meta name="robots" content="noindex, nofollow">
   <title>Admin Control Panel | Signature Spell</title>
   <!-- CSS Links -->
   <link rel="stylesheet" href="css/admin.css">
 <link rel="stylesheet" href="css/button-alignment.css">
 
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=2">
   <link rel="stylesheet" href="css/transitions.css">
   <link rel="stylesheet" href="css/cards-3d.css">
   <link rel="stylesheet" href="css/cart-fixes.css">
@@ -147,6 +148,7 @@
         </div>
         <div class="admin-user-info">
           <span>Hello, <strong id="admin-user-fullname">Administrator</strong></span>
+          <a href="store-manager.html" class="btn btn-primary btn-small" style="margin-right: 10px;">Store Operations</a>
           <button class="btn btn-secondary btn-small" onclick="handleAdminPageLogout()">Log Out</button>
         </div>
       </div>
@@ -233,92 +235,7 @@
             </div>
           </div>
 
-          <!-- Manage Fragrances (Candle Catalog CRUD) -->
-          <div class="admin-card">
-            <div class="admin-card-header">
-              <h2>Candle Catalog</h2>
-            </div>
-            
-            <!-- Add Form -->
-            <form id="admin-add-product-form" style="margin-bottom: 24px; border-bottom:1px solid var(--color-light-gray); padding-bottom:20px;">
-              <h5 style="margin-bottom:12px; font-weight:700; font-family: var(--font-body); font-size: 0.9rem; text-transform: uppercase;">Add New Candle</h5>
-              
-              <div class="admin-filters grid-3" style="margin-bottom: 10px;">
-                <input type="text" id="add-prod-name" required placeholder="E.g., Vanilla Wood Candle">
-                <input type="number" id="add-prod-price" required placeholder="INR Price (₹)">
-                <select id="add-prod-category" required data-ss-select="normal">
-                  <option value="Tea Lights">Tea Lights</option>
-                  <option value="Jars">Glass Jars</option>
-                  <option value="Shells">Coconut Shells</option>
-                </select>
-              </div>
 
-              <div class="admin-filters grid-2" style="margin-bottom: 15px;">
-                <input type="text" id="add-prod-image" value="assets/regular_tlight.png" required placeholder="Image URL path">
-                <input type="text" id="add-prod-notes" placeholder="Top, Heart, Base notes (comma separated)">
-              </div>
-
-              <button type="submit" class="btn btn-accent btn-block" style="padding:10px; font-size:0.8rem;">Add Candle to Storefront</button>
-            </form>
-            
-            <div class="admin-table-container">
-              <table class="admin-table">
-                <thead>
-                  <tr>
-                    <th>Vessel</th>
-                    <th>Name</th>
-                    <th>Price</th>
-                    <th style="text-align:right;">Action</th>
-                  </tr>
-                </thead>
-                <tbody id="admin-product-table-body">
-                  <!-- Populated dynamically -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Customer Orders Card -->
-          <div class="admin-card">
-            <div class="admin-card-header">
-              <h2>Customer Orders</h2>
-            </div>
-
-            <div class="admin-filters" style="margin-top: 15px; margin-bottom: 15px; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));">
-              <input type="text" id="admin-order-search" placeholder="Search ID or Customer..." oninput="filterOrders()">
-              <select id="admin-order-status-filter" data-ss-select="compact" onchange="filterOrders()">
-                <option value="all">All Statuses</option>
-                <option value="Confirmed">Confirmed</option>
-                <option value="Processing">Processing</option>
-                <option value="Shipped">Shipped</option>
-                <option value="Delivered">Delivered</option>
-                <option value="Cancelled">Cancelled</option>
-              </select>
-              <input type="date" id="admin-order-start-date" onchange="filterOrders()" title="Start Date" style="padding: 10px; font-family: inherit; font-size: 0.85rem; border: 1px solid var(--color-light-gray); background-color: var(--color-off-white); border-radius: 4px;">
-              <input type="date" id="admin-order-end-date" onchange="filterOrders()" title="End Date" style="padding: 10px; font-family: inherit; font-size: 0.85rem; border: 1px solid var(--color-light-gray); background-color: var(--color-off-white); border-radius: 4px;">
-              <button class="btn btn-secondary btn-small" onclick="triggerExportOrders()" style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 0.85rem; padding: 10px 15px; border-radius: 4px; gap: 6px; width: 100%;">
-                <span>💾</span> Export
-              </button>
-            </div>
-            
-            <div class="admin-table-container">
-              <table class="admin-table">
-                <thead>
-                  <tr>
-                    <th>Order ID</th>
-                    <th>Date</th>
-                    <th>Customer</th>
-                    <th>Status</th>
-                    <th>Update Status</th>
-                    <th style="text-align:right;">Action</th>
-                  </tr>
-                </thead>
-                <tbody id="admin-orders-table-body">
-                  <!-- Populated dynamically -->
-                </tbody>
-              </table>
-            </div>
-          </div>
 
         </div>
 
@@ -663,29 +580,7 @@
     </div>
   </div>
 
-  <!-- Modal: Shipping Details for Shipped Orders -->
-  <div class="modal-overlay" id="modal-carrier-details">
-    <div class="admin-modal">
-      <button class="modal-close" onclick="closeAllAdminModals()">&times;</button>
-      <h3 class="modal-title">Enter Shipping Details</h3>
-      <div id="alert-carrier-details"></div>
-      <form id="form-carrier-details">
-        <input type="hidden" id="carrier-order-id">
-        <div class="form-group">
-          <label for="carrier-name-input">Carrier Details</label>
-          <input type="text" id="carrier-name-input" required placeholder="E.g., India Post, BlueDart, DHL">
-        </div>
-        <div class="form-group">
-          <label for="carrier-tracking-input">Tracking ID</label>
-          <input type="text" id="carrier-tracking-input" required placeholder="E.g., IN123456789">
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary btn-small" onclick="closeAllAdminModals()">Cancel</button>
-          <button type="submit" class="btn btn-primary btn-small">Mark as Shipped</button>
-        </div>
-      </form>
-    </div>
-  </div>
+
 
   <!-- Shared Footer -->
   <footer class="footer">
@@ -732,6 +627,7 @@
 
   <!-- Core JavaScript -->
   <script src="js/ui-components.js"></script>
+  <script src="js/site-state.js?v=2"></script>
   <script src="js/main.js"></script>
   <script src="js/transitions.js"></script>
   <script src="js/cards-3d.js"></script>

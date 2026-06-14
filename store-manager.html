@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Administration panel for Signature Spell storefront operations. Manage active product catalog, fragrances, and customer orders in real-time.">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Store Operations Dashboard | Signature Spell</title>
+  <!-- CSS Links -->
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/button-alignment.css">
+  <link rel="stylesheet" href="css/style.css?v=2">
+  <link rel="stylesheet" href="css/transitions.css">
+  <link rel="stylesheet" href="css/cards-3d.css">
+  <link rel="stylesheet" href="css/cart-fixes.css">
+  <link rel="stylesheet" href="css/header.css">
+  <link rel="stylesheet" href="css/product-cards.css">
+  <link rel="stylesheet" href="css/light-theme.css" id="theme-light">
+  <link rel="stylesheet" href="css/dark-theme.css" id="theme-dark" disabled>
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem("theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", savedTheme);
+      document.documentElement.setAttribute("data-bs-theme", savedTheme);
+      document.getElementById("theme-light").disabled = (savedTheme === "dark");
+      document.getElementById("theme-dark").disabled = (savedTheme === "light");
+    })();
+  </script>
+  <script src="js/theme.js" defer></script>
+  <link rel="stylesheet" href="css/fragrance.css">
+</head>
+<body>
+
+  <!-- Access Denied Overlay (shown to non-admins) -->
+  <div id="accessDeniedOverlay" class="loading-overlay" style="display: none; background-color: var(--color-cream);">
+    <div style="text-align: center; max-width: 400px; padding: 40px; border: 1px solid var(--color-light-gray); background: white;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="none" stroke="#cf222e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="margin-bottom: 20px;">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+      <h2 id="access-denied-title" style="font-size: 1.8rem; margin-bottom: 10px; color: #cf222e;">Access Denied</h2>
+      <p id="access-denied-desc" style="color: var(--color-muted-gray); margin-bottom: 24px;">You do not possess the required administrator credentials to view this page.</p>
+      <div id="access-denied-actions" style="display: flex; flex-direction: column; gap: 10px;">
+        <button onclick="triggerLoginModal()" class="btn btn-primary btn-block">Log In</button>
+        <a href="index.html" class="btn btn-secondary btn-block">Return to Home</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Spinner Overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <p style="font-family: var(--font-heading); color: var(--color-charcoal);">Verifying security privileges...</p>
+  </div>
+
+  <!-- Sticky Luxury Header -->
+  <header class="header">
+    <div class="promo-bar">
+      Free Delivery on All Orders Over ₹500
+    </div>
+    <div class="container header-container">
+      <a href="index.html" class="logo" id="logo-link">
+        Signature <span class="logo-gold">Spell</span>
+      </a>
+      
+      <!-- Search bar -->
+      <form class="search-form" id="header-search-form">
+        <input type="text" class="search-input" id="header-search-input" placeholder="Search scents..." required aria-label="Search">
+        <button type="submit" class="search-btn" id="header-search-btn" aria-label="Search Submit">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+      </form>
+      
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html" id="nav-home">Home</a></li>
+          <li><a href="shop.html" id="nav-shop">Shop</a></li>
+          <li><a href="about.html" id="nav-about">Our Story</a></li>
+          <li><a href="contact.html" id="nav-contact">Contact</a></li>
+          <li><a href="order-tracking.html" id="nav-tracking">Track Order</a></li>
+        </ul>
+      </nav>
+      
+      <div class="nav-icons">
+        <a href="shop.html" class="icon-btn" id="wishlist-btn" aria-label="Wishlist" style="position: relative;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <span class="wishlist-count" id="wishlist-badge-count" style="display: none;">0</span>
+        </a>
+        
+        <a href="cart.html" class="icon-btn" id="cart-btn" aria-label="Shopping Cart">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <span class="cart-count" id="cart-badge-count">0</span>
+        </a>
+        
+        <a href="#" class="icon-btn" id="user-btn" aria-label="User Account">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </a>
+        
+        <button class="hamburger" id="hamburger-toggle" aria-label="Toggle Menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Navigation Drawer -->
+  <div class="mobile-nav-overlay" id="mobile-overlay"></div>
+  <aside class="mobile-nav" id="mobile-drawer">
+    <button class="mobile-nav-close" id="mobile-close-btn">&times;</button>
+    <ul class="mobile-nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="shop.html">Shop</a></li>
+      <li><a href="about.html">Our Story</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="order-tracking.html">Track Order</a></li>
+      <li><a href="cart.html">Cart</a></li>
+    </ul>
+  </aside>
+
+  <!-- Store Manager Header Banner -->
+  <section class="page-header" style="background-color: var(--color-charcoal); padding: 60px 0;">
+    <div class="container">
+      <h1>Storefront <span>Operations</span></h1>
+      <div class="breadcrumbs">
+        <a href="index.html">Home</a> &nbsp;/&nbsp; <a href="admin.html">Admin Console</a> &nbsp;/&nbsp; <span>Orders & Catalog</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Management Workspace -->
+  <section class="admin-workspace-section" style="background-color: var(--color-cream); min-height: 80vh; padding: 40px 0;">
+    <div class="container" id="admin-workspace-root" style="display: none;">
+      
+      <!-- Operations Header -->
+      <div class="admin-header">
+        <div>
+          <h2 style="font-family: var(--font-heading); font-size: 1.8rem;">Inventory & Orders</h2>
+          <span style="font-size:0.75rem; color:var(--color-muted-gray); text-transform:uppercase; letter-spacing:0.1em; font-weight:700;">Signature Spell Management Console</span>
+        </div>
+        <div class="admin-user-info">
+          <span>Hello, <strong id="admin-user-fullname">Administrator</strong></span>
+          <a href="admin.html" class="btn btn-secondary btn-small">User Registry</a>
+        </div>
+      </div>
+
+      <!-- Stats Cards Row -->
+      <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="stats-card">
+          <div class="stats-icon">📦</div>
+          <div class="stats-info">
+            <h3 id="stat-total-orders">0</h3>
+            <p>Total Orders</p>
+          </div>
+        </div>
+        <div class="stats-card">
+          <div class="stats-icon">🕯️</div>
+          <div class="stats-info">
+            <h3 id="stat-total-candles">0</h3>
+            <p>Active Catalog Items</p>
+          </div>
+        </div>
+        <div class="stats-card">
+          <div class="stats-icon">⚡</div>
+          <div class="stats-info">
+            <h3 id="stat-pending-shipments">0</h3>
+            <p>Pending Orders</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Operations Cards -->
+          <!-- Customer Orders Card -->
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h2>Customer Orders</h2>
+            </div>
+
+            <div class="admin-filters" style="margin-top: 15px; margin-bottom: 15px; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));">
+              <input type="text" id="admin-order-search" placeholder="Search ID or Customer..." oninput="filterOrders()">
+              <select id="admin-order-status-filter" data-ss-select="compact" onchange="filterOrders()">
+                <option value="all">All Statuses</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Processing">Processing</option>
+                <option value="Shipped">Shipped</option>
+                <option value="Delivered">Delivered</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+              <input type="date" id="admin-order-start-date" onchange="filterOrders()" title="Start Date" style="padding: 10px; font-family: inherit; font-size: 0.85rem; border: 1px solid var(--color-light-gray); background-color: var(--color-off-white); border-radius: 4px;">
+              <input type="date" id="admin-order-end-date" onchange="filterOrders()" title="End Date" style="padding: 10px; font-family: inherit; font-size: 0.85rem; border: 1px solid var(--color-light-gray); background-color: var(--color-off-white); border-radius: 4px;">
+              <button class="btn btn-secondary btn-small" onclick="triggerExportOrders()" style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 0.85rem; padding: 10px 15px; border-radius: 4px; gap: 6px; width: 100%;">
+                <span>💾</span> Export
+              </button>
+            </div>
+            
+            <div class="admin-table-container">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Date</th>
+                    <th>Customer</th>
+                    <th>Status</th>
+                    <th>Update Status</th>
+                    <th style="text-align:right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-orders-table-body">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Manage Fragrances (Candle Catalog CRUD) -->
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h2>Candle Catalog</h2>
+              <button class="btn btn-primary btn-small" onclick="openAddProductModal()">+ Add Candle</button>
+            </div>
+            
+            <div class="admin-table-container">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Vessel</th>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th style="text-align:right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-product-table-body">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Fragrance card (Injected automatically, or empty target div) -->
+          <div id="admin-fragrance-management-card" class="admin-card">
+            <!-- Rendered by js/fragrance.js -->
+          </div>
+
+
+    </div>
+  </section>
+
+  <!-- Modals Overlay System -->
+  
+  <!-- Auth Login Modal -->
+  <div class="modal-overlay" id="auth-modal-overlay">
+    <div class="auth-modal">
+      <button class="modal-close" id="auth-modal-close">&times;</button>
+      <h3 class="auth-title" id="auth-form-title">Welcome Back</h3>
+      <form id="auth-email-form">
+        <div class="form-group">
+          <label for="auth-email-input">Email Address</label>
+          <input type="email" id="auth-email-input" required placeholder="E.g., name@example.com">
+        </div>
+        <div class="form-group">
+          <label for="auth-pass-input">Password</label>
+          <input type="password" id="auth-pass-input" required placeholder="Enter password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="auth-submit-btn">Sign In</button>
+      </form>
+      <div class="sso-divider">Or SSO</div>
+      <button class="btn btn-google-sso" id="google-sso-btn">
+        <svg viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5.04c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 1.84 14.96 1 12 1 7.35 1 3.37 3.68 1.41 7.59l3.79 2.94C6.11 7.25 8.84 5.04 12 5.04z"/><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.46c-.29 1.48-1.14 2.73-2.4 3.58l3.76 2.91c2.2-2.03 3.67-5.02 3.67-8.64z"/><path fill="#FBBC05" d="M5.2 14.75c-.24-.72-.38-1.49-.38-2.3c0-.81.14-1.59.38-2.3L1.41 7.21C.51 9.02 0 11.01 0 13.1c0 2.09.51 4.08 1.41 5.89l3.79-3.24z"/><path fill="#34A853" d="M12 23c3.24 0 5.97-1.09 7.96-2.96l-3.76-2.91c-1.11.75-2.53 1.21-4.2 1.21-3.16 0-5.89-2.21-6.84-5.49L1.36 16.1C3.32 20.02 7.3 23 12 23z"/></svg>
+        Sign In with Google
+      </button>
+      <p class="auth-switch" id="auth-switch-desc">Don't have an account? <a href="#" id="auth-switch-link">Sign Up</a></p>
+    </div>
+  </div>
+
+  <!-- Modal: Shipping Details for Shipped Orders -->
+  <div class="modal-overlay" id="modal-carrier-details">
+    <div class="admin-modal">
+      <button class="modal-close" onclick="closeAllAdminModals()">&times;</button>
+      <h3 class="modal-title">Enter Shipping Details</h3>
+      <div id="alert-carrier-details"></div>
+      <form id="form-carrier-details">
+        <input type="hidden" id="carrier-order-id">
+        <div class="form-group">
+          <label for="carrier-name-input">Carrier Details</label>
+          <input type="text" id="carrier-name-input" required placeholder="E.g., India Post, BlueDart, DHL">
+        </div>
+        <div class="form-group">
+          <label for="carrier-tracking-input">Tracking ID</label>
+          <input type="text" id="carrier-tracking-input" required placeholder="E.g., IN123456789">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-small" onclick="closeAllAdminModals()">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-small">Mark as Shipped</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add/Edit Product Catalog Item -->
+  <div class="modal-overlay" id="modal-add-product">
+    <div class="admin-modal">
+      <button class="modal-close" onclick="closeAllAdminModals()">&times;</button>
+      <h3 class="modal-title" id="product-modal-title">Add New Candle</h3>
+      <div id="alert-product-modal"></div>
+      <form id="admin-add-product-form">
+        <input type="hidden" id="edit-prod-id">
+        <div class="form-group">
+          <label for="add-prod-name">Candle Name</label>
+          <input type="text" id="add-prod-name" required placeholder="E.g., Vanilla Wood Candle">
+        </div>
+        <div class="form-group">
+          <label for="add-prod-price">Price (₹)</label>
+          <input type="number" id="add-prod-price" required placeholder="INR Price (₹)">
+        </div>
+        <div class="form-group">
+          <label for="add-prod-category">Vessel Category</label>
+          <select id="add-prod-category" required data-ss-select="normal">
+            <option value="Tea Lights">Tea Lights</option>
+            <option value="Jars">Glass Jars</option>
+            <option value="Shells">Coconut Shells</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="add-prod-image">Image URL path</label>
+          <input type="text" id="add-prod-image" value="assets/regular_tlight.png" required placeholder="Image URL path">
+        </div>
+        <div class="form-group">
+          <label for="add-prod-notes">Fragrance Notes (comma separated)</label>
+          <input type="text" id="add-prod-notes" placeholder="Top, Heart, Base notes">
+        </div>
+        <div class="form-group">
+          <label for="add-prod-desc">Description</label>
+          <textarea id="add-prod-desc" rows="3" placeholder="Detail the candle's notes, wax quality, and aesthetic features..." style="width:100%; padding:10px; border:1px solid var(--color-light-gray); font-family: var(--font-body); box-sizing: border-box;"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-small" onclick="closeAllAdminModals()">Cancel</button>
+          <button type="submit" class="btn btn-accent btn-small" id="product-modal-submit-btn">Add Candle</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Shared Footer -->
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <h3>Signature <span class="logo-gold">Spell</span></h3>
+        <p>Luxury hand-poured soy candles crafted to fill your space with warmth, comfort, and premium aromatic harmony.</p>
+        <div class="footer-socials">
+          <a href="#" class="social-link" aria-label="Instagram">IG</a>
+          <a href="#" class="social-link" aria-label="Facebook">FB</a>
+          <a href="#" class="social-link" aria-label="Pinterest">PI</a>
+        </div>
+      </div>
+      
+      <div class="footer-col">
+        <h4>Shop</h4>
+        <ul class="footer-links">
+          <li><a href="shop.html">All Candles</a></li>
+          <li><a href="shop.html">Tea Lights</a></li>
+          <li><a href="shop.html">Apothecary Jars</a></li>
+          <li><a href="shop.html">Coconut Shells</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-col">
+        <h4>Philosophy</h4>
+        <ul class="footer-links">
+          <li><a href="about.html">Our Sourcing</a></li>
+          <li><a href="about.html">Sustainability</a></li>
+          <li><a href="about.html">The Pour Method</a></li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="container footer-bottom">
+      <p>&copy; 2026 Signature Spell Candles. All rights reserved. Designed for clean, warm homes.</p>
+    </div>
+  </footer>
+
+  <!-- Firebase SDK CDNs (v10 Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+  <!-- Core JavaScript -->
+  <script src="js/ui-components.js"></script>
+  <script src="js/site-state.js?v=2"></script>
+  <script src="js/main.js"></script>
+  <script src="js/transitions.js"></script>
+  <script src="js/cards-3d.js"></script>
+  <script src="js/cart-fixes.js"></script>
+  <script src="js/header.js"></script>
+  <script src="js/store-manager.js"></script>
+  <script src="js/fragrance.js"></script>
+</body>
+</html>
