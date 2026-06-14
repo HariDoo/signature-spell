@@ -1,0 +1,66 @@
+/* ==========================================================================
+   SIGNATURE SPELL - USER ORDERS CSS STYLE
+   ========================================================================== */
+
+@import url("profile.css");
+
+.order-filters-container {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-light-gray);
+  border-radius: 4px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-subtle);
+}
+
+.order-filters {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.order-filters .search-wrapper {
+  flex: 2;
+  min-width: 250px;
+  position: relative;
+}
+
+.order-filters .search-wrapper input {
+  width: 100%;
+  padding: 11px 16px;
+  border: 1px solid var(--color-light-gray);
+  border-radius: 4px;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  background-color: var(--color-off-white);
+  transition: var(--transition-smooth);
+}
+
+.order-filters .search-wrapper input:focus {
+  outline: none;
+  border-color: var(--color-gold);
+  background-color: var(--color-white);
+}
+
+.order-filters .select-wrapper {
+  flex: 1;
+  min-width: 180px;
+}
+
+.order-filters .select-wrapper select {
+  width: 100%;
+  padding: 11px 16px;
+  border: 1px solid var(--color-light-gray);
+  border-radius: 4px;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  background-color: var(--color-off-white);
+  transition: var(--transition-smooth);
+}
+
+.order-filters .select-wrapper select:focus {
+  outline: none;
+  border-color: var(--color-gold);
+  background-color: var(--color-white);
+}

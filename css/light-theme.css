@@ -5,33 +5,46 @@
 /* 1. Global Custom Theme Settings */
 :root {
   /* Core Variable Overrides for style.css integration */
-  --color-charcoal: #2d241e; /* Warm chocolate text */
+  --color-charcoal: #2d241e;
+  /* Warm chocolate text */
   --color-dark-gray: #4a403a;
-  --color-gold: #c58f00; /* Warm Gold accent */
+  --color-gold: #c58f00;
+  /* Warm Gold accent */
   --color-gold-hover: #fef3c7;
   --color-gold-antique: #b45309;
   --color-amber: #d97706;
-  --color-cream: #faf8f5; /* Warm cream background */
-  --color-cream-dark: #f2efe9; /* Sand container backdrop */
+  --color-cream: #faf8f5;
+  /* Warm cream background */
+  --color-cream-dark: #f2efe9;
+  /* Sand container backdrop */
   --color-white: #ffffff;
   --color-off-white: #faf8f5;
-  --color-light-gray: #e6e2db; /* Soft borders */
-  --color-muted-gray: #6b5e54; /* Muted brown */
+  --color-light-gray: #e6e2db;
+  /* Soft borders */
+  --color-muted-gray: #6b5e54;
+  /* Muted brown */
 
   --shadow-subtle: 0 4px 20px rgba(45, 36, 30, 0.04);
   --shadow-luxury: 0 16px 40px rgba(45, 36, 30, 0.08);
   --border-neutral-light: 1px solid #e6e2db;
 
-  --theme-bg: #faf8f5; /* Cozy warm cream beige background */
-  --theme-bg-container: #ffffff; /* Soft warm white containers */
-  --theme-bg-nested: #f3efe9; /* Warm sand elements */
+  --theme-bg: #faf8f5;
+  /* Cozy warm cream beige background */
+  --theme-bg-container: #ffffff;
+  /* Soft warm white containers */
+  --theme-bg-nested: #f3efe9;
+  /* Warm sand elements */
 
-  --theme-text-primary: #2d241e; /* Rich warm chocolate charcoal */
-  --theme-text-secondary: #6b5e54; /* Muted brown/gray */
-  --theme-text-gold: #c58f00; /* Warm gold accent */
+  --theme-text-primary: #2d241e;
+  /* Rich warm chocolate charcoal */
+  --theme-text-secondary: #6b5e54;
+  /* Muted brown/gray */
+  --theme-text-gold: #c58f00;
+  /* Warm gold accent */
   --theme-text-white: #ffffff;
 
-  --theme-border: #e6e2db; /* Soft beige border */
+  --theme-border: #e6e2db;
+  /* Soft beige border */
   --theme-border-gold: rgba(197, 143, 0, 0.3);
 
   --theme-shadow-subtle: 0 4px 20px rgba(45, 36, 30, 0.04);
@@ -247,7 +260,8 @@ textarea:focus {
 
 /* 7. Home Layout & Banners */
 .hero {
-  background-color: #1c1917 !important; /* Keep hero banner dark for dramatic lighting */
+  background-color: #1c1917 !important;
+  /* Keep hero banner dark for dramatic lighting */
 }
 
 .hero-tagline {
@@ -350,7 +364,8 @@ textarea:focus {
 
 /* 9. Shared Footer (Elegant, Dark Styled) */
 .footer {
-  background-color: #241a14 !important; /* Extremely dark warm brown footer for light mode */
+  background-color: #241a14 !important;
+  /* Extremely dark warm brown footer for light mode */
   color: rgba(255, 255, 255, 0.7) !important;
   border-top: 1px solid var(--theme-border) !important;
 }
@@ -521,14 +536,17 @@ textarea:focus {
   background-color: #e2f5ea !important;
   color: #1a7f37 !important;
 }
+
 .badge-warning {
   background-color: #fff8e6 !important;
   color: #b06000 !important;
 }
+
 .badge-info {
   background-color: #e8f2ff !important;
   color: #0969da !important;
 }
+
 .badge-danger {
   background-color: #ffebe9 !important;
   color: #cf222e !important;
@@ -762,11 +780,9 @@ textarea:focus {
 /* 15. Subpage Page Header Banners */
 .page-header {
   background-color: var(--theme-bg-nested) !important;
-  background-image: radial-gradient(
-    circle at top right,
-    rgba(197, 143, 0, 0.05),
-    transparent 60%
-  ) !important;
+  background-image: radial-gradient(circle at top right,
+      rgba(197, 143, 0, 0.05),
+      transparent 60%) !important;
   color: var(--theme-text-primary) !important;
   padding: 80px 0 !important;
   text-align: center !important;

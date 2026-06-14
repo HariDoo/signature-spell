@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (checkoutList) {
     let html = "";
     cart.forEach(item => {
-      const p = PRODUCTS.find(prod => prod.id === item.id);
+      const p = PRODUCTS.find(prod => prod.id == item.id);
       if (!p) return;
       const rowTotal = p.price * item.qty;
       subtotal += rowTotal;
@@ -108,7 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
         tax: tax,
         shipping: shipping,
         total: total,
-        items: cart.map(i => ({ id: i.id, name: PRODUCTS.find(p => p.id === i.id).name, qty: i.qty })),
+        items: cart.map(i => ({ id: i.id, name: PRODUCTS.find(p => p.id == i.id).name, qty: i.qty })),
         status: "Confirmed"
       };
       
@@ -116,18 +116,21 @@ document.addEventListener("DOMContentLoaded", () => {
         db.ref("orders/" + orderId).set(newOrderObj)
           .then(() => {
             CartStorage.clear();
-            window.location.href = `order-tracking.html?orderId=${orderId}`;
+            sessionStorage.setItem("selected_order_id", orderId);
+            window.location.href = "order-tracking.html";
           })
           .catch(err => {
             console.error("Firebase order save failed", err);
             if (typeof OrderDb !== "undefined") OrderDb.add(newOrderObj);
             CartStorage.clear();
-            window.location.href = `order-tracking.html?orderId=${orderId}`;
+            sessionStorage.setItem("selected_order_id", orderId);
+            window.location.href = "order-tracking.html";
           });
       } else {
         if (typeof OrderDb !== "undefined") OrderDb.add(newOrderObj);
         CartStorage.clear();
-        window.location.href = `order-tracking.html?orderId=${orderId}`;
+        sessionStorage.setItem("selected_order_id", orderId);
+        window.location.href = "order-tracking.html";
       }
     });
   }

@@ -37,14 +37,6 @@ function initProfilePage() {
     const alertContainer = document.getElementById("details-alert-container");
     showInlineAlert(alertContainer, "Firebase service not initialized. Please verify configuration.", "danger");
   }
-
-  // Reload orders when they are updated in the background
-  document.addEventListener("ordersUpdated", () => {
-    if (firebaseUser) {
-      loadUserOrders(firebaseUser);
-    }
-  });
-
   setupProfileFormBindings();
 }
 
@@ -118,110 +110,6 @@ function populateProfileFields(user) {
       if (summaryLast && data.lastActive) summaryLast.textContent = new Date(data.lastActive).toLocaleString("en-IN");
     }
   });
-
-  // Load user order history
-  loadUserOrders(user);
-}
-
-function loadUserOrders(user) {
-  const loadingState = document.getElementById("orders-loading-state");
-  const container = document.getElementById("profile-orders-container");
-
-  if (!container) return;
-
-  const renderOrdersList = (orders) => {
-    if (loadingState) loadingState.style.display = "none";
-    container.style.display = "block";
-
-    // Filter orders by customer email matching the logged-in user
-    const userOrders = orders.filter(o => o.email && o.email.toLowerCase() === user.email.toLowerCase());
-
-    if (userOrders.length === 0) {
-      container.innerHTML = `
-        <div class="empty-orders-state">
-          <p>You haven't placed any orders yet.</p>
-          <a href="shop.html" class="btn btn-primary" style="display: inline-block; padding: 10px 20px; font-size: 0.85rem;">Shop Our Candles</a>
-        </div>
-      `;
-      return;
-    }
-
-    // Sort by date (newest first)
-    userOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-    container.innerHTML = userOrders.map(order => {
-      const formattedDate = new Date(order.date).toLocaleDateString("en-IN", {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-      });
-
-      const productsList = order.items.map(item => `
-        <li>${item.name} <span class="qty">&times; ${item.qty}</span></li>
-      `).join("");
-
-      // Status badge class mapping
-      let badgeClass = "badge badge-info";
-      const status = (order.status || "Confirmed").toLowerCase();
-      if (status === "delivered") {
-        badgeClass = "badge badge-success";
-      } else if (status === "cancelled") {
-        badgeClass = "badge badge-danger";
-      } else if (status === "processing" || status === "shipped") {
-        badgeClass = "badge badge-warning";
-      }
-
-      return `
-        <div class="user-order-item">
-          <div class="user-order-header">
-            <div>
-              <span class="user-order-id">${order.id}</span>
-              <span class="user-order-date">placed on ${formattedDate}</span>
-            </div>
-            <span class="${badgeClass}">${order.status || "Confirmed"}</span>
-          </div>
-          <div class="user-order-details">
-            <ul class="user-order-products">
-              ${productsList}
-            </ul>
-            <div class="user-order-summary">
-              <div style="font-size: 0.8rem; color: var(--color-muted-gray);">Total Amount</div>
-              <div class="user-order-total">₹${Number(order.total).toFixed(2)}</div>
-            </div>
-          </div>
-          <div class="user-order-footer">
-            <div style="font-size: 0.8rem; color: var(--color-muted-gray); max-width: 70%; text-align: left;">
-              <strong>Ship To:</strong> ${order.address || "N/A"}
-            </div>
-            <a href="order-tracking.html?orderId=${order.id}" class="user-order-tracking-btn">
-              Track Order &rarr;
-            </a>
-          </div>
-        </div>
-      `;
-    }).join("");
-  };
-
-  if (typeof firebase !== "undefined" && isFirebaseInitialized) {
-    db.ref("orders").once("value")
-      .then(snapshot => {
-        const val = snapshot.val();
-        const arr = val ? Object.values(val) : [];
-        renderOrdersList(arr);
-      })
-      .catch(err => {
-        console.error("Error fetching firebase orders:", err);
-        // Fallback to local storage orders
-        const stored = localStorage.getItem("signature_spell_orders");
-        const arr = stored ? JSON.parse(stored) : [];
-        renderOrdersList(arr);
-      });
-  } else {
-    // Fallback to local storage orders
-    const stored = localStorage.getItem("signature_spell_orders");
-    const arr = stored ? JSON.parse(stored) : [];
-    renderOrdersList(arr);
-  }
 }
 
 function getInitials(name) {

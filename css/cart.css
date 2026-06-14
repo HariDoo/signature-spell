@@ -197,6 +197,10 @@
     gap: 24px;
   }
 
+  .cart-header-row {
+    display: none !important;
+  }
+
   .cart-items-container,
   .summary-sidebar {
     padding: 20px 16px;

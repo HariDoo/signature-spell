@@ -10,18 +10,28 @@
 /* CSS Variables */
 :root {
   /* Premium E-commerce Luxury color tokens - Liquid Glass Theme */
-  --color-charcoal: #1c1917; /* Stone-900 (Primary Dark text) */
-  --color-dark-gray: #292524; /* Stone-800 */
-  --color-gold: #a16207; /* Rich Luxury Amber Gold Accent (contrast compliant) */
-  --color-gold-hover: #fef3c7; /* Warm Amber-100 */
-  --color-gold-antique: #b45309; /* Amber-700 */
-  --color-amber: #d97706; /* Amber-600 */
-  --color-cream: #fafaf9; /* Stone-50 (Luxury Warm White background) */
-  --color-cream-dark: #f5f5f4; /* Stone-100 (Soft container backdrop) */
+  --color-charcoal: #1c1917;
+  /* Stone-900 (Primary Dark text) */
+  --color-dark-gray: #292524;
+  /* Stone-800 */
+  --color-gold: #a16207;
+  /* Rich Luxury Amber Gold Accent (contrast compliant) */
+  --color-gold-hover: #fef3c7;
+  /* Warm Amber-100 */
+  --color-gold-antique: #b45309;
+  /* Amber-700 */
+  --color-amber: #d97706;
+  /* Amber-600 */
+  --color-cream: #fafaf9;
+  /* Stone-50 (Luxury Warm White background) */
+  --color-cream-dark: #f5f5f4;
+  /* Stone-100 (Soft container backdrop) */
   --color-white: #ffffff;
   --color-off-white: #fafaf9;
-  --color-light-gray: #e7e5e4; /* Stone-200 (Subtle borders) */
-  --color-muted-gray: #78716c; /* Stone-500 (Subtle captions) */
+  --color-light-gray: #e7e5e4;
+  /* Stone-200 (Subtle borders) */
+  --color-muted-gray: #78716c;
+  /* Stone-500 (Subtle captions) */
 
   --font-heading: "Cormorant", serif;
   --font-body: "Montserrat", sans-serif;
@@ -1096,6 +1106,7 @@ h6 {
     padding: 28px 20px;
     margin: 20px auto;
   }
+
   .auth-title {
     font-size: 1.6rem;
     margin-bottom: 20px;
@@ -1270,10 +1281,12 @@ h6 {
 
 /* Gold glow pulse effect on primary items */
 @keyframes goldGlow {
+
   0%,
   100% {
     box-shadow: 0 4px 15px rgba(245, 197, 24, 0.25);
   }
+
   50% {
     box-shadow: 0 4px 25px rgba(245, 197, 24, 0.55);
   }
@@ -1284,11 +1297,13 @@ h6 {
 }
 
 @keyframes logoGlicker {
+
   0%,
   100% {
     text-shadow: 0 0 2px rgba(245, 197, 24, 0.2);
     opacity: 0.95;
   }
+
   50% {
     text-shadow: 0 0 10px rgba(245, 197, 24, 0.7);
     opacity: 1;
@@ -1305,11 +1320,13 @@ h6 {
 }
 
 @keyframes badgePulse {
+
   0%,
   100% {
     transform: scale(1);
     box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.7);
   }
+
   50% {
     transform: scale(1.15);
     box-shadow: 0 0 0 6px rgba(243, 156, 18, 0);
@@ -1363,6 +1380,7 @@ h6 {
     opacity: 0;
     transform: translate(-50%, 40px);
   }
+
   to {
     opacity: 1;
     transform: translate(-50%, 0);
@@ -1435,4 +1453,104 @@ h6 {
   background-color: #e8f2ff;
   color: #0969da;
   border: 1px solid rgba(9, 105, 218, 0.15);
+}
+
+/* Newsletter Section styling */
+.newsletter-strip {
+  background-color: var(--color-charcoal);
+  color: var(--color-white);
+  padding: 60px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.newsletter-text {
+  max-width: 600px;
+}
+
+.newsletter-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 40px;
+}
+
+.newsletter-text h3 {
+  color: var(--color-white);
+  font-size: 1.8rem;
+  font-weight: 400;
+  margin-bottom: 8px;
+}
+
+.newsletter-text p {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.95rem;
+}
+
+.newsletter-form {
+  display: flex;
+  flex-grow: 1;
+  max-width: 500px;
+  position: relative;
+}
+
+.newsletter-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid rgba(255, 255, 255, 0.2);
+  color: var(--color-white);
+  padding: 12px 120px 12px 0;
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.95rem;
+  transition: var(--transition-smooth);
+}
+
+.newsletter-input:focus {
+  outline: none;
+  border-bottom-color: var(--color-gold);
+  border-bottom-width: 2px;
+}
+
+.newsletter-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+  transition: opacity 0.3s ease;
+}
+
+.newsletter-input:focus::placeholder {
+  opacity: 0.3;
+}
+
+.newsletter-btn {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  background: none;
+  border: none;
+  color: var(--color-gold);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.8rem;
+  padding: 12px 0;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.newsletter-btn:hover {
+  color: var(--color-white);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 992px) {
+  .newsletter-content {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 24px !important;
+  }
+
+  .newsletter-form {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
 }

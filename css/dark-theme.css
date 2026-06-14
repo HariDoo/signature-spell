@@ -5,33 +5,47 @@
 /* 1. Global Custom Theme Settings */
 :root {
   /* Core Variable Overrides for style.css integration */
-  --color-charcoal: #e6e6fa; /* Silver text */
-  --color-dark-gray: #9e97b0; /* Muted lavender gray */
-  --color-gold: #f5c518; /* Glowing starlight gold */
+  --color-charcoal: #e6e6fa;
+  /* Silver text */
+  --color-dark-gray: #9e97b0;
+  /* Muted lavender gray */
+  --color-gold: #f5c518;
+  /* Glowing starlight gold */
   --color-gold-hover: #fff3cd;
   --color-gold-antique: #d4af37;
   --color-amber: #f59e0b;
-  --color-cream: #0f0c1b; /* Midnight indigo background */
-  --color-cream-dark: #171428; /* Obsidian card backdrop */
-  --color-white: #171428; /* Inner card background */
+  --color-cream: #0f0c1b;
+  /* Midnight indigo background */
+  --color-cream-dark: #171428;
+  /* Obsidian card backdrop */
+  --color-white: #171428;
+  /* Inner card background */
   --color-off-white: #120e1e;
-  --color-light-gray: #2d264e; /* Deep space borders */
+  --color-light-gray: #2d264e;
+  /* Deep space borders */
   --color-muted-gray: #9e97b0;
 
   --shadow-subtle: 0 4px 24px rgba(0, 0, 0, 0.4);
   --shadow-luxury: 0 16px 48px rgba(0, 0, 0, 0.6);
   --border-neutral-light: 1px solid #2d264e;
 
-  --theme-bg: #0f0c1b; /* Cosmic deep indigo/purple backdrop */
-  --theme-bg-container: #171428; /* Midnight obsidian containers */
-  --theme-bg-nested: #231f3b; /* Deep space mid-tone element backgrounds */
+  --theme-bg: #0f0c1b;
+  /* Cosmic deep indigo/purple backdrop */
+  --theme-bg-container: #171428;
+  /* Midnight obsidian containers */
+  --theme-bg-nested: #231f3b;
+  /* Deep space mid-tone element backgrounds */
 
-  --theme-text-primary: #e6e6fa; /* Celestial silver white */
-  --theme-text-secondary: #9e97b0; /* Muted lavender gray text */
-  --theme-text-gold: #f5c518; /* Brilliant golden starlight accent */
+  --theme-text-primary: #e6e6fa;
+  /* Celestial silver white */
+  --theme-text-secondary: #9e97b0;
+  /* Muted lavender gray text */
+  --theme-text-gold: #f5c518;
+  /* Brilliant golden starlight accent */
   --theme-text-white: #e6e6fa;
 
-  --theme-border: #2d264e; /* Deep space purple borders */
+  --theme-border: #2d264e;
+  /* Deep space purple borders */
   --theme-border-gold: rgba(245, 197, 24, 0.3);
 
   --theme-shadow-subtle: 0 4px 24px rgba(0, 0, 0, 0.4);
@@ -93,7 +107,8 @@ h6 {
 
 .cart-count {
   background-color: var(--theme-text-gold) !important;
-  color: #0f0c1b !important; /* Indigo dark text inside light badge */
+  color: #0f0c1b !important;
+  /* Indigo dark text inside light badge */
 }
 
 /* Search input in header */
@@ -135,7 +150,8 @@ h6 {
 
 /* 4. Luxury Buttons */
 .btn-primary {
-  background-color: #c084fc !important; /* Glowing lavender accent button for dark mode */
+  background-color: #c084fc !important;
+  /* Glowing lavender accent button for dark mode */
   color: #0f0c1b !important;
 }
 
@@ -460,7 +476,8 @@ textarea:focus {
 }
 
 .summary-row.total {
-  border-top: 1.5px solid #c084fc !important; /* Lavender line divider for totals */
+  border-top: 1.5px solid #c084fc !important;
+  /* Lavender line divider for totals */
   color: var(--theme-text-primary) !important;
 }
 
@@ -524,14 +541,17 @@ textarea:focus {
   background-color: rgba(26, 127, 55, 0.2) !important;
   color: #58a6ff !important;
 }
+
 .badge-warning {
   background-color: rgba(176, 96, 0, 0.2) !important;
   color: #f5c518 !important;
 }
+
 .badge-info {
   background-color: rgba(9, 105, 218, 0.2) !important;
   color: #388bfd !important;
 }
+
 .badge-danger {
   background-color: rgba(207, 34, 46, 0.2) !important;
   color: #ff7b72 !important;
@@ -784,11 +804,9 @@ textarea:focus {
 /* 15. Subpage Page Header Banners */
 .page-header {
   background-color: var(--theme-bg-nested) !important;
-  background-image: radial-gradient(
-    circle at top right,
-    rgba(245, 197, 24, 0.04),
-    transparent 60%
-  ) !important;
+  background-image: radial-gradient(circle at top right,
+      rgba(245, 197, 24, 0.04),
+      transparent 60%) !important;
   color: var(--theme-text-primary) !important;
   padding: 80px 0 !important;
   text-align: center !important;
@@ -825,5 +843,3 @@ textarea:focus {
 .breadcrumbs a:hover {
   color: var(--theme-text-primary) !important;
 }
-
-
