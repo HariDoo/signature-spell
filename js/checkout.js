@@ -71,6 +71,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // CONFIGURATION: Replace with your deployed Google Apps Script Web App URL
+  const GOOGLE_SHEET_FORM_URL = "https://script.google.com/macros/s/AKfycbzIrSiQ7Awd5WrQ7v7UU3G5OAVai_egithMCa58yKwalHHpuFHnqnxmgalzCVigxbs9/exec";
+
   // Form checkout submits
   const checkoutForm = document.getElementById("checkout-form");
   if (checkoutForm) {
@@ -111,26 +114,52 @@ document.addEventListener("DOMContentLoaded", () => {
         items: cart.map(i => ({ id: i.id, name: PRODUCTS.find(p => p.id == i.id).name, qty: i.qty })),
         status: "Confirmed"
       };
-      
-      if (typeof isFirebaseInitialized !== "undefined" && isFirebaseInitialized) {
-        db.ref("orders/" + orderId).set(newOrderObj)
-          .then(() => {
-            CartStorage.clear();
-            sessionStorage.setItem("selected_order_id", orderId);
-            window.location.href = "order-tracking.html";
-          })
-          .catch(err => {
-            console.error("Firebase order save failed", err);
-            if (typeof OrderDb !== "undefined") OrderDb.add(newOrderObj);
-            CartStorage.clear();
-            sessionStorage.setItem("selected_order_id", orderId);
-            window.location.href = "order-tracking.html";
-          });
-      } else {
-        if (typeof OrderDb !== "undefined") OrderDb.add(newOrderObj);
+
+      // Disable submit button & show processing text
+      const submitBtn = checkoutForm.querySelector('button[type="submit"]');
+      let originalBtnText = "";
+      if (submitBtn) {
+        originalBtnText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = "Processing Order...";
+      }
+
+      const proceedToReceipt = () => {
         CartStorage.clear();
         sessionStorage.setItem("selected_order_id", orderId);
         window.location.href = "order-tracking.html";
+      };
+
+      const sendOrderNotification = () => {
+        const emailPayload = {
+          ...newOrderObj,
+          "Form Name": "Order Placement",
+          "Submitted At": new Date().toLocaleString()
+        };
+        return fetch(GOOGLE_SHEET_FORM_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(emailPayload)
+        })
+        .catch(err => {
+          console.error("Google Apps Script order notification failed:", err);
+        });
+      };
+      
+      if (typeof isFirebaseInitialized !== "undefined" && isFirebaseInitialized) {
+        db.ref("orders/" + orderId).set(newOrderObj)
+          .then(() => sendOrderNotification())
+          .then(proceedToReceipt)
+          .catch(err => {
+            console.error("Firebase order save failed", err);
+            if (typeof OrderDb !== "undefined") OrderDb.add(newOrderObj);
+            sendOrderNotification().then(proceedToReceipt);
+          });
+      } else {
+        if (typeof OrderDb !== "undefined") OrderDb.add(newOrderObj);
+        sendOrderNotification().then(proceedToReceipt);
       }
     });
   }

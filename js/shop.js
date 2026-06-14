@@ -10,7 +10,10 @@ document.addEventListener("DOMContentLoaded", () => {
   
   const urlParams = new URLSearchParams(window.location.search);
   let activeSearch = urlParams.get("search") || "";
-  let activeFilter = urlParams.get("filter") === "wishlist" ? "Wishlist" : "All";
+  
+  // Read filter from sessionStorage or URL query parameter fallback
+  const sessionFilter = sessionStorage.getItem("selected_shop_filter");
+  let activeFilter = (urlParams.get("filter") === "wishlist" || sessionFilter === "wishlist") ? "Wishlist" : "All";
   let activeSort = "default";
   
   if (activeSearch) {
@@ -85,6 +88,8 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.classList.add("active");
       activeFilter = btn.dataset.filter;
       activeSearch = "";
+      // Clear session filter when manually clicking tabs
+      sessionStorage.removeItem("selected_shop_filter");
       if (pageBreadcrumb) pageBreadcrumb.textContent = "Shop All";
       renderShop();
     });

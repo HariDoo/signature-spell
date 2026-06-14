@@ -699,9 +699,9 @@ h6 {
     gap: 8px;
   }
 
-  /* Hide wishlist on very small screens to prevent header overflow */
+  /* Keep wishlist visible on mobile screens next to the cart */
   .nav-icons #wishlist-btn {
-    display: none;
+    display: inline-flex;
   }
 
   /* Tighter icon button padding on very small screens */
@@ -1553,4 +1553,61 @@ h6 {
     width: 100% !important;
     max-width: 100% !important;
   }
+}
+/* --- Maintenance Mode & Announcements --- */
+.global-announcement-banner {
+  background-color: var(--color-accent);
+  color: white;
+  padding: 10px 40px 10px 20px;
+  text-align: center;
+  position: relative;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.global-announcement-banner .announcement-close {
+  position: absolute;
+  right: 15px;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  line-height: 1;
+}
+.maintenance-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: var(--color-cream);
+  z-index: 99999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  text-align: center;
+}
+.maintenance-box {
+  background: white;
+  padding: 50px;
+  border-radius: 8px;
+  max-width: 500px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  border: 1px solid var(--color-light-gray);
+}
+.maintenance-admin-badge {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #cf222e;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-family: var(--font-body);
+  z-index: 99999;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  pointer-events: none;
 }
