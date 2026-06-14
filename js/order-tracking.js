@@ -2,7 +2,13 @@
 
 document.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const orderId = urlParams.get("orderId");
+  let orderId = urlParams.get("orderId");
+  if (orderId) {
+    sessionStorage.setItem("selected_order_id", orderId);
+    window.history.replaceState({}, document.title, window.location.pathname);
+  } else {
+    orderId = sessionStorage.getItem("selected_order_id");
+  }
   
   const trackingForm = document.getElementById("order-tracking-form");
   const searchSection = document.querySelector(".tracker-search-section");
@@ -25,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
             renderOrderTrackingUI(val);
           } else {
             // Check local fallback
-            const localOrder = (typeof OrderDb !== "undefined") ? OrderDb.get().find(o => o.id === id) : null;
+            const localOrder = (typeof OrderDb !== "undefined") ? OrderDb.get().find(o => o.id == id) : null;
             if (localOrder) {
               renderOrderTrackingUI(localOrder);
             } else {
@@ -40,11 +46,11 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .catch(err => {
           console.error("Firebase track error", err);
-          const localOrder = (typeof OrderDb !== "undefined") ? OrderDb.get().find(o => o.id === id) : null;
+          const localOrder = (typeof OrderDb !== "undefined") ? OrderDb.get().find(o => o.id == id) : null;
           if (localOrder) renderOrderTrackingUI(localOrder);
         });
     } else {
-      const localOrder = (typeof OrderDb !== "undefined") ? OrderDb.get().find(o => o.id === id) : null;
+      const localOrder = (typeof OrderDb !== "undefined") ? OrderDb.get().find(o => o.id == id) : null;
       if (localOrder) {
         renderOrderTrackingUI(localOrder);
       } else {
@@ -100,8 +106,23 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    if (trackCarrier) {
-      trackCarrier.textContent = order.status === "Delivered" ? "Delivered at Doorstep" : (order.status === "Cancelled" ? "Shipment Cancelled" : "In Transit via India Post BlueDart");
+    const carrierWrapper = document.getElementById("track-carrier-wrapper");
+    if (carrierWrapper) {
+      const status = order.status ? order.status.toLowerCase() : "confirmed";
+      if (status === "shipped" || status === "delivered") {
+        if (order.carrier) {
+          carrierWrapper.style.display = "block";
+          carrierWrapper.innerHTML = `Carrier: <strong>${order.carrier}</strong>${order.trackingId ? ` &nbsp;|&nbsp; Tracking ID: <strong>${order.trackingId}</strong>` : ''}`;
+        } else {
+          carrierWrapper.style.display = "block";
+          carrierWrapper.innerHTML = `Carrier: <strong>In Transit via India Post BlueDart</strong>`;
+        }
+      } else if (status === "cancelled") {
+        carrierWrapper.style.display = "block";
+        carrierWrapper.innerHTML = `Carrier: <strong>Shipment Cancelled</strong>`;
+      } else {
+        carrierWrapper.style.display = "none";
+      }
     }
     
     // Set Steps Activation based on status
@@ -177,6 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       const idInput = document.getElementById("tracking-id-input").value.trim();
       if (idInput) {
+        sessionStorage.setItem("selected_order_id", idInput);
         fetchAndShowOrder(idInput);
       }
     });

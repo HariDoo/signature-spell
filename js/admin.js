@@ -203,7 +203,7 @@ function syncCatalogTable() {
         <td><img src="${p.image}" alt=""></td>
         <td><strong>${p.name}</strong><br><span style="color:var(--color-muted-gray); font-size:0.7rem;">${p.category}</span></td>
         <td>₹${p.price}</td>
-        <td style="text-align:right;"><button class="btn-danger-sm" onclick="handleAdminDeleteProduct(${p.id})">Remove</button></td>
+        <td style="text-align:right;"><button class="btn-danger-sm" onclick="handleAdminDeleteProduct('${p.id}')">Remove</button></td>
       </tr>
     `).join("");
   }
@@ -290,6 +290,11 @@ window.filterOrders = function() {
 };
 
 window.handleAdminUpdateOrderStatus = function(orderId, status) {
+  if (status === "Shipped") {
+    openCarrierDetailsModal(orderId);
+    return;
+  }
+
   if (isFirebaseInitialized) {
     db.ref("orders/" + orderId).update({ status: status })
       .then(() => {
@@ -683,12 +688,91 @@ function setupAdminFormBindings() {
       }
     });
   }
+
+  const carrierForm = document.getElementById("form-carrier-details");
+  if (carrierForm) {
+    carrierForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const orderId = document.getElementById("carrier-order-id").value;
+      const carrier = document.getElementById("carrier-name-input").value.trim();
+      const trackingId = document.getElementById("carrier-tracking-input").value.trim();
+      const alertCont = document.getElementById("alert-carrier-details");
+
+      if (isFirebaseInitialized) {
+        db.ref("orders/" + orderId).update({
+          status: "Shipped",
+          carrier: carrier,
+          trackingId: trackingId
+        })
+        .then(() => {
+          logAdminAction("order_status_updated", `Updated order ${orderId} status to Shipped (Carrier: ${carrier}, Tracking ID: ${trackingId})`);
+          showToast(`Order ${orderId} marked as Shipped`);
+          closeAllAdminModals();
+          syncOrdersTable();
+        })
+        .catch(err => {
+          if (typeof showInlineAlert === "function") {
+            showInlineAlert(alertCont, err.message, "danger");
+          } else {
+            alert(err.message);
+          }
+        });
+      } else {
+        const list = OrderDb.get();
+        const order = list.find(o => o.id === orderId);
+        if (order) {
+          order.status = "Shipped";
+          order.carrier = carrier;
+          order.trackingId = trackingId;
+          OrderDb.save(list);
+          document.dispatchEvent(new CustomEvent("ordersUpdated"));
+        }
+        showToast(`Order ${orderId} status updated locally to Shipped`);
+        closeAllAdminModals();
+      }
+    });
+  }
 }
+
+window.openCarrierDetailsModal = function(orderId) {
+  const alertCont = document.getElementById("alert-carrier-details");
+  if (alertCont) alertCont.innerHTML = "";
+  
+  const orderIdInput = document.getElementById("carrier-order-id");
+  if (orderIdInput) orderIdInput.value = orderId;
+  
+  const nameInput = document.getElementById("carrier-name-input");
+  if (nameInput) nameInput.value = "";
+  
+  const trackingInput = document.getElementById("carrier-tracking-input");
+  if (trackingInput) trackingInput.value = "";
+  
+  if (isFirebaseInitialized) {
+    db.ref("orders/" + orderId).once("value").then(snapshot => {
+      const order = snapshot.val();
+      if (order) {
+        if (nameInput && order.carrier) nameInput.value = order.carrier;
+        if (trackingInput && order.trackingId) trackingInput.value = order.trackingId;
+      }
+    });
+  } else {
+    const localOrder = OrderDb.get().find(o => o.id === orderId);
+    if (localOrder) {
+      if (nameInput && localOrder.carrier) nameInput.value = localOrder.carrier;
+      if (trackingInput && localOrder.trackingId) trackingInput.value = localOrder.trackingId;
+    }
+  }
+
+  document.getElementById("modal-carrier-details")?.classList.add("active");
+};
 
 window.closeAllAdminModals = function() {
   document.querySelectorAll(".modal-overlay").forEach(m => {
     m.classList.remove("active");
   });
+  if (typeof syncOrdersTable === "function") {
+    syncOrdersTable();
+  }
 };
 
 window.openAddUserModal = function() {
@@ -831,7 +915,7 @@ window.triggerViewUserOrders = function(uid, email) {
       let orderTotal = 0;
       if (o.items && Array.isArray(o.items)) {
         itemsStr = o.items.map(item => {
-          const prodObj = PRODUCTS.find(p => p.id === item.id);
+          const prodObj = PRODUCTS.find(p => p.id == item.id);
           const pName = prodObj ? prodObj.name : `Product #${item.id}`;
           const subtotal = (prodObj ? prodObj.price : 0) * item.qty;
           orderTotal += subtotal;

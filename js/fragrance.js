@@ -26,14 +26,17 @@
   document.addEventListener("DOMContentLoaded", () => {
     initializeFragranceDb();
     if (window.location.pathname.includes("product.html")) {
-      // Initial attempt after a short delay
-      setTimeout(injectDetailsPageDropdown, 500);
-      // Re-inject when fragrances are fully loaded from Firebase
-      document.addEventListener("fragrancesUpdated", () => {
-        const existing = document.querySelector(".product-detail-fragrance-wrapper");
-        if (existing) existing.remove();
+      if (typeof isFirebaseInitialized !== "undefined" && isFirebaseInitialized) {
+        // If firebase is active, only run once fragrances are loaded from the database
+        document.addEventListener("fragrancesUpdated", () => {
+          const existing = document.querySelector(".product-detail-fragrance-wrapper");
+          if (existing) existing.remove();
+          injectDetailsPageDropdown();
+        });
+      } else {
+        // Fallback for local database
         injectDetailsPageDropdown();
-      });
+      }
     }
 
     // MutationObserver: upgrade any .product-fragrance-select elements
@@ -77,7 +80,9 @@
         // Trigger updates in UI
         if (window.location.pathname.includes("admin.html")) {
           renderAdminFragranceList();
-          updateFragranceCheckboxes();
+          if (typeof updateFragranceCheckboxes === "function") {
+            updateFragranceCheckboxes();
+          }
         }
         
         document.dispatchEvent(new CustomEvent("fragrancesUpdated"));
@@ -116,7 +121,9 @@
       const newInitDash = function() {
         originalInitDash();
         injectAdminFragranceCard();
-        populateAssignProductDropdown();
+        if (typeof populateAssignProductDropdown === "function") {
+          populateAssignProductDropdown();
+        }
       };
       
       if (typeof window.initializeDashboard === "function") {
@@ -162,8 +169,8 @@
 
       // Redirect Add to Cart button to support fragrance selection
       let modifiedHTML = originalHTML.replace(
-        `onclick="handleCardAddToCart(${product.id})"`,
-        `onclick="handleCardAddToCartWithFragrance(${product.id}, this)"`
+        `onclick="handleCardAddToCart('${product.id}')"`,
+        `onclick="handleCardAddToCartWithFragrance('${product.id}', this)"`
       );
 
       // Inject selector above the add-to-cart button
@@ -182,7 +189,7 @@
     const fragrance = select ? select.value : "Lavender Mist";
 
     CartStorage.add(productId, 1, fragrance);
-    const product = PRODUCTS.find(p => p.id === productId);
+    const product = PRODUCTS.find(p => p.id == productId);
     showToast(`${product ? product.name : "Candle"} (${fragrance}) added to cart!`);
   };
 
@@ -192,8 +199,11 @@
     if (!purchaseControls) return;
 
     const urlParams = new URLSearchParams(window.location.search);
-    const productId = parseInt(urlParams.get("id")) || 1;
-    const product = PRODUCTS.find(p => p.id === productId) || PRODUCTS[0];
+    let productId = parseInt(urlParams.get("id"));
+    if (!productId) {
+      productId = parseInt(sessionStorage.getItem("selected_product_id")) || 1;
+    }
+    const product = PRODUCTS.find(p => p.id == productId) || PRODUCTS[0];
     if (!product) return;
 
     // Check if dropdown already exists
@@ -252,19 +262,8 @@
   // Override CartStorage to handle fragrance variants
   if (typeof CartStorage !== "undefined") {
     CartStorage.add = function(id, qty = 1, fragrance = "Lavender Mist") {
-      const user = typeof UserSession !== "undefined" ? UserSession.get() : null;
-      if (!user) {
-        if (typeof showToast === "function") {
-          showToast("Please Login or Signup to add items to your cart.");
-        }
-        if (typeof window.triggerLoginModal === "function") {
-          window.triggerLoginModal();
-        }
-        return;
-      }
-
       const cart = this.get();
-      const existingItem = cart.find(item => item.id === id && (item.fragrance || "Lavender Mist") === fragrance);
+      const existingItem = cart.find(item => item.id == id && (item.fragrance || "Lavender Mist") === fragrance);
       if (existingItem) {
         existingItem.qty += qty;
       } else {
@@ -274,17 +273,48 @@
     };
 
     CartStorage.updateQty = function(id, fragrance, qty) {
-      const cart = this.get();
-      const existingItem = cart.find(item => item.id === id && (item.fragrance || "Lavender Mist") === fragrance);
-      if (existingItem) {
-        existingItem.qty = Math.max(1, qty);
+      let actualFragrance = fragrance;
+      let actualQty = qty;
+      let hasFragrance = true;
+
+      // If second arg is a number or undefined and third is undefined, it's (id, qty)
+      if ((typeof fragrance === "number" || typeof fragrance === "undefined") && typeof qty === "undefined") {
+        actualQty = fragrance;
+        actualFragrance = undefined;
+        hasFragrance = false;
       }
+
+      console.log("[fragrance.js override: CartStorage.updateQty] Called with:", { id, fragrance, qty, actualFragrance, actualQty, hasFragrance });
+
+      let cart = this.get();
+      console.log("[fragrance.js override: CartStorage.updateQty] Current cart before update:", JSON.stringify(cart));
+
+      const existingItem = cart.find(item => {
+        if (hasFragrance) {
+          return item.id == id && (item.fragrance || "Lavender Mist") === actualFragrance;
+        } else {
+          return item.id == id;
+        }
+      });
+
+      console.log("[fragrance.js override: CartStorage.updateQty] Found matching item:", existingItem);
+
+      if (existingItem) {
+        existingItem.qty = Math.max(1, actualQty);
+        console.log("[fragrance.js override: CartStorage.updateQty] Updated item qty to:", existingItem.qty);
+      }
+      
       this.save(cart);
+      console.log("[fragrance.js override: CartStorage.updateQty] Cart saved:", JSON.stringify(this.get()));
     };
 
     CartStorage.remove = function(id, fragrance) {
       let cart = this.get();
-      cart = cart.filter(item => !(item.id === id && (item.fragrance || "Lavender Mist") === fragrance));
+      if (typeof fragrance === "undefined") {
+        cart = cart.filter(item => item.id != id);
+      } else {
+        cart = cart.filter(item => !(item.id == id && (item.fragrance || "Lavender Mist") === fragrance));
+      }
       this.save(cart);
     };
   }
@@ -316,16 +346,17 @@
       let html = `
         <div class="cart-header-row">
           <div>Product</div>
-          <div>Price</div>
-          <div>Quantity</div>
+          <div style="text-align: center;">Price</div>
+          <div style="text-align: center;">Quantity</div>
           <div style="text-align: right;">Total</div>
+          <div></div>
         </div>
       `;
       
       let subtotal = 0;
       
       cart.forEach(item => {
-        const p = PRODUCTS.find(prod => prod.id === item.id);
+        const p = PRODUCTS.find(prod => prod.id == item.id);
         if (!p) return;
         
         const itemTotal = p.price * item.qty;
@@ -347,14 +378,14 @@
             <div class="cart-item-price-unit">₹${p.price}</div>
             <div class="qty-selector-cell">
               <div class="quantity-selector" style="height: 40px; max-width: 120px;">
-                <button class="qty-btn" onclick="updateCartItemQtyWithFragrance(${p.id}, '${fragrance}', ${item.qty - 1})">-</button>
+                <button class="qty-btn" onclick="updateCartItemQtyWithFragrance('${p.id}', '${fragrance}', ${item.qty - 1})">-</button>
                 <input type="text" class="qty-input" value="${item.qty}" readonly>
-                <button class="qty-btn" onclick="updateCartItemQtyWithFragrance(${p.id}, '${fragrance}', ${item.qty + 1})">+</button>
+                <button class="qty-btn" onclick="updateCartItemQtyWithFragrance('${p.id}', '${fragrance}', ${item.qty + 1})">+</button>
               </div>
             </div>
             <div class="subtotal-cell" style="font-family: var(--font-heading); font-weight: 700; text-align: right;">₹${itemTotal}</div>
             <div class="remove-cell" style="text-align: right;">
-              <button class="cart-item-remove" onclick="handleRemoveCartItemWithFragrance(${p.id}, '${fragrance}')">✕</button>
+              <button class="cart-item-remove" onclick="handleRemoveCartItemWithFragrance('${p.id}', '${fragrance}')">✕</button>
             </div>
           </div>
         `;
@@ -425,7 +456,7 @@
     if (checkoutList) {
       let html = "";
       cart.forEach(item => {
-        const p = PRODUCTS.find(prod => prod.id === item.id);
+        const p = PRODUCTS.find(prod => prod.id == item.id);
         if (!p) return;
         const rowTotal = p.price * item.qty;
         subtotal += rowTotal;
@@ -519,7 +550,7 @@
           total: total,
           items: cart.map(i => ({
             id: i.id,
-            name: `${PRODUCTS.find(p => p.id === i.id).name} (${i.fragrance || "Lavender Mist"})`,
+            name: `${PRODUCTS.find(p => p.id == i.id).name} (${i.fragrance || "Lavender Mist"})`,
             qty: i.qty
           })),
           status: "Confirmed"
@@ -529,7 +560,8 @@
           db.ref("orders/" + orderId).set(newOrderObj)
             .then(() => {
               CartStorage.clear();
-              window.location.href = `order-tracking.html?orderId=${orderId}`;
+              sessionStorage.setItem("selected_order_id", orderId);
+              window.location.href = "order-tracking.html";
             })
             .catch(err => {
               console.error("Firebase save order error", err);
@@ -537,14 +569,16 @@
               localOrders.push(newOrderObj);
               localStorage.setItem("signature_spell_orders", JSON.stringify(localOrders));
               CartStorage.clear();
-              window.location.href = `order-tracking.html?orderId=${orderId}`;
+              sessionStorage.setItem("selected_order_id", orderId);
+              window.location.href = "order-tracking.html";
             });
         } else {
           const localOrders = JSON.parse(localStorage.getItem("signature_spell_orders") || "[]");
           localOrders.push(newOrderObj);
           localStorage.setItem("signature_spell_orders", JSON.stringify(localOrders));
           CartStorage.clear();
-          window.location.href = `order-tracking.html?orderId=${orderId}`;
+          sessionStorage.setItem("selected_order_id", orderId);
+          window.location.href = "order-tracking.html";
         }
       });
     }

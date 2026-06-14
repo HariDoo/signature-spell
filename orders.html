@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Manage your Signature Spell profile. Update your display name, password, and communication preferences.">
-  <title>My Profile Settings | Signature Spell</title>
+  <meta name="description" content="Track and inspect your past Signature Spell luxury candle orders.">
+  <title>My Orders | Signature Spell</title>
   <!-- CSS Links -->
-  <link rel="stylesheet" href="css/profile.css">
+  <link rel="stylesheet" href="css/orders.css">
 
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/transitions.css">
@@ -33,7 +33,7 @@
   <!-- Loading State Spinner -->
   <div id="profile-loading-state" class="loading-overlay">
     <div class="spinner"></div>
-    <p style="font-family: var(--font-heading); color: var(--color-charcoal);">Loading your fragrance profile...</p>
+    <p style="font-family: var(--font-heading); color: var(--color-charcoal);">Loading your orders...</p>
   </div>
 
   <!-- Sticky Luxury Header -->
@@ -105,9 +105,9 @@
   <!-- Page Title Banner -->
   <section class="page-header" style="background-color: var(--color-charcoal); padding: 60px 0;">
     <div class="container">
-      <h1>My Account <span>Profile</span></h1>
+      <h1>My <span>Orders</span></h1>
       <div class="breadcrumbs">
-        <a href="index.html">Home</a> &nbsp;/&nbsp; <span>Profile Settings</span>
+        <a href="index.html">Home</a> &nbsp;/&nbsp; <a href="profile.html">Profile Settings</a> &nbsp;/&nbsp; <span>Order History</span>
       </div>
     </div>
   </section>
@@ -120,159 +120,49 @@
     </svg>
     <h2 style="font-size: 2.2rem; margin-bottom: 12px;">Authentication Required</h2>
     <p style="color: var(--color-muted-gray); max-width: 500px; margin: 0 auto 30px auto;">
-      Please sign in or create an account to view and customize your profile preferences.
+      Please sign in or create an account to view your purchase order history.
     </p>
     <button class="btn btn-primary" onclick="triggerLoginModal()">Access Account</button>
   </section>
 
-  <!-- Main Profile Workspace (shown when logged in) -->
-  <main id="profile-workspace" class="container" style="display: none;">
-    <div class="profile-grid-container">
-      
-      <!-- Left Column: Summary Card -->
-      <aside class="profile-card" style="text-align: center;">
-        <div class="profile-avatar-large" id="profile-avatar-initials">
-          <!-- Populated by JS -->
-          SS
-        </div>
-        <h4 class="profile-display-name" id="summary-display-name">Aria Vance</h4>
-        <p class="profile-email-text" id="summary-email">aria@example.com</p>
-        
-        <div style="margin-top: 15px;">
-          <span class="badge" id="summary-verification-badge">Unverified</span>
-        </div>
-        
-        <div class="account-info">
-          <p><strong>Member Since:</strong> <span id="summary-created-at">-</span></p>
-          <p><strong>Last Active:</strong> <span id="summary-last-signin">-</span></p>
-        </div>
-        
-        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 30px;">
-          <a href="orders.html" class="btn btn-secondary btn-block" style="padding: 10px 0; font-size: 0.8rem;">
-            View Order History
-          </a>
-          <button class="btn btn-secondary btn-block" onclick="handleProfileLogout()" style="padding: 10px 0; font-size: 0.8rem; background-color: var(--color-cream-dark); border-color: var(--color-cream-dark);">
-            Sign Out of Account
-          </button>
-        </div>
-      </aside>
+  <!-- Main Orders Workspace (shown when logged in) -->
+  <main id="profile-workspace" class="container" style="display: none; margin-top: 40px; margin-bottom: 60px; max-width: 800px;">
+    
 
-      <!-- Right Column: Settings Panels -->
-      <section style="padding: 0; display: flex; flex-direction: column; gap: 30px;">
-        
-        <!-- Section: Personal Details -->
+    <!-- Filters Container -->
+        <div class="order-filters-container">
+          <div class="order-filters">
+            <div class="search-wrapper">
+              <input type="text" id="order-search-input" placeholder="Search by Order ID or Item name..." oninput="handleFiltersChange()">
+            </div>
+            <div class="select-wrapper">
+              <select id="order-status-filter" onchange="handleFiltersChange()" data-ss-select="compact">
+                <option value="all">All Statuses</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Processing">Processing</option>
+                <option value="Shipped">Shipped</option>
+                <option value="Delivered">Delivered</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Orders List -->
         <div class="profile-card">
           <div class="profile-card-header">
-            <h3>Personal Details</h3>
+            <h3>My Order History</h3>
           </div>
-          <div id="details-alert-container"></div>
-          <form id="profile-details-form">
-            <div class="form-group">
-              <label for="profile-name-input">Display Name</label>
-              <input type="text" id="profile-name-input" required placeholder="E.g., Jane Doe">
-            </div>
-            
-            <div class="form-group">
-              <label for="profile-phone-input">Phone Number</label>
-              <input type="tel" id="profile-phone-input" placeholder="E.g., +91 9988776655" max="20">
-            </div>
-            
-            <button type="submit" class="btn btn-primary" id="save-details-btn">Update Profile</button>
-          </form>
-        </div>
-
-
-        <!-- Section: Email Verification -->
-        <div class="profile-card">
-          <div class="profile-card-header">
-            <h3>Security Verification</h3>
+          <div id="orders-loading-state" class="orders-loading" style="text-align: center; padding: 20px 0;">
+            <div class="spinner" style="margin: 0 auto 10px auto; width: 30px; height: 30px;"></div>
+            <p style="font-size: 0.9rem; color: var(--color-muted-gray);">Retrieving your order history...</p>
           </div>
-          <div id="security-alert-container"></div>
-          <div style="display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;">
-            <div>
-              <h5 style="font-family: var(--font-body); font-weight: 700; font-size: 1rem; margin-bottom: 4px;">Email Verification status</h5>
-              <p style="color: var(--color-muted-gray); font-size: 0.9rem;" id="security-email-status-desc">Your email is verified for secure sign-ins and alerts.</p>
-            </div>
-            <button class="btn btn-secondary" id="verify-email-btn" onclick="handleSendEmailVerification()">Verify Now</button>
+          <div id="profile-orders-container" style="display: none;">
+            <!-- Rendered by js/orders.js -->
           </div>
-        </div>
-
-        <!-- Section: Password Management -->
-        <div class="profile-card">
-          <div class="profile-card-header">
-            <h3>Change Password</h3>
-          </div>
-          <div id="password-alert-container"></div>
-          <form id="profile-password-form">
-            <div class="form-group">
-              <label for="profile-old-pass">Current Password</label>
-              <input type="password" id="profile-old-pass" required placeholder="Enter current password">
-            </div>
-            <div class="form-group">
-              <label for="profile-new-pass">New Password</label>
-              <input type="password" id="profile-new-pass" required placeholder="Enter new password (min 6 characters)">
-              <!-- Strength Checker -->
-              <div class="password-strength">
-                <div class="progress-bar">
-                  <div class="progress-bar-fill" id="pass-strength-fill"></div>
-                </div>
-                <small style="color: var(--color-muted-gray); font-size: 0.75rem; margin-top: 4px; display: block;" id="pass-strength-text">Password strength: Empty</small>
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="profile-confirm-pass">Confirm New Password</label>
-              <input type="password" id="profile-confirm-pass" required placeholder="Confirm new password">
-            </div>
-            <button type="submit" class="btn btn-primary" id="change-pass-btn">Change Password</button>
-          </form>
-        </div>
-
-        <!-- Section: Danger Zone -->
-        <div class="profile-card danger-zone">
-          <div class="profile-card-header">
-            <h3>Danger Zone</h3>
-          </div>
-          <div style="display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;">
-            <div>
-              <h5 style="font-family: var(--font-body); font-weight: 700; font-size: 1rem; color: #cf222e; margin-bottom: 4px;">Delete My Account</h5>
-              <p style="color: var(--color-muted-gray); font-size: 0.9rem;">Permanently remove your orders history, profile attributes, and database access. This is irreversible.</p>
-            </div>
-            <button class="btn btn-danger-outline" onclick="triggerDeleteAccountModal()">Delete Account</button>
-          </div>
-        </div>
-
-      </section>
-
-    </div>
   </main>
 
-  <!-- Delete Account Confirmation Modal -->
-  <div class="modal-overlay" id="delete-confirm-modal">
-    <div class="admin-modal">
-      <button class="modal-close" id="delete-modal-close">&times;</button>
-      <h3 class="modal-title" style="color:#cf222e;">Confirm Account Deletion</h3>
-      <p style="color: var(--color-charcoal); margin-bottom: 16px;">
-        <strong>Warning:</strong> Deleting your account will completely clear your records from our databases. 
-        Please re-authenticate by entering your current password below to confirm this action.
-      </p>
-      
-      <div id="delete-modal-alert"></div>
-      
-      <form id="delete-account-form">
-        <div class="form-group">
-          <label for="delete-password-input">Account Password</label>
-          <input type="password" id="delete-password-input" required placeholder="Confirm your password to proceed">
-        </div>
-        
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary btn-small" id="delete-cancel-btn">Cancel</button>
-          <button type="submit" class="btn btn-danger-outline btn-small" style="background-color:#cf222e; color:white;">Permanently Delete Account</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Global Auth Login Modal (also accessible from index/header buttons) -->
+  <!-- Global Auth Login Modal -->
   <div class="modal-overlay" id="auth-modal-overlay">
     <div class="auth-modal">
       <button class="modal-close" id="auth-modal-close">&times;</button>
@@ -367,7 +257,7 @@
   <script src="js/cards-3d.js"></script>
   <script src="js/cart-fixes.js"></script>
   <script src="js/header.js"></script>
-  <script src="js/profile.js"></script>
+  <script src="js/orders.js"></script>
   <script src="js/fragrance.js"></script>
 </body>
 </html>

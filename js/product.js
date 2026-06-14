@@ -4,8 +4,14 @@ document.addEventListener("DOMContentLoaded", () => {
   if (typeof PRODUCTS === "undefined") return;
 
   const urlParams = new URLSearchParams(window.location.search);
-  let productId = parseInt(urlParams.get("id")) || 1;
-  const product = PRODUCTS.find(p => p.id === productId) || PRODUCTS[0];
+  let productId = parseInt(urlParams.get("id"));
+  if (productId) {
+    sessionStorage.setItem("selected_product_id", productId);
+    window.history.replaceState({}, document.title, window.location.pathname);
+  } else {
+    productId = parseInt(sessionStorage.getItem("selected_product_id")) || 1;
+  }
+  const product = PRODUCTS.find(p => p.id == productId) || PRODUCTS[0];
   
   // Dynamic text fields
   const title = document.querySelector(".product-name");

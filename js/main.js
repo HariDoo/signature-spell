@@ -154,7 +154,15 @@ const CartStorage = {
   get: function() {
     try {
       const cartStr = localStorage.getItem("signature_spell_cart");
-      return cartStr ? JSON.parse(cartStr) : [];
+      let cart = cartStr ? JSON.parse(cartStr) : [];
+      if (typeof PRODUCTS !== "undefined" && Array.isArray(PRODUCTS) && PRODUCTS.length > 0) {
+        const validCart = cart.filter(item => PRODUCTS.some(p => p.id == item.id));
+        if (validCart.length !== cart.length) {
+          localStorage.setItem("signature_spell_cart", JSON.stringify(validCart));
+          cart = validCart;
+        }
+      }
+      return cart;
     } catch (e) {
       console.error("Error reading cart", e);
       return [];
@@ -173,27 +181,58 @@ const CartStorage = {
       console.error("Error saving cart", e);
     }
   },
-  add: function(id, qty = 1) {
+  add: function(id, qty = 1, fragrance = "Lavender Mist") {
     const cart = this.get();
-    const existingItem = cart.find(item => item.id === id);
+    const existingItem = cart.find(item => item.id == id && (item.fragrance || "Lavender Mist") === fragrance);
     if (existingItem) {
       existingItem.qty += qty;
     } else {
-      cart.push({ id: id, qty: qty });
+      cart.push({ id: id, qty: qty, fragrance: fragrance });
     }
     this.save(cart);
   },
-  updateQty: function(id, qty) {
+  updateQty: function(id, fragrance, qty) {
+    let actualFragrance = fragrance;
+    let actualQty = qty;
+    let hasFragrance = true;
+
+    // If second arg is a number or undefined and third is undefined, it's (id, qty)
+    if ((typeof fragrance === "number" || typeof fragrance === "undefined") && typeof qty === "undefined") {
+      actualQty = fragrance;
+      actualFragrance = undefined;
+      hasFragrance = false;
+    }
+
+    console.log("[CartStorage.updateQty] Called with:", { id, fragrance, qty, actualFragrance, actualQty, hasFragrance });
+
     let cart = this.get();
-    const existingItem = cart.find(item => item.id === id);
+    console.log("[CartStorage.updateQty] Current cart before update:", JSON.stringify(cart));
+
+    const existingItem = cart.find(item => {
+      if (hasFragrance) {
+        return item.id == id && (item.fragrance || "Lavender Mist") === actualFragrance;
+      } else {
+        return item.id == id;
+      }
+    });
+
+    console.log("[CartStorage.updateQty] Found matching item:", existingItem);
+
     if (existingItem) {
-      existingItem.qty = Math.max(1, qty);
+      existingItem.qty = Math.max(1, actualQty);
+      console.log("[CartStorage.updateQty] Updated item qty to:", existingItem.qty);
     }
+    
     this.save(cart);
+    console.log("[CartStorage.updateQty] Cart saved:", JSON.stringify(this.get()));
   },
-  remove: function(id) {
+  remove: function(id, fragrance) {
     let cart = this.get();
-    cart = cart.filter(item => item.id !== id);
+    if (typeof fragrance === "undefined") {
+      cart = cart.filter(item => item.id != id);
+    } else {
+      cart = cart.filter(item => !(item.id == id && (item.fragrance || "Lavender Mist") === fragrance));
+    }
     this.save(cart);
   },
   clear: function() {
@@ -373,18 +412,27 @@ function tryInitFirebase() {
             } catch(je) {}
             if (!Array.isArray(localCart)) localCart = [];
 
+            const justLoggedIn = sessionStorage.getItem("just_logged_in") === "true";
+            sessionStorage.removeItem("just_logged_in"); // Clear flag immediately
+
             if (cartSnap.exists()) {
               const dbCart = cartSnap.val() || [];
-              dbCart.forEach(dbItem => {
-                const existing = localCart.find(i => i.id === dbItem.id);
-                if (existing) {
-                  existing.qty += dbItem.qty;
-                } else {
-                  localCart.push(dbItem);
-                }
-              });
-              localStorage.setItem("signature_spell_cart", JSON.stringify(localCart));
-              await db.ref("users/" + user.uid + "/cart").set(localCart);
+              if (justLoggedIn) {
+                dbCart.forEach(dbItem => {
+                  const existing = localCart.find(i => i.id == dbItem.id && (i.fragrance || "Lavender Mist") === (dbItem.fragrance || "Lavender Mist"));
+                  if (existing) {
+                    existing.qty += dbItem.qty;
+                  } else {
+                    localCart.push(dbItem);
+                  }
+                });
+                localStorage.setItem("signature_spell_cart", JSON.stringify(localCart));
+                await db.ref("users/" + user.uid + "/cart").set(localCart);
+              } else {
+                // Overwrite local cart with DB cart (DB is source of truth on fresh page loads)
+                localCart = dbCart;
+                localStorage.setItem("signature_spell_cart", JSON.stringify(localCart));
+              }
             } else {
               if (localCart.length > 0) {
                 await db.ref("users/" + user.uid + "/cart").set(localCart);
@@ -408,7 +456,7 @@ function tryInitFirebase() {
             if (wishSnap.exists()) {
               const dbWish = wishSnap.val() || [];
               dbWish.forEach(dbItem => {
-                const existing = localWish.find(i => i.id === dbItem.id);
+                const existing = localWish.find(i => i.id == dbItem.id);
                 if (!existing) {
                   localWish.push(dbItem);
                 }
@@ -546,7 +594,7 @@ function updateFloatingCartBar() {
 
   let subtotal = 0;
   cart.forEach(item => {
-    const p = PRODUCTS.find(prod => prod.id === item.id);
+    const p = PRODUCTS.find(prod => prod.id == item.id);
     if (p) subtotal += p.price * item.qty;
   });
 
@@ -632,9 +680,8 @@ function initAuthModal() {
       e.preventDefault();
       const user = UserSession.get();
       if (user) {
-        // Route admins to admin dashboard, standard users to profile settings
-        if (getPageName() !== "profile.html") {
-          window.location.href = "profile.html";
+        if (getPageName() !== "orders.html") {
+          window.location.href = "orders.html";
         } else {
           showConfirm(`Logged in as ${user.name}. Would you like to log out?`, {
             title: 'Log Out',
@@ -724,19 +771,27 @@ function initAuthModal() {
       
       if (isFirebaseInitialized) {
         if (isLoginState) {
+          sessionStorage.setItem("just_logged_in", "true");
           auth.signInWithEmailAndPassword(email, pass)
             .then(() => {
               overlay.classList.remove("active");
               showToast("Welcome back!");
             })
-            .catch(err => showAuthError(err.message));
+            .catch(err => {
+              sessionStorage.removeItem("just_logged_in");
+              showAuthError(err.message);
+            });
         } else {
+          sessionStorage.setItem("just_logged_in", "true");
           auth.createUserWithEmailAndPassword(email, pass)
             .then(() => {
               overlay.classList.remove("active");
               showToast("Account created!");
             })
-            .catch(err => showAuthError(err.message));
+            .catch(err => {
+              sessionStorage.removeItem("just_logged_in");
+              showAuthError(err.message);
+            });
         }
       } else {
         showAuthError("Firebase is not initialized. Please connect your credentials.");
@@ -751,12 +806,16 @@ function initAuthModal() {
     googleBtn.addEventListener("click", () => {
       clearAuthError();
       if (isFirebaseInitialized) {
+        sessionStorage.setItem("just_logged_in", "true");
         auth.signInWithPopup(googleProvider)
           .then(() => {
             overlay.classList.remove("active");
             showToast("Welcome!");
           })
-          .catch(err => showAuthError(err.message));
+          .catch(err => {
+            sessionStorage.removeItem("just_logged_in");
+            showAuthError(err.message);
+          });
       } else {
         showAuthError("Firebase is not initialized. Please connect your credentials.");
       }
@@ -813,7 +872,7 @@ function createProductCardHTML(product) {
   const isWished = WishlistStorage.has(product.id);
   return `
     <article class="product-card" data-id="${product.id}">
-      <button class="wishlist-heart-btn ${isWished ? 'active' : ''}" onclick="handleCardWishlistToggle(${product.id}, this)" aria-label="Add to wishlist">
+      <button class="wishlist-heart-btn ${isWished ? 'active' : ''}" onclick="handleCardWishlistToggle('${product.id}', this)" aria-label="Add to wishlist">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
       </button>
       <a href="product.html?id=${product.id}">
@@ -827,7 +886,7 @@ function createProductCardHTML(product) {
         <span class="product-category">${product.category}</span>
         <h4 class="product-name"><a href="product.html?id=${product.id}">${product.name}</a></h4>
         <div class="product-price">₹${product.price}</div>
-        <button class="btn btn-primary btn-block product-card-cta" onclick="handleCardAddToCart(${product.id})">Add to Cart</button>
+        <button class="btn btn-primary btn-block product-card-cta" onclick="handleCardAddToCart('${product.id}')">Add to Cart</button>
       </div>
     </article>
   `;
@@ -844,7 +903,8 @@ window.handleCardWishlistToggle = function(productId, element) {
 
 window.handleCardAddToCart = function(productId) {
   CartStorage.add(productId, 1);
-  showToast(`${PRODUCTS.find(p => p.id === productId).name} added to cart!`);
+  const p = PRODUCTS.find(p => p.id == productId);
+  showToast(`${p ? p.name : "Candle"} added to cart!`);
 };
 
 // Generic Toast feedback
@@ -892,3 +952,30 @@ function showToast(message) {
     setTimeout(() => toast.remove(), 400);
   }, 3000);
 }
+
+// Pre-navigation URL Parameter Hiding Interceptor
+document.addEventListener("click", function(e) {
+  const anchor = e.target.closest("a");
+  if (!anchor) return;
+  
+  const href = anchor.getAttribute("href");
+  if (!href) return;
+  
+  // Intercept product.html?id=...
+  const productMatch = href.match(/product\.html\?id=(\d+)/);
+  if (productMatch) {
+    e.preventDefault();
+    sessionStorage.setItem("selected_product_id", productMatch[1]);
+    window.location.href = "product.html";
+    return;
+  }
+  
+  // Intercept order-tracking.html?orderId=...
+  const trackingMatch = href.match(/order-tracking\.html\?orderId=([^&]+)/);
+  if (trackingMatch) {
+    e.preventDefault();
+    sessionStorage.setItem("selected_order_id", trackingMatch[1]);
+    window.location.href = "order-tracking.html";
+    return;
+  }
+}, true);

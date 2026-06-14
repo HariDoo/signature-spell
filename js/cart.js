@@ -1,6 +1,11 @@
 /* js/cart.js - Cart page logic and INR calculations with 18% GST */
 
 document.addEventListener("DOMContentLoaded", () => {
+  if (typeof window.initCartPage === "function") {
+    window.initCartPage();
+    return;
+  }
+
   const itemsContainer = document.querySelector(".cart-items-list");
   const summaryBlock = document.querySelector(".cart-summary-block");
   
@@ -37,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let subtotal = 0;
     
     cart.forEach(item => {
-      const p = PRODUCTS.find(prod => prod.id === item.id);
+      const p = PRODUCTS.find(prod => prod.id == item.id);
       if (!p) return;
       
       const itemTotal = p.price * item.qty;
@@ -57,14 +62,14 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="cart-item-price-unit">₹${p.price}</div>
           <div class="qty-selector-cell">
             <div class="quantity-selector" style="height: 40px; max-width: 120px;">
-              <button class="qty-btn" onclick="updateCartItemQty(${p.id}, ${item.qty - 1})">-</button>
+              <button class="qty-btn" onclick="updateCartItemQty('${p.id}', ${item.qty - 1})">-</button>
               <input type="text" class="qty-input" value="${item.qty}" readonly>
-              <button class="qty-btn" onclick="updateCartItemQty(${p.id}, ${item.qty + 1})">+</button>
+              <button class="qty-btn" onclick="updateCartItemQty('${p.id}', ${item.qty + 1})">+</button>
             </div>
           </div>
           <div class="subtotal-cell" style="font-family: var(--font-heading); font-weight: 700; text-align: right;">₹${itemTotal}</div>
           <div class="remove-cell" style="text-align: right;">
-            <button class="cart-item-remove" onclick="handleRemoveCartItem(${p.id})">✕</button>
+            <button class="cart-item-remove" onclick="handleRemoveCartItem('${p.id}')">✕</button>
           </div>
         </div>
       `;

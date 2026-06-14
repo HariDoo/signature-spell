@@ -111,6 +111,8 @@
             <div class="mobile-auth-links">
               <a href="profile.html" class="mobile-auth-sublink">My Profile</a>
               <span class="divider">|</span>
+              <a href="orders.html" class="mobile-auth-sublink">My Orders</a>
+              <span class="divider">|</span>
               <a href="#" class="mobile-auth-sublink" id="mobile-logout-btn">Log Out</a>
             </div>
           </div>
@@ -185,6 +187,7 @@
       const menu = document.createElement("div");
       menu.className = "user-dropdown-menu";
       menu.innerHTML = `
+        <a href="orders.html" class="user-dropdown-item"><i class="bi bi-bag"></i> My Orders</a>
         <a href="profile.html" class="user-dropdown-item"><i class="bi bi-person"></i> View Profile</a>
         <button class="user-dropdown-item" id="user-dropdown-logout"><i class="bi bi-box-arrow-right"></i> Log Out</button>
       `;
