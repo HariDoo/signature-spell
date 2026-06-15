@@ -58,6 +58,8 @@
   font-size: 0.9rem;
   background-color: var(--color-off-white);
   transition: var(--transition-smooth);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .form-group input:focus,
@@ -150,15 +152,10 @@
 }
 
 /* Responsive Media Queries */
-@media (max-width: 768px) {
+@media (max-width: 992px) {
   .checkout-grid {
     grid-template-columns: 1fr;
-    gap: 24px;
-  }
-
-  .checkout-section,
-  .summary-sidebar {
-    padding: 20px;
+    gap: 32px;
   }
 
   .summary-sidebar {
@@ -166,12 +163,24 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
+  .checkout-grid {
+    gap: 24px;
+  }
+
+  .checkout-section,
+  .summary-sidebar {
+    padding: 20px;
+    box-sizing: border-box;
+  }
+
   .form-group-row {
     grid-template-columns: 1fr;
     gap: 0;
   }
-  
+}
+
+@media (max-width: 480px) {
   .checkout-section,
   .summary-sidebar {
     padding: 16px;
@@ -199,5 +208,57 @@
 @keyframes checkoutSelectFadeIn {
   from { opacity: 0; transform: translateY(-5px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Custom Dropdown Responsive Overrides to prevent layout expansion */
+.ss-select {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.ss-select-trigger {
+  display: flex !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important; /* Allow trigger to shrink */
+  overflow: hidden !important; /* Prevent content overflow */
+  box-sizing: border-box !important;
+}
+
+.ss-select-value {
+  display: block !important;
+  flex: 1 !important;
+  min-width: 0 !important; /* Crucial for text-overflow: ellipsis in flexbox */
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.ss-select-option {
+  display: block !important;
+  white-space: normal !important; /* Allow long address texts to wrap */
+  word-break: break-word !important;
+  line-height: 1.4 !important;
+  padding-right: 36px !important; /* Make room for absolute checkmark */
+}
+
+.ss-select-dropdown {
+  width: 100% !important;
+  max-width: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Constrain forms and layout container components on mobile viewports */
+.checkout-grid,
+.checkout-forms,
+.checkout-section,
+.form-group {
+  min-width: 0 !important;
+  max-width: 100% !important;
 }
 
