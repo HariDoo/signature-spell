@@ -20,10 +20,13 @@
 /* Outer wrapper — positioned relative for dropdown panel */
 .ss-select {
   position: relative;
-  display: inline-block;
+  display: block;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   font-family: var(--font-body, 'Montserrat', sans-serif);
   user-select: none;
+  box-sizing: border-box;
 }
 
 /* The visible trigger button */
@@ -33,6 +36,8 @@
   justify-content: space-between;
   gap: 10px;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   padding: 12px 16px;
   background-color: var(--color-off-white, #fafaf9);
   border: 1px solid var(--color-light-gray, #e7e5e4);
@@ -44,6 +49,8 @@
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
   text-align: left;
   outline: none;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .ss-select-trigger:hover {
@@ -60,7 +67,9 @@
 
 /* Trigger value text */
 .ss-select-value {
+  display: block;
   flex: 1;
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -107,6 +116,8 @@
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--color-light-gray, #e7e5e4) transparent;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .ss-select-dropdown::-webkit-scrollbar {
@@ -130,15 +141,16 @@
 
 /* Individual options */
 .ss-select-option {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 11px 16px;
+  display: block;
+  padding: 11px 36px 11px 16px;
   font-size: 0.875rem;
   color: var(--color-charcoal, #1c1917);
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease;
   position: relative;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.4;
 }
 
 .ss-select-option:not(:last-child) {

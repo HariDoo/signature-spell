@@ -232,3 +232,129 @@
   font-weight: 700;
   color: var(--color-muted-gray);
 }
+
+/* ==========================================================================
+   RESPONSIVE DESIGN (Media Queries)
+   ========================================================================== */
+
+/* Tablet Viewports */
+@media (max-width: 992px) {
+  .product-detail-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+}
+
+/* Mobile Viewports */
+@media (max-width: 768px) {
+  .product-details {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .product-details .product-name {
+    font-size: 2rem;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+
+  .purchase-controls {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    gap: 12px !important;
+    margin-bottom: 24px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .quantity-selector {
+    grid-area: 1 / 1 / 2 / 2 !important;
+    width: 120px !important; /* Keep it compact and elegant */
+  }
+
+  .quantity-selector .qty-btn {
+    width: 35px !important;
+  }
+
+  .quantity-selector .qty-input {
+    width: 50px !important;
+  }
+
+  #detail-wishlist-btn {
+    grid-area: 1 / 2 / 2 / 3 !important;
+    margin-left: 0 !important;
+    position: static !important;
+  }
+
+  #detail-add-to-cart-btn {
+    grid-area: 2 / 1 / 3 / 3 !important;
+    width: 100% !important;
+    height: 50px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .tab-headers {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    overflow: visible !important;
+    white-space: normal !important;
+    width: 100% !important;
+    border-bottom: 1px solid var(--color-light-gray) !important;
+    margin-bottom: 16px !important;
+  }
+
+  .tab-header {
+    flex: 1 !important;
+    flex-shrink: 1 !important;
+    font-size: 0.75rem !important;
+    padding: 8px 4px !important;
+    text-align: center !important;
+    line-height: 1.2 !important;
+    word-break: break-word !important;
+    white-space: normal !important;
+  }
+
+  .specs-list li {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+    padding: 10px 0 !important;
+  }
+
+  .detail-tabs .tab-content ul {
+    display: block !important;
+    padding-left: 20px !important;
+  }
+
+  .detail-tabs .tab-content ul li {
+    display: list-item !important;
+    margin-bottom: 8px !important;
+  }
+
+  /* Make sure images and thumbnails scale down fluidly */
+  .gallery-container,
+  .main-image,
+  .thumbnail-strip {
+    max-width: 100%;
+    min-width: 0;
+  }
+}
+
+/* Very Small Mobile Viewports */
+@media (max-width: 480px) {
+  .scent-notes-grid {
+    grid-template-columns: 1fr !important;
+    padding: 16px !important;
+    gap: 16px !important;
+  }
+
+  .scent-note-item p {
+    font-size: 0.95rem;
+  }
+}
