@@ -1,6 +1,7 @@
 "use strict";
 
 let firebaseUser = null;
+let userAddresses = [];
 
 document.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => {
@@ -23,6 +24,7 @@ function initProfilePage() {
           if (profileWorkspace) profileWorkspace.style.display = "block";
           populateProfileFields(user);
           populateProviderLinking(user);
+          loadUserAddresses(user);
         });
       } else {
         firebaseUser = null;
@@ -313,6 +315,11 @@ function setupProfileFormBindings() {
 
   if (cancelDeleteBtn) cancelDeleteBtn.addEventListener("click", closeModal);
   if (modalCloseBtn) modalCloseBtn.addEventListener("click", closeModal);
+
+  const addressForm = document.getElementById("address-form");
+  if (addressForm) {
+    addressForm.addEventListener("submit", handleAddressFormSubmit);
+  }
 }
 
 window.handleProfileLogout = function() {
@@ -488,6 +495,204 @@ window.handleUnlinkGoogle = function() {
       .catch((err) => {
         showInlineAlert(alertContainer, err.message, "danger");
       });
+  }
+};
+
+// --- ADDRESS BOOK FUNCTIONS ---
+
+async function loadUserAddresses(user) {
+  const loading = document.getElementById("address-book-loading");
+  const empty = document.getElementById("address-book-empty");
+  const list = document.getElementById("address-book-list");
+  
+  if (loading) loading.style.display = "block";
+  if (empty) empty.style.display = "none";
+  if (list) list.innerHTML = "";
+  
+  try {
+    const snapshot = await db.ref("users/" + user.uid + "/addresses").once("value");
+    const data = snapshot.val();
+    userAddresses = [];
+    
+    if (loading) loading.style.display = "none";
+    
+    if (!data) {
+      if (empty) empty.style.display = "block";
+      return;
+    }
+    
+    let html = "";
+    // Sort addresses so default is always first
+    const addrList = Object.values(data).sort((a, b) => {
+      if (a.isDefault && !b.isDefault) return -1;
+      if (!a.isDefault && b.isDefault) return 1;
+      return 0;
+    });
+
+    addrList.forEach(addr => {
+      userAddresses.push(addr);
+      const defaultBadge = addr.isDefault ? `<span class="badge badge-success" style="font-size:0.65rem; padding: 2px 6px; margin-left: 8px;">Default</span>` : "";
+      
+      html += `
+        <div class="address-book-card-item" id="address-card-${addr.id}">
+          <div class="address-card-header-row">
+            <span class="address-card-name">${addr.firstName} ${addr.lastName} ${defaultBadge}</span>
+          </div>
+          <div class="address-card-body">
+            <p style="margin: 3px 0;">${addr.address}</p>
+            <p style="margin: 3px 0;">${addr.city} - ${addr.zip}</p>
+            <p style="margin: 3px 0;">Phone: ${addr.phone}</p>
+          </div>
+          <div class="address-card-actions">
+            <button class="address-action-btn edit" onclick="openAddressModal('${addr.id}')">Edit</button>
+            <button class="address-action-btn delete" onclick="handleDeleteAddress('${addr.id}')">Delete</button>
+          </div>
+        </div>
+      `;
+    });
+    
+    if (list) {
+      list.innerHTML = html;
+    }
+  } catch (err) {
+    console.error("Error loading addresses:", err);
+    if (loading) loading.style.display = "none";
+    const alertContainer = document.getElementById("address-alert-container");
+    showInlineAlert(alertContainer, "Failed to load address book: " + err.message, "danger");
+  }
+}
+
+window.openAddressModal = function(addressId = null) {
+  const overlay = document.getElementById("address-modal-overlay");
+  const title = document.getElementById("address-modal-title");
+  const form = document.getElementById("address-form");
+  const modalAlert = document.getElementById("address-modal-alert");
+  
+  if (modalAlert) modalAlert.innerHTML = "";
+  if (form) form.reset();
+  
+  if (addressId) {
+    if (title) title.textContent = "Edit Address";
+    const addr = userAddresses.find(a => a.id === addressId);
+    if (addr) {
+      document.getElementById("address-id-input").value = addr.id;
+      document.getElementById("address-first-name").value = addr.firstName || "";
+      document.getElementById("address-last-name").value = addr.lastName || "";
+      document.getElementById("address-street").value = addr.address || "";
+      document.getElementById("address-city").value = addr.city || "";
+      document.getElementById("address-zip").value = addr.zip || "";
+      document.getElementById("address-phone").value = addr.phone || "";
+      document.getElementById("address-default").checked = !!addr.isDefault;
+    }
+  } else {
+    if (title) title.textContent = "Add New Address";
+    document.getElementById("address-id-input").value = "";
+    document.getElementById("address-default").checked = userAddresses.length === 0;
+  }
+  
+  if (overlay) overlay.classList.add("active");
+};
+
+window.closeAddressModal = function() {
+  const overlay = document.getElementById("address-modal-overlay");
+  if (overlay) overlay.classList.remove("active");
+};
+
+async function handleAddressFormSubmit(e) {
+  e.preventDefault();
+  if (!firebaseUser) return;
+  
+  const id = document.getElementById("address-id-input").value || ("addr_" + Date.now());
+  const firstName = document.getElementById("address-first-name").value.trim();
+  const lastName = document.getElementById("address-last-name").value.trim();
+  const street = document.getElementById("address-street").value.trim();
+  const city = document.getElementById("address-city").value.trim();
+  const zip = document.getElementById("address-zip").value.trim();
+  const phone = document.getElementById("address-phone").value.trim();
+  const isDefault = document.getElementById("address-default").checked;
+  
+  const modalAlert = document.getElementById("address-modal-alert");
+  
+  const addressData = {
+    id,
+    firstName,
+    lastName,
+    address: street,
+    city,
+    zip,
+    phone,
+    isDefault
+  };
+
+  const submitBtn = document.getElementById("address-submit-btn");
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Saving...";
+
+  try {
+    const addrRef = db.ref("users/" + firebaseUser.uid + "/addresses");
+    
+    if (isDefault) {
+      // Find existing addresses and set their isDefault to false
+      const snapshot = await addrRef.once("value");
+      const addresses = snapshot.val() || {};
+      const updates = {};
+      Object.keys(addresses).forEach(key => {
+        if (key !== id && addresses[key].isDefault) {
+          updates[key + "/isDefault"] = false;
+        }
+      });
+      updates[id] = addressData;
+      await addrRef.update(updates);
+    } else {
+      // Just set this address, check if it's the only one. If it is, make it default anyway.
+      const snapshot = await addrRef.once("value");
+      const addresses = snapshot.val() || {};
+      const count = Object.keys(addresses).length;
+      if (count === 0 || (count === 1 && addresses[id])) {
+        addressData.isDefault = true;
+      }
+      await addrRef.child(id).set(addressData);
+    }
+    
+    showToast("Address saved successfully.");
+    closeAddressModal();
+    loadUserAddresses(firebaseUser);
+  } catch (err) {
+    showInlineAlert(modalAlert, err.message, "danger");
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Save Address";
+  }
+}
+
+window.handleDeleteAddress = async function(addressId) {
+  if (!firebaseUser) return;
+  if (!confirm("Are you sure you want to delete this address?")) return;
+  
+  try {
+    const addrRef = db.ref("users/" + firebaseUser.uid + "/addresses/" + addressId);
+    
+    // Check if the deleted address was the default one
+    const addressSnap = await addrRef.once("value");
+    const addressData = addressSnap.val();
+    
+    await addrRef.remove();
+    showToast("Address deleted successfully.");
+    
+    // If it was default, make another address default
+    if (addressData && addressData.isDefault) {
+      const parentSnap = await db.ref("users/" + firebaseUser.uid + "/addresses").once("value");
+      const addresses = parentSnap.val();
+      if (addresses) {
+        const firstKey = Object.keys(addresses)[0];
+        await db.ref("users/" + firebaseUser.uid + "/addresses/" + firstKey).update({ isDefault: true });
+      }
+    }
+    
+    loadUserAddresses(firebaseUser);
+  } catch (err) {
+    const alertContainer = document.getElementById("address-alert-container");
+    showInlineAlert(alertContainer, err.message, "danger");
   }
 };
 

@@ -366,3 +366,89 @@
   margin-bottom: 20px;
 }
 
+/* --- ADDRESS BOOK STYLES --- */
+.address-book-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 15px;
+}
+
+.address-book-card-item {
+  border: 1px solid var(--color-light-gray);
+  border-radius: 4px;
+  padding: 20px;
+  background-color: var(--color-off-white);
+  transition: var(--transition-smooth);
+  position: relative;
+}
+
+.address-book-card-item:hover {
+  box-shadow: var(--shadow-subtle);
+  border-color: var(--color-gold);
+  background-color: var(--color-white);
+}
+
+.address-card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.address-card-name {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-charcoal);
+}
+
+.address-card-body {
+  font-size: 0.9rem;
+  color: var(--color-charcoal);
+  line-height: 1.5;
+}
+
+.address-card-body p {
+  margin: 3px 0;
+}
+
+.address-card-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 15px;
+  border-top: 1px dashed var(--color-light-gray);
+  padding-top: 12px;
+}
+
+.address-action-btn {
+  background: none;
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  padding: 0;
+  transition: var(--transition-smooth);
+}
+
+.address-action-btn.edit {
+  color: var(--color-gold);
+}
+
+.address-action-btn.edit:hover {
+  color: var(--color-charcoal);
+}
+
+.address-action-btn.delete {
+  color: #cf222e;
+}
+
+.address-action-btn.delete:hover {
+  color: #a0101a;
+}
+
+
