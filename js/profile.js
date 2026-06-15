@@ -22,6 +22,7 @@ function initProfilePage() {
           if (authRequired) authRequired.style.display = "none";
           if (profileWorkspace) profileWorkspace.style.display = "block";
           populateProfileFields(user);
+          populateProviderLinking(user);
         });
       } else {
         firebaseUser = null;
@@ -49,9 +50,9 @@ async function syncUserDbMetadata(user) {
     const now = Date.now();
     if (!val) {
       await userRef.set({
-        email: user.email,
-        displayName: user.displayName || user.email.split("@")[0],
-        role: (user.email === "nandheswara21@gmail.com" || user.email === "admin@signaturespell.com") ? "admin" : "user",
+        email: user.email || "No Email",
+        displayName: user.displayName || (user.email ? user.email.split("@")[0] : "User"),
+        role: (user.email && (user.email === "nandheswara21@gmail.com" || user.email === "admin@signaturespell.com")) ? "admin" : "user",
         status: "active",
         createdAt: now,
         lastActive: now
@@ -77,10 +78,10 @@ function populateProfileFields(user) {
   const nameInput = document.getElementById("profile-name-input");
   const phoneInput = document.getElementById("profile-phone-input");
 
-  const displayName = user.displayName || user.email.split("@")[0];
+  const displayName = user.displayName || (user.email ? user.email.split("@")[0] : "User");
   if (summaryName) summaryName.textContent = displayName;
   if (nameInput) nameInput.value = user.displayName || "";
-  if (summaryEmail) summaryEmail.textContent = user.email;
+  if (summaryEmail) summaryEmail.textContent = user.email || "No Email";
   
   if (nameInitials) {
     nameInitials.textContent = getInitials(displayName);
@@ -201,20 +202,41 @@ function setupProfileFormBindings() {
       }
 
       if (isFirebaseInitialized && firebaseUser) {
-        const credential = firebase.auth.EmailAuthProvider.credential(firebaseUser.email, oldPass);
-        firebaseUser.reauthenticateWithCredential(credential)
-          .then(() => {
-            return firebaseUser.updatePassword(newPass);
-          })
-          .then(() => {
-            showInlineAlert(alertContainer, "Password changed successfully!", "success");
-            passwordForm.reset();
-            document.getElementById("pass-strength-fill").className = "progress-bar-fill";
-            document.getElementById("pass-strength-text").textContent = "Password strength: Empty";
-          })
-          .catch(err => {
-            showInlineAlert(alertContainer, err.message, "danger");
-          });
+        const providers = firebaseUser.providerData.map(p => p.providerId);
+        const hasPassword = providers.includes('password');
+
+        if (hasPassword) {
+          const credential = firebase.auth.EmailAuthProvider.credential(firebaseUser.email, oldPass);
+          firebaseUser.reauthenticateWithCredential(credential)
+            .then(() => {
+              return firebaseUser.updatePassword(newPass);
+            })
+            .then(() => {
+              showInlineAlert(alertContainer, "Password changed successfully!", "success");
+              passwordForm.reset();
+              document.getElementById("pass-strength-fill").className = "progress-bar-fill";
+              document.getElementById("pass-strength-text").textContent = "Password strength: Empty";
+              populateProviderLinking(firebaseUser);
+            })
+            .catch(err => {
+              showInlineAlert(alertContainer, err.message, "danger");
+            });
+        } else {
+          // Google-only user setting a new password (linking it)
+          const credential = firebase.auth.EmailAuthProvider.credential(firebaseUser.email, newPass);
+          firebaseUser.linkWithCredential(credential)
+            .then((result) => {
+              showInlineAlert(alertContainer, "Password set successfully! You can now log in using either method.", "success");
+              passwordForm.reset();
+              document.getElementById("pass-strength-fill").className = "progress-bar-fill";
+              document.getElementById("pass-strength-text").textContent = "Password strength: Empty";
+              firebaseUser = result.user; // Update current user
+              populateProviderLinking(firebaseUser);
+            })
+            .catch(err => {
+              showInlineAlert(alertContainer, err.message, "danger");
+            });
+        }
       }
     });
   }
@@ -227,8 +249,22 @@ function setupProfileFormBindings() {
       const alertContainer = document.getElementById("delete-modal-alert");
 
       if (isFirebaseInitialized && firebaseUser) {
-        const credential = firebase.auth.EmailAuthProvider.credential(firebaseUser.email, password);
-        firebaseUser.reauthenticateWithCredential(credential)
+        const providers = firebaseUser.providerData.map(p => p.providerId);
+        const hasPassword = providers.includes('password');
+
+        let reauthPromise;
+        if (hasPassword) {
+          const credential = firebase.auth.EmailAuthProvider.credential(firebaseUser.email, password);
+          reauthPromise = firebaseUser.reauthenticateWithCredential(credential);
+        } else {
+          if (!googleReauthenticated) {
+            showInlineAlert(alertContainer, "Please reauthenticate with Google using the button first.", "danger");
+            return;
+          }
+          reauthPromise = Promise.resolve();
+        }
+
+        reauthPromise
           .then(() => {
             return db.ref("users/" + firebaseUser.uid).remove();
           })
@@ -237,6 +273,28 @@ function setupProfileFormBindings() {
           })
           .then(() => {
             window.location.href = "index.html";
+          })
+          .catch(err => {
+            showInlineAlert(alertContainer, err.message, "danger");
+          });
+      }
+    });
+  }
+
+  const deleteGoogleBtn = document.getElementById("delete-google-btn");
+  if (deleteGoogleBtn) {
+    deleteGoogleBtn.addEventListener("click", () => {
+      const alertContainer = document.getElementById("delete-modal-alert");
+      if (alertContainer) alertContainer.innerHTML = "";
+
+      if (isFirebaseInitialized && firebaseUser) {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        firebaseUser.reauthenticateWithPopup(provider)
+          .then(() => {
+            googleReauthenticated = true;
+            const submitBtn = document.getElementById("delete-confirm-submit-btn");
+            if (submitBtn) submitBtn.disabled = false;
+            showInlineAlert(alertContainer, "Google authentication verified successfully! You can now permanently delete your account.", "success");
           })
           .catch(err => {
             showInlineAlert(alertContainer, err.message, "danger");
@@ -283,15 +341,157 @@ window.handleSendEmailVerification = function() {
   }
 };
 
+let googleReauthenticated = false;
+
 window.triggerDeleteAccountModal = function() {
   const deleteOverlay = document.getElementById("delete-confirm-modal");
   const passInput = document.getElementById("delete-password-input");
   const alertContainer = document.getElementById("delete-modal-alert");
   
+  googleReauthenticated = false; // Reset
+
   if (passInput) passInput.value = "";
   if (alertContainer) alertContainer.innerHTML = "";
+
+  if (isFirebaseInitialized && firebaseUser) {
+    const providers = firebaseUser.providerData.map(p => p.providerId);
+    const hasPassword = providers.includes('password');
+
+    const passGroup = document.getElementById("delete-password-group");
+    const googleGroup = document.getElementById("delete-google-reauth-group");
+    const reauthText = document.getElementById("delete-reauth-text");
+    const submitBtn = document.getElementById("delete-confirm-submit-btn");
+
+    if (hasPassword) {
+      if (passGroup) passGroup.style.display = "block";
+      if (passInput) passInput.required = true;
+      if (googleGroup) googleGroup.style.display = "none";
+      if (reauthText) reauthText.textContent = "by entering your current password below to confirm this action";
+      if (submitBtn) submitBtn.disabled = false;
+    } else {
+      if (passGroup) passGroup.style.display = "none";
+      if (passInput) passInput.required = false;
+      if (googleGroup) googleGroup.style.display = "block";
+      if (reauthText) reauthText.textContent = "by authenticating with your Google account using the button below";
+      if (submitBtn) submitBtn.disabled = true;
+    }
+  }
+  
   if (deleteOverlay) deleteOverlay.classList.add("active");
 };
+
+// --- HELPER UTILITIES & AUTH LINKING ---
+
+function showInlineAlert(container, message, type = "info") {
+  if (!container) return;
+  container.innerHTML = `
+    <div class="alert alert-${type}" style="margin-top: 10px; margin-bottom: 15px;">
+      ${message}
+    </div>
+  `;
+}
+
+function populateProviderLinking(user) {
+  const providers = user.providerData.map(p => p.providerId);
+  const hasGoogle = providers.includes('google.com');
+  const hasPassword = providers.includes('password');
+
+  // Update Password Form UI based on active providers
+  const oldPassGroup = document.getElementById("profile-old-pass-group");
+  const oldPassInput = document.getElementById("profile-old-pass");
+  const changePassBtn = document.getElementById("change-pass-btn");
+  const changePassTitle = document.querySelector("#profile-password-form-card .profile-card-header h3");
+
+  if (hasPassword) {
+    if (oldPassGroup) oldPassGroup.style.display = "block";
+    if (oldPassInput) oldPassInput.required = true;
+    if (changePassBtn) changePassBtn.textContent = "Change Password";
+    if (changePassTitle) changePassTitle.textContent = "Change Password";
+  } else {
+    if (oldPassGroup) oldPassGroup.style.display = "none";
+    if (oldPassInput) oldPassInput.required = false;
+    if (changePassBtn) changePassBtn.textContent = "Create Password Login";
+    if (changePassTitle) changePassTitle.textContent = "Set Account Password";
+  }
+
+  // Update Linked Accounts Status and Buttons
+  const googleStatus = document.getElementById("google-link-status");
+  const googleBtn = document.getElementById("google-link-btn");
+  const passwordStatus = document.getElementById("password-link-status");
+
+  if (googleStatus && googleBtn) {
+    if (hasGoogle) {
+      googleStatus.innerHTML = '<span class="badge badge-success">Connected</span>';
+      const googleInfo = user.providerData.find(p => p.providerId === 'google.com');
+      if (googleInfo && googleInfo.email) {
+        googleStatus.innerHTML += ` <span style="font-size:0.9rem; color:var(--color-muted-gray);">(${googleInfo.email})</span>`;
+      }
+      
+      const otherProvidersCount = hasPassword ? 1 : 0;
+      if (otherProvidersCount > 0) {
+        googleBtn.textContent = "Disconnect Google";
+        googleBtn.className = "btn btn-secondary btn-small";
+        googleBtn.style.display = "inline-block";
+        googleBtn.onclick = () => handleUnlinkGoogle();
+      } else {
+        googleBtn.style.display = "none";
+      }
+    } else {
+      googleStatus.innerHTML = '<span class="badge badge-warning">Not Connected</span>';
+      googleBtn.textContent = "Connect Google Account";
+      googleBtn.className = "btn btn-primary btn-small";
+      googleBtn.style.display = "inline-block";
+      googleBtn.onclick = () => handleLinkGoogle();
+    }
+  }
+
+  if (passwordStatus) {
+    if (hasPassword) {
+      passwordStatus.innerHTML = '<span class="badge badge-success">Enabled</span>';
+    } else {
+      passwordStatus.innerHTML = '<span class="badge badge-warning">Disabled (Google Sign-In Only)</span>';
+    }
+  }
+}
+
+window.handleLinkGoogle = function() {
+  const alertContainer = document.getElementById("linked-accounts-alert-container");
+  if (alertContainer) alertContainer.innerHTML = "";
+
+  if (isFirebaseInitialized && firebaseUser) {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    firebaseUser.linkWithPopup(provider)
+      .then((result) => {
+        showInlineAlert(alertContainer, "Google account linked successfully!", "success");
+        showToast("Google account linked.");
+        firebaseUser = result.user; // Update reference
+        populateProviderLinking(firebaseUser);
+      })
+      .catch((err) => {
+        showInlineAlert(alertContainer, err.message, "danger");
+      });
+  }
+};
+
+window.handleUnlinkGoogle = function() {
+  const alertContainer = document.getElementById("linked-accounts-alert-container");
+  if (alertContainer) alertContainer.innerHTML = "";
+
+  if (isFirebaseInitialized && firebaseUser) {
+    firebaseUser.unlink('google.com')
+      .then((user) => {
+        showInlineAlert(alertContainer, "Google account disconnected successfully.", "success");
+        showToast("Google account unlinked.");
+        firebaseUser = user; // Update reference
+        populateProviderLinking(firebaseUser);
+      })
+      .catch((err) => {
+        showInlineAlert(alertContainer, err.message, "danger");
+      });
+  }
+};
+
+
 
 
 

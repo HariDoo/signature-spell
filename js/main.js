@@ -389,10 +389,12 @@ function tryInitFirebase() {
       // Auto listen to Auth changes
       auth.onAuthStateChanged(async (user) => {
         if (user) {
-          let isAdmin = user.email === "admin@signaturespell.com" || user.email === "nandheswara21@gmail.com" || user.email.startsWith("admin");
+          let isAdmin = user.email ? (user.email === "admin@signaturespell.com" || user.email === "nandheswara21@gmail.com" || user.email.startsWith("admin")) : false;
+          let safeEmail = user.email || "No Email";
+          let safeName = user.displayName || (user.email ? user.email.split("@")[0] : "User");
           UserSession.set({
-            name: user.displayName || user.email.split("@")[0],
-            email: user.email,
+            name: safeName,
+            email: safeEmail,
             photo: user.photoURL,
             uid: user.uid,
             isAdmin: isAdmin
@@ -403,8 +405,8 @@ function tryInitFirebase() {
             if (roleSnap.exists()) {
               const role = roleSnap.val();
               UserSession.set({
-                name: user.displayName || user.email.split("@")[0],
-                email: user.email,
+                name: safeName,
+                email: safeEmail,
                 photo: user.photoURL,
                 uid: user.uid,
                 isAdmin: role === "admin" || isAdmin
@@ -703,45 +705,134 @@ function initAuthModal() {
 
   window.triggerLoginModal = () => {
     clearAuthError();
+    authFormState = "login";
+    updateModalUI();
     if (overlay) overlay.classList.add("active");
   };
   
   // Tab/Forms toggle inside modal
-  const tabToggle = document.getElementById("auth-switch-link");
   const formTitle = document.getElementById("auth-form-title");
   const submitBtn = document.getElementById("auth-submit-btn");
   const switchDesc = document.getElementById("auth-switch-desc");
   
-  let isLoginState = true;
-  
-  if (tabToggle && formTitle && submitBtn) {
-    tabToggle.addEventListener("click", (e) => {
-      e.preventDefault();
-      clearAuthError();
-      isLoginState = !isLoginState;
-      if (isLoginState) {
-        formTitle.textContent = "Welcome Back";
-        submitBtn.textContent = "Sign In";
-        switchDesc.innerHTML = `Don't have an account? <a href="#" id="auth-switch-link">Sign Up</a>`;
-      } else {
-        formTitle.textContent = "Create Account";
-        submitBtn.textContent = "Sign Up";
-        switchDesc.innerHTML = `Already have an account? <a href="#" id="auth-switch-link">Sign In</a>`;
-      }
-      // Re-bind click event to the newly generated link
-      initAuthModalToggleLink();
-    });
-  }
+  let authFormState = "login"; // "login" | "signup" | "forgot"
   
   function initAuthModalToggleLink() {
-    const newLink = document.getElementById("auth-switch-link");
-    if (newLink) {
-      newLink.addEventListener("click", (e) => {
+    const link = document.getElementById("auth-switch-link");
+    if (link) {
+      link.addEventListener("click", (e) => {
         e.preventDefault();
-        tabToggle.click();
+        clearAuthError();
+        if (authFormState === "login") {
+          authFormState = "signup";
+        } else {
+          authFormState = "login";
+        }
+        updateModalUI();
       });
     }
   }
+
+  const setButtonLoading = (btn, isLoading) => {
+    if (btn) {
+      if (isLoading) {
+        btn.classList.add("btn-loading");
+        btn.disabled = true;
+      } else {
+        btn.classList.remove("btn-loading");
+        btn.disabled = false;
+      }
+    }
+  };
+
+  function updateModalUI() {
+    clearAuthError();
+    const passInput = document.getElementById("auth-pass-input");
+    const passGroup = passInput ? passInput.closest(".form-group") : null;
+    const emailInput = document.getElementById("auth-email-input");
+    const emailGroup = emailInput ? emailInput.closest(".form-group") : null;
+    const ssoDivider = overlay ? overlay.querySelector(".sso-divider") : null;
+    const googleBtn = document.getElementById("google-sso-btn");
+
+    if (authFormState === "login") {
+      if (formTitle) formTitle.textContent = "Welcome Back";
+      if (submitBtn) submitBtn.textContent = "Sign In";
+      if (emailGroup) emailGroup.style.display = "block";
+      if (emailInput) emailInput.required = true;
+      if (passGroup) passGroup.style.display = "block";
+      if (passInput) passInput.required = true;
+      if (ssoDivider) ssoDivider.style.display = "block";
+      if (googleBtn) googleBtn.style.display = "flex";
+      if (switchDesc) switchDesc.innerHTML = `Don't have an account? <a href="#" id="auth-switch-link">Sign Up</a>`;
+    } else if (authFormState === "signup") {
+      if (formTitle) formTitle.textContent = "Create Account";
+      if (submitBtn) submitBtn.textContent = "Sign Up";
+      if (emailGroup) emailGroup.style.display = "block";
+      if (emailInput) emailInput.required = true;
+      if (passGroup) passGroup.style.display = "block";
+      if (passInput) passInput.required = true;
+      if (ssoDivider) ssoDivider.style.display = "block";
+      if (googleBtn) googleBtn.style.display = "flex";
+      if (switchDesc) switchDesc.innerHTML = `Already have an account? <a href="#" id="auth-switch-link">Sign In</a>`;
+    } else if (authFormState === "forgot") {
+      if (formTitle) formTitle.textContent = "Reset Password";
+      if (submitBtn) submitBtn.textContent = "Send Reset Link";
+      if (emailGroup) emailGroup.style.display = "block";
+      if (emailInput) emailInput.required = true;
+      if (passGroup) passGroup.style.display = "none";
+      if (passInput) passInput.required = false;
+      if (ssoDivider) ssoDivider.style.display = "none";
+      if (googleBtn) googleBtn.style.display = "none";
+      if (switchDesc) switchDesc.innerHTML = `Remembered your password? <a href="#" id="auth-switch-link">Sign In</a>`;
+    }
+
+    // Trigger smooth fade transition
+    const modalWrapper = overlay ? overlay.querySelector(".auth-modal") : null;
+    if (modalWrapper) {
+      modalWrapper.classList.remove("auth-modal-content-fade");
+      void modalWrapper.offsetWidth; // Force reflow
+      modalWrapper.classList.add("auth-modal-content-fade");
+    }
+
+    initAuthModalToggleLink();
+  }
+
+
+
+  // Initialize toggle links
+  initAuthModalToggleLink();
+
+  // Inject "Forgot Password?" link dynamically above the password input
+  const passInputElCheck = document.getElementById("auth-pass-input");
+  if (passInputElCheck) {
+    const passGroup = passInputElCheck.closest(".form-group");
+    if (passGroup) {
+      if (!document.getElementById("auth-forgot-link")) {
+        const label = passGroup.querySelector("label");
+        if (label) {
+          const container = document.createElement("div");
+          container.style.cssText = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;";
+          label.parentNode.insertBefore(container, label);
+          container.appendChild(label);
+          label.style.margin = "0";
+
+          const forgotLink = document.createElement("a");
+          forgotLink.id = "auth-forgot-link";
+          forgotLink.href = "#";
+          forgotLink.textContent = "Forgot Password?";
+          forgotLink.style.cssText = "font-size: 0.8rem; color: var(--color-gold); text-decoration: none;";
+          forgotLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            authFormState = "forgot";
+            updateModalUI();
+          });
+          container.appendChild(forgotLink);
+        }
+      }
+    }
+  }
+
+
 
   // Handle Auth submission
   const authForm = document.getElementById("auth-email-form");
@@ -755,26 +846,56 @@ function initAuthModal() {
       if (!navigator.onLine) {
         showAuthError("Check your Internet and try again.");
       } else if (isFirebaseInitialized) {
-        if (isLoginState) {
+        if (authFormState === "login") {
+          setButtonLoading(submitBtn, true);
           sessionStorage.setItem("just_logged_in", "true");
           auth.signInWithEmailAndPassword(email, pass)
             .then(() => {
+              setButtonLoading(submitBtn, false);
               overlay.classList.remove("active");
               showToast("Welcome back!");
             })
             .catch(err => {
+              setButtonLoading(submitBtn, false);
               sessionStorage.removeItem("just_logged_in");
               showAuthError(err.message);
             });
-        } else {
+        } else if (authFormState === "signup") {
+          setButtonLoading(submitBtn, true);
           sessionStorage.setItem("just_logged_in", "true");
           auth.createUserWithEmailAndPassword(email, pass)
             .then(() => {
+              setButtonLoading(submitBtn, false);
               overlay.classList.remove("active");
               showToast("Account created!");
             })
             .catch(err => {
+              setButtonLoading(submitBtn, false);
               sessionStorage.removeItem("just_logged_in");
+              showAuthError(err.message);
+            });
+        } else if (authFormState === "forgot") {
+          setButtonLoading(submitBtn, true);
+          auth.sendPasswordResetEmail(email)
+            .then(() => {
+              setButtonLoading(submitBtn, false);
+              if (overlay) overlay.classList.remove("active");
+              authFormState = "login";
+              updateModalUI();
+              
+              if (typeof window.showModal === "function") {
+                window.showModal("A password reset link has been dispatched to your email address. Please check your inbox and spam folder to reset your password.", {
+                  title: "Reset Link Sent",
+                  type: "success",
+                  icon: "✉️",
+                  confirmText: "Got it"
+                });
+              } else {
+                showToast("Password reset email sent!");
+              }
+            })
+            .catch(err => {
+              setButtonLoading(submitBtn, false);
               showAuthError(err.message);
             });
         }
@@ -793,15 +914,22 @@ function initAuthModal() {
       if (!navigator.onLine) {
         showAuthError("Check your Internet and try again.");
       } else if (isFirebaseInitialized) {
+        setButtonLoading(googleBtn, true);
         sessionStorage.setItem("just_logged_in", "true");
         auth.signInWithPopup(googleProvider)
           .then(() => {
+            setButtonLoading(googleBtn, false);
             overlay.classList.remove("active");
             showToast("Welcome!");
           })
           .catch(err => {
+            setButtonLoading(googleBtn, false);
             sessionStorage.removeItem("just_logged_in");
-            showAuthError(err.message);
+            if (err && err.code === "auth/account-exists-with-different-credential") {
+              showAuthError("An account with this email address already exists under another login method. Please sign in with your email/password first, then link your Google account in your Profile settings.");
+            } else {
+              showAuthError(err.message);
+            }
           });
       } else {
         showAuthError("Firebase is not initialized. Please connect your credentials.");
