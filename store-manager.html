@@ -119,15 +119,14 @@
     </ul>
   </aside>
 
-  <!-- Store Manager Header Banner -->
-  <section class="page-header" style="background-color: var(--color-charcoal); padding: 60px 0;">
-    <div class="container">
-      <h1>Storefront <span>Operations</span></h1>
-      <div class="breadcrumbs">
-        <a href="index.html">Home</a> &nbsp;/&nbsp; <a href="admin.html">Admin Console</a> &nbsp;/&nbsp; <span>Orders & Catalog</span>
-      </div>
+  <!-- Breadcrumbs -->
+  <div class="container" style="padding-top: 24px; padding-bottom: 0;">
+    <div class="breadcrumbs" style="margin-top: 0; color: var(--color-muted-gray); font-size: 0.85rem;">
+      <a href="index.html" style="color: var(--color-charcoal); font-weight:700;">Home</a> &nbsp;/&nbsp; 
+      <a href="admin.html" style="color: var(--color-charcoal); font-weight:700;">Admin Console</a> &nbsp;/&nbsp; 
+      <span style="color: var(--color-gold); font-weight:700;">Orders &amp; Catalog</span>
     </div>
-  </section>
+  </div>
 
   <!-- Main Management Workspace -->
   <section class="admin-workspace-section" style="background-color: var(--color-cream); min-height: 80vh; padding: 40px 0;">
@@ -138,10 +137,6 @@
         <div>
           <h2 style="font-family: var(--font-heading); font-size: 1.8rem;">Inventory & Orders</h2>
           <span style="font-size:0.75rem; color:var(--color-muted-gray); text-transform:uppercase; letter-spacing:0.1em; font-weight:700;">Signature Spell Management Console</span>
-        </div>
-        <div class="admin-user-info">
-          <span>Hello, <strong id="admin-user-fullname">Administrator</strong></span>
-          <a href="admin.html" class="btn btn-secondary btn-small">User Registry</a>
         </div>
       </div>
 
@@ -226,6 +221,8 @@
                   <tr>
                     <th>Vessel</th>
                     <th>Name</th>
+                    <th>Size</th>
+                    <th>Fragrance</th>
                     <th>Price</th>
                     <th style="text-align:right;">Action</th>
                   </tr>
@@ -322,6 +319,14 @@
           </select>
         </div>
         <div class="form-group">
+          <label for="add-prod-size">Candle Size</label>
+          <select id="add-prod-size" required data-ss-select="compact">
+            <option value="Small">Small</option>
+            <option value="Medium" selected>Medium</option>
+            <option value="Large">Large</option>
+          </select>
+        </div>
+        <div class="form-group">
           <label for="add-prod-image">Image URL path</label>
           <select id="add-prod-image" required data-ss-select="compact">
             <option value="assets/coconut_shell.png">Coconut Shell (assets/coconut_shell.png)</option>
@@ -338,8 +343,10 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="add-prod-notes">Fragrance Notes (comma separated)</label>
-          <input type="text" id="add-prod-notes" placeholder="Top, Heart, Base notes">
+          <label for="add-prod-fragrance">Fragrance</label>
+          <select id="add-prod-fragrance" required data-ss-select="compact">
+            <!-- Populated dynamically from Active Fragrances -->
+          </select>
         </div>
         <div class="form-group">
           <label for="add-prod-desc">Description</label>

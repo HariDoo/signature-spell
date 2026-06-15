@@ -127,7 +127,10 @@
         
         <!-- Product Buy/Info Details -->
         <div class="product-details">
-          <a href="shop.html" class="product-category" id="detail-category-link">Signature Scent</a>
+          <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 8px;">
+            <a href="shop.html" class="product-category" id="detail-category-link" style="margin-bottom: 0;">Signature Scent</a>
+            <span id="detail-size-badge" style="display: none; background-color: var(--color-cream-dark); color: var(--color-charcoal); border: var(--border-neutral-light); font-size: 0.75rem; font-weight: 700; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em;">Medium</span>
+          </div>
           <h1 class="product-name">Luxury Candle</h1>
           <div class="product-price">₹0.00</div>
           
@@ -192,6 +195,14 @@
                 <li>
                   <span>Vessel Material:</span>
                   <span>Recyclable Luxury Glass/Brass</span>
+                </li>
+                <li id="spec-size-row" style="display: none;">
+                  <span>Candle Size:</span>
+                  <span id="spec-size">-</span>
+                </li>
+                <li id="spec-fragrance-row" style="display: none;">
+                  <span>Fragrance:</span>
+                  <span id="spec-fragrance">-</span>
                 </li>
               </ul>
             </div>

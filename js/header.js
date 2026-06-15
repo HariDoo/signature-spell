@@ -62,6 +62,21 @@
         loginTextLink.style.display = "none";
       }
       userBtn.style.display = "inline-flex";
+
+      // Update dropdown menu items dynamically
+      const menu = document.querySelector(".user-dropdown-menu");
+      if (menu) {
+        const isAdmin = user && user.isAdmin;
+        menu.innerHTML = `
+          <a href="orders.html" class="user-dropdown-item"><i class="bi bi-bag"></i> My Orders</a>
+          <a href="profile.html" class="user-dropdown-item"><i class="bi bi-person"></i> View Profile</a>
+          ${isAdmin ? `
+            <a href="admin.html" class="user-dropdown-item"><i class="bi bi-shield-lock"></i> Admin Dashboard</a>
+            <a href="store-manager.html" class="user-dropdown-item"><i class="bi bi-gear"></i> Orders &amp; Catalog</a>
+          ` : ''}
+          <button class="user-dropdown-item" id="user-dropdown-logout"><i class="bi bi-box-arrow-right"></i> Log Out</button>
+        `;
+      }
     } else {
       // Logged Out: Show text link, hide SVG profile icon button
       if (!loginTextLink) {
@@ -204,10 +219,10 @@
         }
       }, true); // Capture phase interceptor
 
-      // Handle Log Out option click
-      const logoutBtn = menu.querySelector("#user-dropdown-logout");
-      if (logoutBtn) {
-        logoutBtn.addEventListener("click", (e) => {
+      // Use event delegation on menu for Log Out button
+      menu.addEventListener("click", (e) => {
+        const btn = e.target.closest("#user-dropdown-logout");
+        if (btn) {
           e.preventDefault();
           e.stopPropagation();
           menu.classList.remove("show");
@@ -225,8 +240,8 @@
           setTimeout(() => {
             window.location.reload();
           }, 500);
-        });
-      }
+        }
+      });
 
       // Hide dropdown when clicking elsewhere
       document.addEventListener("click", (e) => {

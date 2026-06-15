@@ -11,49 +11,105 @@ document.addEventListener("DOMContentLoaded", () => {
   } else {
     productId = parseInt(sessionStorage.getItem("selected_product_id")) || 1;
   }
-  const product = PRODUCTS.find(p => p.id == productId) || PRODUCTS[0];
-  
-  // Dynamic text fields
-  const title = document.querySelector(".product-name");
-  const price = document.querySelector(".product-price");
-  const desc = document.querySelector(".product-desc");
-  const categoryLink = document.getElementById("detail-category-link");
-  const productBreadcrumb = document.getElementById("detail-breadcrumb-name");
-  
-  if (title) title.textContent = product.name;
-  if (price) price.textContent = `₹${product.price}`;
-  if (desc) desc.textContent = product.description;
-  if (categoryLink) {
-    categoryLink.textContent = product.category;
-    categoryLink.href = `shop.html`;
+
+  function renderProduct() {
+    if (typeof PRODUCTS === "undefined" || PRODUCTS.length === 0) return;
+    
+    const product = PRODUCTS.find(p => p.id == productId) || PRODUCTS[0];
+    
+    // Dynamic text fields
+    const title = document.querySelector(".product-name");
+    const price = document.querySelector(".product-price");
+    const desc = document.querySelector(".product-desc");
+    const categoryLink = document.getElementById("detail-category-link");
+    const productBreadcrumb = document.getElementById("detail-breadcrumb-name");
+    
+    if (title) title.textContent = product.name;
+    if (price) price.textContent = `₹${product.price}`;
+    if (desc) desc.textContent = product.description;
+    if (categoryLink) {
+      categoryLink.textContent = product.category;
+      categoryLink.href = `shop.html`;
+    }
+    if (productBreadcrumb) productBreadcrumb.textContent = product.name;
+    
+    // Gallery image loads
+    const mainImg = document.getElementById("main-product-img");
+    const thumbStrip = document.querySelector(".thumbnail-strip");
+    if (mainImg) mainImg.src = product.image;
+    if (thumbStrip) {
+      thumbStrip.innerHTML = `
+        <div class="thumbnail active" onclick="swapMainImage('${product.image}', this)"><img src="${product.image}" alt="${product.name}"></div>
+        <div class="thumbnail" onclick="swapMainImage('assets/hero_candle.png', this)"><img src="assets/hero_candle.png" alt="Mood Candle Ambient"></div>
+      `;
+    }
+    
+    // Tab scent notes loading
+    const noteTop = document.getElementById("note-top");
+    const noteHeart = document.getElementById("note-heart");
+    const noteBase = document.getElementById("note-base");
+    if (noteTop) noteTop.textContent = product.notes.top;
+    if (noteHeart) noteHeart.textContent = product.notes.heart;
+    if (noteBase) noteBase.textContent = product.notes.base;
+    
+    // Tab spec burn details
+    const specBurn = document.getElementById("spec-burn");
+    const specWax = document.getElementById("spec-wax");
+    if (specBurn) specBurn.textContent = product.burnTime;
+    if (specWax) specWax.textContent = product.waxType;
+
+    // Candle Size
+    const sizeBadge = document.getElementById("detail-size-badge");
+    const sizeRow = document.getElementById("spec-size-row");
+    const sizeVal = document.getElementById("spec-size");
+    if (product.size) {
+      if (sizeBadge) {
+        sizeBadge.textContent = product.size;
+        sizeBadge.style.display = "inline-block";
+      }
+      if (sizeRow) sizeRow.style.display = "flex";
+      if (sizeVal) sizeVal.textContent = product.size;
+    } else {
+      if (sizeBadge) sizeBadge.style.display = "none";
+      if (sizeRow) sizeRow.style.display = "none";
+    }
+
+    // Selected Fragrance
+    const fragRow = document.getElementById("spec-fragrance-row");
+    const fragVal = document.getElementById("spec-fragrance");
+    if (product.fragrance) {
+      if (fragRow) fragRow.style.display = "flex";
+      if (fragVal) fragVal.textContent = product.fragrance;
+    } else {
+      if (fragRow) fragRow.style.display = "none";
+    }
+
+    // Wishlist Action Toggle
+    const detailWishlistBtn = document.getElementById("detail-wishlist-btn");
+    if (detailWishlistBtn && typeof WishlistStorage !== "undefined") {
+      const isWished = WishlistStorage.has(product.id);
+      detailWishlistBtn.classList.toggle("active", isWished);
+    }
+    
+    // Related Products Grid
+    const relatedGrid = document.querySelector(".related-grid");
+    if (relatedGrid && typeof createProductCardHTML === "function") {
+      const related = PRODUCTS.filter(p => p.id !== product.id && p.category === product.category).slice(0, 4);
+      relatedGrid.innerHTML = related.map(p => createProductCardHTML(p)).join("");
+      
+      // Initialize 3D cards tilt if function exists
+      if (typeof init3dCards === "function") {
+        init3dCards();
+      }
+    }
   }
-  if (productBreadcrumb) productBreadcrumb.textContent = product.name;
-  
-  // Gallery image loads
-  const mainImg = document.getElementById("main-product-img");
-  const thumbStrip = document.querySelector(".thumbnail-strip");
-  if (mainImg) mainImg.src = product.image;
-  if (thumbStrip) {
-    thumbStrip.innerHTML = `
-      <div class="thumbnail active" onclick="swapMainImage('${product.image}', this)"><img src="${product.image}" alt="${product.name}"></div>
-      <div class="thumbnail" onclick="swapMainImage('assets/hero_candle.png', this)"><img src="assets/hero_candle.png" alt="Mood Candle Ambient"></div>
-    `;
-  }
-  
-  // Tab scent notes loading
-  const noteTop = document.getElementById("note-top");
-  const noteHeart = document.getElementById("note-heart");
-  const noteBase = document.getElementById("note-base");
-  if (noteTop) noteTop.textContent = product.notes.top;
-  if (noteHeart) noteHeart.textContent = product.notes.heart;
-  if (noteBase) noteBase.textContent = product.notes.base;
-  
-  // Tab spec burn details
-  const specBurn = document.getElementById("spec-burn");
-  const specWax = document.getElementById("spec-wax");
-  if (specBurn) specBurn.textContent = product.burnTime;
-  if (specWax) specWax.textContent = product.waxType;
-  
+
+  // Initial Render
+  renderProduct();
+
+  // Listen for real-time database updates
+  document.addEventListener("productsUpdated", renderProduct);
+
   // Tab navigation triggers
   const tabHeaders = document.querySelectorAll(".tab-header");
   const tabContents = document.querySelectorAll(".tab-content");
@@ -86,7 +142,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const addToCartBtn = document.getElementById("detail-add-to-cart-btn");
   if (addToCartBtn) {
     addToCartBtn.addEventListener("click", () => {
-      if (typeof CartStorage !== "undefined") {
+      if (typeof PRODUCTS === "undefined") return;
+      const product = PRODUCTS.find(p => p.id == productId) || PRODUCTS[0];
+      if (product && typeof CartStorage !== "undefined") {
         const qty = parseInt(qtyInput.value) || 1;
         CartStorage.add(product.id, qty);
         if (typeof showToast === "function") {
@@ -96,25 +154,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   
-  // Wishlist Action Toggle
+  // Wishlist Action Toggle Setup
   const detailWishlistBtn = document.getElementById("detail-wishlist-btn");
   if (detailWishlistBtn && typeof WishlistStorage !== "undefined") {
-    const isWished = WishlistStorage.has(product.id);
-    detailWishlistBtn.classList.toggle("active", isWished);
     detailWishlistBtn.addEventListener("click", () => {
+      if (typeof PRODUCTS === "undefined") return;
+      const product = PRODUCTS.find(p => p.id == productId) || PRODUCTS[0];
+      if (!product) return;
       const added = WishlistStorage.toggle(product.id);
       detailWishlistBtn.classList.toggle("active", added);
       if (typeof showToast === "function") {
         showToast(added ? "Added to wishlist!" : "Removed from wishlist.");
       }
     });
-  }
-  
-  // Related Products Grid
-  const relatedGrid = document.querySelector(".related-grid");
-  if (relatedGrid && typeof createProductCardHTML === "function") {
-    const related = PRODUCTS.filter(p => p.id !== product.id && p.category === product.category).slice(0, 4);
-    relatedGrid.innerHTML = related.map(p => createProductCardHTML(p)).join("");
   }
 });
 

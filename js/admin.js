@@ -27,7 +27,10 @@ function initAdminConsole() {
           if (loadingOverlay) loadingOverlay.style.display = "none";
           if (deniedOverlay) deniedOverlay.style.display = "none";
           root.style.display = "block";
-          document.getElementById("admin-user-fullname").textContent = user.displayName || user.email.split("@")[0];
+          const userFullname = document.getElementById("admin-user-fullname");
+          if (userFullname) {
+            userFullname.textContent = user.displayName || user.email.split("@")[0];
+          }
           initializeDashboard();
         } else {
           if (loadingOverlay) loadingOverlay.style.display = "none";

@@ -591,17 +591,13 @@
         const name = document.getElementById("add-prod-name").value.trim();
         const price = parseFloat(document.getElementById("add-prod-price").value) || 0;
         const category = document.getElementById("add-prod-category").value;
+        const size = document.getElementById("add-prod-size") ? document.getElementById("add-prod-size").value : "Medium";
         const image = document.getElementById("add-prod-image").value.trim();
-        const notesInput = document.getElementById("add-prod-notes").value;
+        const fragranceSelect = document.getElementById("add-prod-fragrance");
+        const fragrance = fragranceSelect ? fragranceSelect.value : "Vanilla Wood";
         const description = document.getElementById("add-prod-desc").value.trim();
         
-        let notes = { top: "Bergamot", heart: "Rose", base: "Vanilla" };
-        if (notesInput) {
-          const arr = notesInput.split(",");
-          notes.top = arr[0] ? arr[0].trim() : "Bergamot";
-          notes.heart = arr[1] ? arr[1].trim() : "Rose";
-          notes.base = arr[2] ? arr[2].trim() : "Vanilla";
-        }
+        let notes = { top: fragrance, heart: "Aromatic Blend", base: "Natural Essences" };
         
         const existingProduct = isEditing ? PRODUCTS.find(p => p.id == editId) : null;
         const productDesc = description || (existingProduct ? existingProduct.description : "Handcrafted boutique candle released by our Master Pourers. Designed to build warm spaces.");
@@ -619,7 +615,9 @@
           burnTime: burnTime,
           waxType: waxType,
           description: productDesc,
-          fragrances: fragrances
+          fragrances: fragrances,
+          size: size,
+          fragrance: fragrance
         };
         
         if (typeof db !== "undefined" && isFirebaseInitialized) {
