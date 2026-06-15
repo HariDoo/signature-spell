@@ -92,12 +92,6 @@
 }
 
 /* Product Cards & Grid */
-.product-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 24px;
-}
-
 .product-card {
   background-color: var(--color-white);
   border: var(--border-neutral-light);

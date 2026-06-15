@@ -1,6 +1,9 @@
 "use strict";
 
 (function() {
+  const page = window.location.pathname.split("/").pop().toLowerCase();
+  const isBypassedPage = page === "admin.html" || page === "store-manager.html" || page === "admin" || page === "store-manager";
+
   // Run immediately, don't wait for DOMContentLoaded if possible.
   // Use a fast interval to wait for Firebase to become available
   const checkFbInterval = setInterval(() => {
@@ -11,7 +14,7 @@
   }, 10);
 
   // Synchronous cache check to prevent flash of content on page load
-  if (localStorage.getItem("maintenanceMode") === "true") {
+  if (localStorage.getItem("maintenanceMode") === "true" && !isBypassedPage) {
     // Optimistically lock the page. If Firebase later says it's off, we unlock it.
     enforceMaintenanceLock();
   }
@@ -114,11 +117,13 @@
   }
 
   function enforceMaintenanceLock() {
+    if (isBypassedPage) return;
     if (document.getElementById("maintenance-overlay")) return;
 
     const overlay = document.createElement("div");
     overlay.id = "maintenance-overlay";
-    overlay.style.cssText = "position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--color-cream, #fdfbf7); z-index: 999999; display: flex; padding: 20px; text-align: center; overflow-y: auto; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);";
+    overlay.className = "maintenance-overlay";
+    overlay.style.cssText = "position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--color-cream, #fdfbf7); z-index: 999999; display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); touch-action: none;";
     
     overlay.innerHTML = `
       <div class="maintenance-box" style="background: var(--color-off-white); color: var(--color-dark); padding: 40px 20px; border-radius: 12px; width: 100%; max-width: 500px; box-sizing: border-box; margin: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.2); border: 1px solid var(--color-light-gray); text-align: center; position: relative; overflow: hidden;">
@@ -137,20 +142,24 @@
     `;
 
     document.body.appendChild(overlay);
-    // Hide body scrolling
+    // Hide scrolling on both html and body to completely lock down scrolling
+    document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
   }
 
   function removeMaintenanceOverlay() {
     const overlay = document.getElementById("maintenance-overlay");
     if (overlay) overlay.remove();
-    document.body.style.overflow = ""; // restore scrolling
+    // Restore scrolling
+    document.documentElement.style.overflow = "";
+    document.body.style.overflow = "";
 
     const badge = document.getElementById("maintenance-admin-badge");
     if (badge) badge.remove();
   }
 
   function showAdminMaintenanceBadge() {
+    if (isBypassedPage) return;
     if (document.getElementById("maintenance-admin-badge")) return;
     const badge = document.createElement("div");
     badge.id = "maintenance-admin-badge";

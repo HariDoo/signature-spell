@@ -51,7 +51,7 @@ function initAdminConsole() {
     if (loadingOverlay) loadingOverlay.style.display = "none";
     root.style.display = "none";
     document.getElementById("access-denied-title").textContent = "Service Unavailable";
-    document.getElementById("access-denied-desc").textContent = "Firebase is not initialized. Please verify configuration.";
+    document.getElementById("access-denied-desc").textContent = !navigator.onLine ? "Check your Internet and try again." : "Firebase is not initialized. Please verify configuration.";
     if (deniedOverlay) deniedOverlay.style.display = "flex";
   }
 

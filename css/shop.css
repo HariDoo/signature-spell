@@ -7,7 +7,6 @@
    product-grid is the base, shop-grid scopes overrides for the shop page
    ========================================================================== */
 
-.product-grid,
 .shop-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -16,7 +15,6 @@
 
 /* On tablet, drop to 2-column layout */
 @media (max-width: 992px) {
-  .product-grid,
   .shop-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
@@ -25,7 +23,6 @@
 
 /* On mobile, single column */
 @media (max-width: 480px) {
-  .product-grid,
   .shop-grid {
     grid-template-columns: 1fr;
   }
