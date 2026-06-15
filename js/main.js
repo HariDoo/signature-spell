@@ -341,6 +341,11 @@ const UserSession = {
 
 // Global DOM Content Loaded Init
 document.addEventListener("DOMContentLoaded", () => {
+  // Clear order tracking id if we are on any page other than order-tracking.html
+  if (getPageName() !== "order-tracking.html") {
+    sessionStorage.removeItem("selected_order_id");
+  }
+
   // Sync products in case admin updated list
   PRODUCTS = ProductDb.get();
   
@@ -555,7 +560,7 @@ function updateCartBadge() {
 
 function updateFloatingCartBar() {
   const page = getPageName();
-  if (page === "cart.html" || page === "checkout.html") {
+  if (page === "cart.html" || page === "checkout.html" || page === "admin.html" || page === "store-manager.html") {
     const bar = document.getElementById("floating-cart-bar");
     if (bar) bar.style.display = "none";
     return;
@@ -1108,5 +1113,10 @@ document.addEventListener("click", function(e) {
   // If clicking on shop.html with no parameters, clear the shop filter
   if (href === "shop.html" || href.endsWith("/shop.html")) {
     sessionStorage.removeItem("selected_shop_filter");
+  }
+
+  // If clicking on order-tracking.html with no parameters, clear the selected order id
+  if (href === "order-tracking.html" || href.endsWith("/order-tracking.html")) {
+    sessionStorage.removeItem("selected_order_id");
   }
 }, true);

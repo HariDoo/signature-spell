@@ -27,7 +27,8 @@ function initPageTransitions() {
       child.classList.contains("maintenance-admin-badge") ||
       child.id === "maintenance-overlay" ||
       child.id === "maintenance-admin-badge" ||
-      child.id === "candle-portal"
+      child.id === "candle-portal" ||
+      child.id === "floating-cart-bar"
     )) {
       modals.push(child);
       document.body.removeChild(child);
