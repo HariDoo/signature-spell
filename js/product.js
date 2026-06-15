@@ -32,6 +32,111 @@ document.addEventListener("DOMContentLoaded", () => {
       categoryLink.href = `shop.html`;
     }
     if (productBreadcrumb) productBreadcrumb.textContent = product.name;
+
+    // --- DYNAMIC SEO META UPDATES ---
+    const pageTitle = `${product.name} | Signature Spell`;
+    document.title = pageTitle;
+
+    const pageUrl = `https://signaturespell.com/product.html?id=${product.id}`;
+    const productImgUrl = product.image.startsWith('http') ? product.image : `https://signaturespell.com/${product.image}`;
+    const seoDesc = `${product.description} Scent notes: Top: ${product.notes.top}, Heart: ${product.notes.heart}, Base: ${product.notes.base}. Burn time: ${product.burnTime}.`;
+
+    // Dynamic Description
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute("content", seoDesc);
+
+    // Dynamic Canonical
+    const canonicalTag = document.getElementById("canonical-placeholder");
+    if (canonicalTag) canonicalTag.setAttribute("href", pageUrl);
+
+    // Dynamic OG tags
+    const ogUrl = document.getElementById("og-url-placeholder");
+    if (ogUrl) ogUrl.setAttribute("content", pageUrl);
+
+    const ogTitle = document.getElementById("og-title-placeholder");
+    if (ogTitle) ogTitle.setAttribute("content", pageTitle);
+
+    const ogDesc = document.getElementById("og-desc-placeholder");
+    if (ogDesc) ogDesc.setAttribute("content", product.description);
+
+    const ogImg = document.getElementById("og-image-placeholder");
+    if (ogImg) ogImg.setAttribute("content", productImgUrl);
+
+    // Dynamic Twitter tags
+    const twitterUrl = document.getElementById("twitter-url-placeholder");
+    if (twitterUrl) twitterUrl.setAttribute("content", pageUrl);
+
+    const twitterTitle = document.getElementById("twitter-title-placeholder");
+    if (twitterTitle) twitterTitle.setAttribute("content", pageTitle);
+
+    const twitterDesc = document.getElementById("twitter-desc-placeholder");
+    if (twitterDesc) twitterDesc.setAttribute("content", product.description);
+
+    const twitterImg = document.getElementById("twitter-image-placeholder");
+    if (twitterImg) twitterImg.setAttribute("content", productImgUrl);
+
+    // --- DYNAMIC JSON-LD PRODUCT SCHEMA ---
+    let schemaScript = document.getElementById("dynamic-product-schema");
+    if (!schemaScript) {
+      schemaScript = document.createElement("script");
+      schemaScript.id = "dynamic-product-schema";
+      schemaScript.type = "application/ld+json";
+      document.head.appendChild(schemaScript);
+    }
+    const productSchema = {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "name": product.name,
+      "image": [productImgUrl],
+      "description": product.description,
+      "sku": `SS-CANDLE-${product.id}`,
+      "mpn": `SS-${product.id}`,
+      "brand": {
+        "@type": "Brand",
+        "name": "Signature Spell"
+      },
+      "offers": {
+        "@type": "Offer",
+        "url": pageUrl,
+        "priceCurrency": "INR",
+        "price": product.price,
+        "priceValidUntil": "2027-12-31",
+        "itemCondition": "https://schema.org/NewCondition",
+        "availability": "https://schema.org/InStock",
+        "seller": {
+          "@type": "Organization",
+          "name": "Signature Spell"
+        }
+      },
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "Wax Type",
+          "value": product.waxType
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "Burn Time",
+          "value": product.burnTime
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "Scent Note - Top",
+          "value": product.notes.top
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "Scent Note - Heart",
+          "value": product.notes.heart
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "Scent Note - Base",
+          "value": product.notes.base
+        }
+      ]
+    };
+    schemaScript.textContent = JSON.stringify(productSchema, null, 2);
     
     // Gallery image loads
     const mainImg = document.getElementById("main-product-img");

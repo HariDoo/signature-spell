@@ -350,21 +350,32 @@ textarea:focus {
   color: var(--theme-text-secondary) !important;
 }
 
-.newsletter-input {
-  color: var(--theme-text-primary) !important;
-  border-bottom-color: var(--theme-border) !important;
+.newsletter-input-wrapper {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1.5px solid var(--theme-border) !important;
 }
 
-.newsletter-input:focus {
-  border-bottom-color: var(--theme-text-gold) !important;
+.newsletter-input-wrapper:focus-within {
+  border-color: var(--theme-text-gold) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 0 0 4px rgba(245, 197, 24, 0.2) !important;
+}
+
+.newsletter-input {
+  color: var(--theme-text-primary) !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .newsletter-btn {
-  color: var(--theme-text-gold) !important;
+  background-color: var(--theme-text-gold) !important;
+  color: #0f0c1b !important;
 }
 
 .newsletter-btn:hover {
-  color: var(--theme-text-primary) !important;
+  background-color: var(--theme-text-primary) !important;
+  color: #0f0c1b !important;
 }
 
 /* 9. Shared Footer (Celestial Midnight Theme) */
