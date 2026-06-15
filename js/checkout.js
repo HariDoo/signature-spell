@@ -55,20 +55,140 @@ document.addEventListener("DOMContentLoaded", () => {
   
   // Auto-populate & lock email address if logged in
   const emailInput = document.getElementById("shipping-email");
-  if (emailInput) {
-    let activeEmail = "";
-    if (typeof firebase !== "undefined" && typeof isFirebaseInitialized !== "undefined" && isFirebaseInitialized && auth && auth.currentUser) {
-      activeEmail = auth.currentUser.email;
-    } else if (typeof UserSession !== "undefined") {
-      const sessionUser = UserSession.get();
-      if (sessionUser && sessionUser.email) activeEmail = sessionUser.email;
-    }
-    if (activeEmail) {
-      emailInput.value = activeEmail;
+  
+  const lockEmailField = (email) => {
+    if (emailInput && email) {
+      emailInput.value = email;
       emailInput.readOnly = true;
       emailInput.style.backgroundColor = "var(--color-cream-dark)";
       emailInput.style.color = "var(--color-muted-gray)";
     }
+  };
+
+  if (typeof firebase !== "undefined" && typeof isFirebaseInitialized !== "undefined" && isFirebaseInitialized && auth) {
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        lockEmailField(user.email);
+        initCheckoutAddressBook(user);
+      }
+    });
+  } else if (typeof UserSession !== "undefined") {
+    const sessionUser = UserSession.get();
+    if (sessionUser && sessionUser.email) {
+      lockEmailField(sessionUser.email);
+    }
+  }
+
+  // Checkout address book functions
+  async function initCheckoutAddressBook(user) {
+    const container = document.getElementById("checkout-address-selector-container");
+    const select = document.getElementById("checkout-address-select");
+    if (!container || !select) return;
+    
+    try {
+      const snapshot = await db.ref("users/" + user.uid + "/addresses").once("value");
+      const data = snapshot.val();
+      
+      if (!data) {
+        container.style.display = "none";
+        return;
+      }
+      
+      const addresses = Object.values(data);
+      if (addresses.length === 0) {
+        container.style.display = "none";
+        return;
+      }
+      
+      // Store addresses locally so we can access them when dropdown changes
+      window.checkoutAddresses = addresses;
+      
+      // Create options: first option is empty/prompt
+      let html = '<option value="">-- Select a saved address --</option>';
+      
+      // Sort addresses so default is always first
+      addresses.sort((a, b) => {
+        if (a.isDefault && !b.isDefault) return -1;
+        if (!a.isDefault && b.isDefault) return 1;
+        return 0;
+      });
+
+      addresses.forEach(addr => {
+        const defaultText = addr.isDefault ? " [Default]" : "";
+        html += `<option value="${addr.id}">${addr.firstName} ${addr.lastName}: ${addr.address}, ${addr.city} (${addr.zip})${defaultText}</option>`;
+      });
+      html += '<option value="new">-- Enter a new address --</option>';
+      
+      select.innerHTML = html;
+      container.style.display = "block";
+      
+      // If there's a default address, select it and fill the form automatically!
+      const defaultAddr = addresses.find(a => a.isDefault);
+      if (defaultAddr) {
+        select.value = defaultAddr.id;
+        fillShippingForm(defaultAddr);
+      }
+
+      // Initialize or refresh custom select styling
+      if (typeof window.initCustomSelect === "function") {
+        window.initCustomSelect(select);
+        if (select.parentNode && select.parentNode.refresh) {
+          select.parentNode.refresh();
+        }
+      }
+      
+      // Bind selection change
+      select.addEventListener("change", (e) => {
+        const val = e.target.value;
+        if (val === "" || val === "new") {
+          clearShippingForm();
+        } else {
+          const matched = window.checkoutAddresses.find(a => a.id === val);
+          if (matched) {
+            fillShippingForm(matched);
+          }
+        }
+      });
+      
+    } catch (err) {
+      console.error("Error loading checkout address book:", err);
+    }
+  }
+
+  function fillShippingForm(addr) {
+    const fields = {
+      "shipping-first-name": addr.firstName,
+      "shipping-last-name": addr.lastName,
+      "shipping-address": addr.address,
+      "shipping-city": addr.city,
+      "shipping-zip": addr.zip,
+      "shipping-phone": addr.phone
+    };
+    
+    for (const [id, val] of Object.entries(fields)) {
+      const input = document.getElementById(id);
+      if (input) {
+        input.value = val || "";
+      }
+    }
+  }
+
+  function clearShippingForm() {
+    const ids = [
+      "shipping-first-name",
+      "shipping-last-name",
+      "shipping-address",
+      "shipping-city",
+      "shipping-zip",
+      "shipping-phone"
+    ];
+    
+    ids.forEach(id => {
+      const input = document.getElementById(id);
+      if (input) {
+        input.value = "";
+      }
+    });
   }
 
   // CONFIGURATION: Replace with your deployed Google Apps Script Web App URL
