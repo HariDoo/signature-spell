@@ -21,7 +21,10 @@ function initStoreManagerConsole() {
           if (loadingOverlay) loadingOverlay.style.display = "none";
           if (deniedOverlay) deniedOverlay.style.display = "none";
           root.style.display = "block";
-          document.getElementById("admin-user-fullname").textContent = user.displayName || user.email.split("@")[0];
+          const userFullname = document.getElementById("admin-user-fullname");
+          if (userFullname) {
+            userFullname.textContent = user.displayName || user.email.split("@")[0];
+          }
           if (typeof window.initializeStoreManager === "function") {
             window.initializeStoreManager();
           } else {
@@ -109,6 +112,8 @@ window.syncCatalogTable = function() {
       <tr>
         <td><img src="${p.image}" alt=""></td>
         <td><strong>${p.name}</strong><br><span style="color:var(--color-muted-gray); font-size:0.7rem;">${p.category}</span></td>
+        <td>${p.size || 'Medium'}</td>
+        <td>${p.fragrance || p.notes?.top || '-'}</td>
         <td>₹${p.price}</td>
         <td style="text-align:right; white-space:nowrap;">
           <button class="btn btn-primary btn-small" style="padding:4px 8px; font-size:0.75rem; margin-right:5px; height:auto; width:auto; display:inline-block;" onclick="openEditProductModal('${p.id}')">Edit</button>
@@ -140,6 +145,21 @@ window.openAddProductModal = function() {
   if (categorySelect) {
     categorySelect.dispatchEvent(new Event("change", { bubbles: true }));
   }
+
+  const sizeSelect = document.getElementById("add-prod-size");
+  if (sizeSelect) {
+    sizeSelect.value = "Medium";
+    sizeSelect.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  if (typeof window.populateActiveFragrancesDropdown === "function") {
+    window.populateActiveFragrancesDropdown();
+  }
+  const fragSelect = document.getElementById("add-prod-fragrance");
+  if (fragSelect) {
+    fragSelect.value = fragSelect.options[0]?.value || "";
+    fragSelect.dispatchEvent(new Event("change", { bubbles: true }));
+  }
   
   document.getElementById("modal-add-product")?.classList.add("active");
 };
@@ -162,6 +182,21 @@ window.openEditProductModal = function(productId) {
   if (categorySelect) {
     categorySelect.value = product.category || "Tea Lights";
     categorySelect.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  const sizeSelect = document.getElementById("add-prod-size");
+  if (sizeSelect) {
+    sizeSelect.value = product.size || "Medium";
+    sizeSelect.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  if (typeof window.populateActiveFragrancesDropdown === "function") {
+    window.populateActiveFragrancesDropdown();
+  }
+  const fragSelect = document.getElementById("add-prod-fragrance");
+  if (fragSelect) {
+    fragSelect.value = product.fragrance || product.notes?.top || (fragSelect.options[0]?.value || "");
+    fragSelect.dispatchEvent(new Event("change", { bubbles: true }));
   }
   
   const imgSelect = document.getElementById("add-prod-image");
@@ -190,12 +225,6 @@ window.openEditProductModal = function(productId) {
   }
 
   document.getElementById("add-prod-desc").value = product.description || "";
-  
-  let notesStr = "";
-  if (product.notes) {
-    notesStr = `${product.notes.top || ""}, ${product.notes.heart || ""}, ${product.notes.base || ""}`;
-  }
-  document.getElementById("add-prod-notes").value = notesStr;
 
   document.getElementById("modal-add-product")?.classList.add("active");
 };
@@ -491,4 +520,30 @@ window.closeAllAdminModals = function() {
     m.classList.remove("active");
   });
   syncOrdersTable();
+};
+
+window.populateActiveFragrancesDropdown = function() {
+  const fragSelect = document.getElementById("add-prod-fragrance");
+  if (!fragSelect) return;
+  
+  // Clear existing options
+  fragSelect.innerHTML = "";
+  
+  const fragrancesList = Object.values(window.allFragrances || {});
+  if (fragrancesList.length > 0) {
+    fragrancesList.forEach(frag => {
+      const opt = document.createElement("option");
+      opt.value = frag.name;
+      opt.textContent = frag.name;
+      fragSelect.appendChild(opt);
+    });
+  } else {
+    const fallbackFragrances = ["Lavender Mist", "Vanilla Wood"];
+    fallbackFragrances.forEach(name => {
+      const opt = document.createElement("option");
+      opt.value = name;
+      opt.textContent = name;
+      fragSelect.appendChild(opt);
+    });
+  }
 };
