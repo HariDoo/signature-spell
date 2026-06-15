@@ -102,44 +102,160 @@
     // Update Mobile Nav links dynamically
     const mobileDrawer = document.getElementById("mobile-drawer");
     if (mobileDrawer) {
-      let authContainer = document.getElementById("mobile-auth-container");
-      if (!authContainer) {
-        authContainer = document.createElement("div");
-        authContainer.id = "mobile-auth-container";
-        authContainer.className = "mobile-auth-wrapper";
-        
-        const closeBtn = document.getElementById("mobile-close-btn");
-        if (closeBtn && closeBtn.nextSibling) {
-          mobileDrawer.insertBefore(authContainer, closeBtn.nextSibling);
-        } else if (mobileDrawer.firstChild) {
-          mobileDrawer.insertBefore(authContainer, mobileDrawer.firstChild);
-        } else {
-          mobileDrawer.appendChild(authContainer);
-        }
+      const isAdmin = user && user.isAdmin;
+      const userName = user ? (user.name || "User") : "";
+
+      mobileDrawer.innerHTML = `
+        <div class="mobile-drawer-header">
+          <span class="mobile-drawer-title">Signature Spell</span>
+          <button class="mobile-nav-close" id="mobile-close-btn" aria-label="Close menu">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+
+        <div class="mobile-search-container">
+          <form class="mobile-search-form" id="mobile-search-form">
+            <div class="mobile-search-input-wrapper">
+              <input type="text" id="mobile-search-input" placeholder="Search scents..." required autocomplete="off">
+              <button type="submit" class="mobile-search-submit" aria-label="Search">
+                <i class="bi bi-search"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="mobile-drawer-content">
+          ${user ? `
+            <div class="mobile-user-profile-card">
+              <div class="mobile-user-avatar">
+                <i class="bi bi-person-circle"></i>
+              </div>
+              <div class="mobile-user-details">
+                <span class="mobile-user-greet">Welcome,</span>
+                <span class="mobile-user-name">${userName}</span>
+              </div>
+            </div>
+          ` : ''}
+
+          <ul class="mobile-unified-menu">
+            <li>
+              <a href="index.html" class="mobile-menu-item">
+                <i class="bi bi-house"></i>
+                <span>Home</span>
+              </a>
+            </li>
+            <li>
+              <a href="shop.html" class="mobile-menu-item">
+                <i class="bi bi-shop"></i>
+                <span>Shop</span>
+              </a>
+            </li>
+            <li>
+              <a href="about.html" class="mobile-menu-item">
+                <i class="bi bi-book"></i>
+                <span>Our Story</span>
+              </a>
+            </li>
+            <li>
+              <a href="contact.html" class="mobile-menu-item">
+                <i class="bi bi-envelope"></i>
+                <span>Contact</span>
+              </a>
+            </li>
+            <li>
+              <a href="order-tracking.html" class="mobile-menu-item">
+                <i class="bi bi-geo-alt"></i>
+                <span>Track Order</span>
+              </a>
+            </li>
+            <li>
+              <a href="cart.html" class="mobile-menu-item">
+                <i class="bi bi-bag"></i>
+                <span>Cart</span>
+              </a>
+            </li>
+
+            <li class="mobile-menu-divider"></li>
+
+            ${user ? `
+              <li>
+                <a href="profile.html" class="mobile-menu-item">
+                  <i class="bi bi-person"></i>
+                  <span>My Profile</span>
+                </a>
+              </li>
+              <li>
+                <a href="orders.html" class="mobile-menu-item">
+                  <i class="bi bi-bag-check"></i>
+                  <span>My Orders</span>
+                </a>
+              </li>
+              ${isAdmin ? `
+                <li>
+                  <a href="admin.html" class="mobile-menu-item">
+                    <i class="bi bi-shield-lock"></i>
+                    <span>Admin Dashboard</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="store-manager.html" class="mobile-menu-item">
+                    <i class="bi bi-gear"></i>
+                    <span>Orders &amp; Catalog</span>
+                  </a>
+                </li>
+              ` : ''}
+              <li>
+                <a href="#" class="mobile-menu-item mobile-logout-item" id="mobile-logout-btn">
+                  <i class="bi bi-box-arrow-right"></i>
+                  <span>Log Out</span>
+                </a>
+              </li>
+            ` : `
+              <li>
+                <a href="#" class="mobile-menu-item mobile-login-item" id="mobile-login-btn">
+                  <i class="bi bi-box-arrow-in-right"></i>
+                  <span>Login / Signup</span>
+                </a>
+              </li>
+            `}
+          </ul>
+        </div>
+      `;
+
+      // Helper function to close mobile menu
+      const closeMenu = () => {
+        const mobileOverlay = document.getElementById("mobile-overlay");
+        if (mobileOverlay) mobileOverlay.classList.remove("active");
+        mobileDrawer.classList.remove("active");
+      };
+
+      // Bind dynamic close button
+      const closeBtn = mobileDrawer.querySelector("#mobile-close-btn");
+      if (closeBtn) {
+        closeBtn.addEventListener("click", closeMenu);
       }
 
+      // Bind search submission
+      const searchForm = mobileDrawer.querySelector("#mobile-search-form");
+      const searchInput = mobileDrawer.querySelector("#mobile-search-input");
+      if (searchForm && searchInput) {
+        searchForm.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const query = searchInput.value.trim();
+          if (query) {
+            closeMenu();
+            window.location.href = `shop.html?search=${encodeURIComponent(query)}`;
+          }
+        });
+      }
+
+      // Bind auth actions
       if (user) {
-        const userName = user.name || "User";
-        authContainer.innerHTML = `
-          <div class="mobile-user-info">
-            <span class="mobile-welcome-text">Hello, <strong>${userName}</strong></span>
-            <div class="mobile-auth-links">
-              <a href="profile.html" class="mobile-auth-sublink">My Profile</a>
-              <span class="divider">|</span>
-              <a href="orders.html" class="mobile-auth-sublink">My Orders</a>
-              <span class="divider">|</span>
-              <a href="#" class="mobile-auth-sublink" id="mobile-logout-btn">Log Out</a>
-            </div>
-          </div>
-        `;
-        
-        const logoutBtn = authContainer.querySelector("#mobile-logout-btn");
+        const logoutBtn = mobileDrawer.querySelector("#mobile-logout-btn");
         if (logoutBtn) {
           logoutBtn.addEventListener("click", (e) => {
             e.preventDefault();
-            const mobileOverlay = document.getElementById("mobile-overlay");
-            if (mobileOverlay) mobileOverlay.classList.remove("active");
-            mobileDrawer.classList.remove("active");
+            closeMenu();
             
             if (typeof firebase !== "undefined" && typeof isFirebaseInitialized !== "undefined" && isFirebaseInitialized && auth) {
               auth.signOut();
@@ -155,19 +271,11 @@
           });
         }
       } else {
-        authContainer.innerHTML = `
-          <a href="#" class="mobile-auth-btn" id="mobile-login-btn">
-            <i class="bi bi-person-circle"></i> Login / Signup
-          </a>
-        `;
-        
-        const loginBtn = authContainer.querySelector("#mobile-login-btn");
+        const loginBtn = mobileDrawer.querySelector("#mobile-login-btn");
         if (loginBtn) {
           loginBtn.addEventListener("click", (e) => {
             e.preventDefault();
-            const mobileOverlay = document.getElementById("mobile-overlay");
-            if (mobileOverlay) mobileOverlay.classList.remove("active");
-            mobileDrawer.classList.remove("active");
+            closeMenu();
             
             if (typeof window.triggerLoginModal === "function") {
               window.triggerLoginModal();
