@@ -49,7 +49,7 @@ function initStoreManagerConsole() {
     if (loadingOverlay) loadingOverlay.style.display = "none";
     root.style.display = "none";
     document.getElementById("access-denied-title").textContent = "Service Unavailable";
-    document.getElementById("access-denied-desc").textContent = "Firebase is not initialized. Please verify configuration.";
+    document.getElementById("access-denied-desc").textContent = !navigator.onLine ? "Check your Internet and try again." : "Firebase is not initialized. Please verify configuration.";
     if (deniedOverlay) deniedOverlay.style.display = "flex";
   }
 
@@ -129,6 +129,12 @@ window.openAddProductModal = function() {
   
   const form = document.getElementById("admin-add-product-form");
   if (form) form.reset();
+
+  const imgSelect = document.getElementById("add-prod-image");
+  if (imgSelect) {
+    // Clean up any dynamic custom options from previous edits
+    Array.from(imgSelect.querySelectorAll(".custom-option")).forEach(opt => opt.remove());
+  }
   
   const categorySelect = document.getElementById("add-prod-category");
   if (categorySelect) {
@@ -158,7 +164,31 @@ window.openEditProductModal = function(productId) {
     categorySelect.dispatchEvent(new Event("change", { bubbles: true }));
   }
   
-  document.getElementById("add-prod-image").value = product.image || "";
+  const imgSelect = document.getElementById("add-prod-image");
+  if (imgSelect) {
+    // Clean up any dynamic custom options first
+    Array.from(imgSelect.querySelectorAll(".custom-option")).forEach(opt => opt.remove());
+    
+    const val = product.image || "";
+    let exists = false;
+    for (let i = 0; i < imgSelect.options.length; i++) {
+      if (imgSelect.options[i].value === val) {
+        exists = true;
+        break;
+      }
+    }
+    
+    // Dynamically append custom option if not present in the pre-defined list
+    if (!exists && val) {
+      const opt = document.createElement("option");
+      opt.value = val;
+      opt.className = "custom-option";
+      opt.textContent = `${val} (Custom Path)`;
+      imgSelect.appendChild(opt);
+    }
+    imgSelect.value = val;
+  }
+
   document.getElementById("add-prod-desc").value = product.description || "";
   
   let notesStr = "";

@@ -667,6 +667,13 @@ function initAuthModal() {
       message.includes("invalid-email")
     )) {
       friendlyMessage = "Given username / password wrong try once again";
+    } else if (!navigator.onLine || (message && (
+      message.includes("network-request-failed") ||
+      message.includes("network error") ||
+      message.includes("timeout") ||
+      message.includes("unreachable host")
+    ))) {
+      friendlyMessage = "Check your Internet and try again.";
     }
     const container = getAlertContainer();
     if (container) {
@@ -779,7 +786,9 @@ function initAuthModal() {
       const email = document.getElementById("auth-email-input").value.trim();
       const pass = document.getElementById("auth-pass-input").value;
       
-      if (isFirebaseInitialized) {
+      if (!navigator.onLine) {
+        showAuthError("Check your Internet and try again.");
+      } else if (isFirebaseInitialized) {
         if (isLoginState) {
           sessionStorage.setItem("just_logged_in", "true");
           auth.signInWithEmailAndPassword(email, pass)
@@ -815,7 +824,9 @@ function initAuthModal() {
   if (googleBtn) {
     googleBtn.addEventListener("click", () => {
       clearAuthError();
-      if (isFirebaseInitialized) {
+      if (!navigator.onLine) {
+        showAuthError("Check your Internet and try again.");
+      } else if (isFirebaseInitialized) {
         sessionStorage.setItem("just_logged_in", "true");
         auth.signInWithPopup(googleProvider)
           .then(() => {

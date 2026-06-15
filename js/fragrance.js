@@ -39,29 +39,7 @@
       }
     }
 
-    // MutationObserver: upgrade any .product-fragrance-select elements
-    // that get injected into product grids (shop.html / index.html)
-    function upgradeCardSelects(container) {
-      container.querySelectorAll("select.product-fragrance-select").forEach(sel => {
-        if (!sel._ssInitialized && typeof window.initCustomSelect === "function") {
-          window.initCustomSelect(sel, { size: "small", placeholder: "Choose fragrance..." });
-        }
-      });
-    }
-
-    const grids = document.querySelectorAll(".shop-grid, .product-grid, .featured-grid");
-    grids.forEach(grid => {
-      upgradeCardSelects(grid); // Upgrade any already-present selects
-      const obs = new MutationObserver(() => upgradeCardSelects(grid));
-      obs.observe(grid, { childList: true, subtree: true });
-    });
-
-    // Also upgrade when products are re-rendered by shop.js / index.js
-    document.addEventListener("productsUpdated", () => {
-      document.querySelectorAll(".shop-grid, .product-grid, .featured-grid").forEach(grid => {
-        upgradeCardSelects(grid);
-      });
-    });
+    // No grid fragrance dropdown observers needed
   });
 
   function initializeFragranceDb() {
@@ -146,63 +124,7 @@
     }
   }, 100);
 
-  // Storefront overrides: intercept card rendering
-  if (typeof window.createProductCardHTML === "function" || typeof createProductCardHTML === "function") {
-    const originalCreateCardHTML = window.createProductCardHTML || createProductCardHTML;
-    
-    window.createProductCardHTML = function(product) {
-      const originalHTML = originalCreateCardHTML(product);
-      
-      // Determine assigned fragrances
-      const assignedIds = product.fragrances ? Object.keys(product.fragrances) : [];
-      let optionsHTML = "";
-      if (assignedIds.length > 0) {
-        assignedIds.forEach(fid => {
-          const name = window.allFragrances[fid] ? window.allFragrances[fid].name : fid;
-          optionsHTML += `<option value="${name}">${name}</option>`;
-        });
-      } else {
-        // Fallback options
-        optionsHTML = `
-          <option value="Lavender Mist">Lavender Mist</option>
-          <option value="Vanilla Wood">Vanilla Wood</option>
-        `;
-      }
-
-      const dropdownHTML = `
-        <div class="product-fragrance-select-wrapper" style="text-align: left; padding: 0 4px;">
-          <span class="product-fragrance-label" style="font-size: 0.7rem; font-weight: 700; color: var(--color-muted-gray, #71717a); display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; font-family: var(--font-body), sans-serif;">Select your fragrance</span>
-          <select class="product-fragrance-select" data-product-id="${product.id}" aria-label="Select Fragrance">
-            ${optionsHTML}
-          </select>
-        </div>
-      `;
-
-      // Redirect Add to Cart button to support fragrance selection
-      let modifiedHTML = originalHTML.replace(
-        `onclick="handleCardAddToCart('${product.id}')"`,
-        `onclick="handleCardAddToCartWithFragrance('${product.id}', this)"`
-      );
-
-      // Inject selector above the add-to-cart button
-      const btnIndex = modifiedHTML.indexOf("<button class=\"btn btn-primary btn-block product-card-cta\"");
-      if (btnIndex !== -1) {
-        modifiedHTML = modifiedHTML.slice(0, btnIndex) + dropdownHTML + modifiedHTML.slice(btnIndex);
-      }
-      return modifiedHTML;
-    };
-  }
-
-  // Handle storefront card cart addition
-  window.handleCardAddToCartWithFragrance = function(productId, btnElement) {
-    const card = btnElement ? btnElement.closest(".product-card") : document.querySelector(`.product-card[data-id="${productId}"]`);
-    const select = card ? card.querySelector(".product-fragrance-select") : null;
-    const fragrance = select ? select.value : "Lavender Mist";
-
-    CartStorage.add(productId, 1, fragrance);
-    const product = PRODUCTS.find(p => p.id == productId);
-    showToast(`${product ? product.name : "Candle"} (${fragrance}) added to cart!`);
-  };
+  // Storefront overrides: card rendering is left unchanged (no dropdown in card)
 
   // Product Details Page Dropdown Injection
   function injectDetailsPageDropdown() {
@@ -220,12 +142,11 @@
     // Check if dropdown already exists
     if (document.querySelector(".product-detail-fragrance-wrapper")) return;
 
-    const assignedIds = product.fragrances ? Object.keys(product.fragrances) : [];
+    const fragrancesList = Object.values(window.allFragrances);
     let optionsHTML = "";
-    if (assignedIds.length > 0) {
-      assignedIds.forEach(fid => {
-        const name = window.allFragrances[fid] ? window.allFragrances[fid].name : fid;
-        optionsHTML += `<option value="${name}">${name}</option>`;
+    if (fragrancesList.length > 0) {
+      fragrancesList.forEach(frag => {
+        optionsHTML += `<option value="${frag.name}">${frag.name}</option>`;
       });
     } else {
       optionsHTML = `

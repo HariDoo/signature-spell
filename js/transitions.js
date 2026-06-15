@@ -20,7 +20,15 @@ function initPageTransitions() {
   const modals = [];
   while (document.body.firstChild) {
     const child = document.body.firstChild;
-    if (child.nodeType === 1 && (child.classList.contains("modal-overlay") || child.classList.contains("loading-overlay") || child.id === "candle-portal")) {
+    if (child.nodeType === 1 && (
+      child.classList.contains("modal-overlay") || 
+      child.classList.contains("loading-overlay") || 
+      child.classList.contains("maintenance-overlay") ||
+      child.classList.contains("maintenance-admin-badge") ||
+      child.id === "maintenance-overlay" ||
+      child.id === "maintenance-admin-badge" ||
+      child.id === "candle-portal"
+    )) {
       modals.push(child);
       document.body.removeChild(child);
     } else {
