@@ -345,21 +345,32 @@ textarea:focus {
   color: rgba(255, 255, 255, 0.75) !important;
 }
 
-.newsletter-input {
-  color: var(--theme-text-white) !important;
-  border-bottom-color: rgba(255, 255, 255, 0.2) !important;
+.newsletter-input-wrapper {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.15) !important;
 }
 
-.newsletter-input:focus {
-  border-bottom-color: var(--theme-text-gold) !important;
+.newsletter-input-wrapper:focus-within {
+  border-color: var(--theme-text-gold) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 0 0 4px rgba(197, 143, 0, 0.25) !important;
+}
+
+.newsletter-input {
+  color: var(--theme-text-white) !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .newsletter-btn {
-  color: var(--theme-text-gold) !important;
+  background-color: var(--theme-text-gold) !important;
+  color: var(--theme-text-primary) !important;
 }
 
 .newsletter-btn:hover {
-  color: var(--theme-text-white) !important;
+  background-color: var(--theme-text-white) !important;
+  color: var(--theme-text-primary) !important;
 }
 
 /* 9. Shared Footer (Elegant, Dark Styled) */
