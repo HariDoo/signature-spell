@@ -905,7 +905,8 @@ h6 {
   color: var(--color-charcoal);
 }
 
-.auth-modal .form-group input {
+.auth-modal .form-group input,
+.auth-modal .form-group select {
   width: 100%;
   padding: 12px;
   border: 1px solid var(--color-light-gray);
@@ -918,7 +919,8 @@ h6 {
   box-sizing: border-box;
 }
 
-.auth-modal .form-group input:focus {
+.auth-modal .form-group input:focus,
+.auth-modal .form-group select:focus {
   outline: none;
   border-color: var(--color-gold);
   background-color: var(--color-white);
@@ -1763,4 +1765,44 @@ h6 {
   z-index: 99999;
   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
   pointer-events: none;
+}
+
+/* Authentication Modal Transition Animations & Loading States */
+.auth-modal-content-fade {
+  animation: modalContentFadeIn 0.35s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+}
+
+@keyframes modalContentFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.btn-loading {
+  position: relative !important;
+  color: transparent !important;
+  pointer-events: none !important;
+}
+
+.btn-loading::after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  top: 0; left: 0; right: 0; bottom: 0;
+  margin: auto;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: btnSpinnerSpin 0.6s linear infinite;
+}
+
+@keyframes btnSpinnerSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }

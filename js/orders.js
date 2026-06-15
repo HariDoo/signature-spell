@@ -50,9 +50,9 @@ function populateProfileSummary(user) {
   const summaryEmail = document.getElementById("summary-email");
   const summaryCreated = document.getElementById("summary-created-at");
 
-  const displayName = user.displayName || user.email.split("@")[0];
+  const displayName = user.displayName || (user.email ? user.email.split("@")[0] : "User");
   if (summaryName) summaryName.textContent = displayName;
-  if (summaryEmail) summaryEmail.textContent = user.email;
+  if (summaryEmail) summaryEmail.textContent = user.email || "No Email";
   
   if (nameInitials) {
     nameInitials.textContent = getInitials(displayName);
@@ -88,8 +88,9 @@ function loadUserOrders(user) {
   if (!container) return;
 
   const fetchSuccess = (orders) => {
-    // Filter orders by customer email matching the logged-in user
-    allUserOrders = orders.filter(o => o.email && o.email.toLowerCase() === user.email.toLowerCase());
+    allUserOrders = orders.filter(o => {
+      return !!(user.email && o.email && o.email.toLowerCase() === user.email.toLowerCase());
+    });
     
     // Sort by date (newest first)
     allUserOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
