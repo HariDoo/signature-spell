@@ -1521,8 +1521,9 @@ h6 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 90%;
-  max-width: 480px;
+  gap: 28px;
+  width: max-content;
+  max-width: 90%;
   box-shadow:
     0 10px 30px rgba(0, 0, 0, 0.2),
     0 0 0 1px rgba(255, 255, 255, 0.15);
@@ -1567,6 +1568,9 @@ h6 {
 }
 
 .floating-cart-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   background-color: var(--color-gold);
   color: var(--color-charcoal);
   padding: 10px 20px;
@@ -1575,13 +1579,26 @@ h6 {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  transition: var(--transition-smooth);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .floating-cart-btn:hover {
   background-color: var(--color-white);
   color: var(--color-charcoal);
-  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+
+.floating-cart-btn:active {
+  transform: translateY(-0.5px);
+}
+
+.floating-cart-btn .btn-arrow {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.floating-cart-btn:hover .btn-arrow {
+  transform: translateX(4px);
 }
 
 /* Alert Styles */

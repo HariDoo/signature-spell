@@ -54,5 +54,20 @@
         glow.style.opacity = "0";
       }
     });
+
+    // Click Event Delegation to make entire product card clickable
+    document.body.addEventListener("click", (e) => {
+      const card = e.target.closest(".product-card");
+      if (card) {
+        // Do not redirect if clicking interactive elements (buttons, links, native or custom selectors)
+        if (e.target.closest("button") || e.target.closest("a") || e.target.closest("select") || e.target.closest(".custom-select") || e.target.closest(".select-selected") || e.target.closest(".select-items")) {
+          return;
+        }
+        const productId = card.getAttribute("data-id");
+        if (productId) {
+          window.location.href = `product.html?id=${productId}`;
+        }
+      }
+    });
   }
 })();

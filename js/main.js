@@ -594,7 +594,13 @@ function updateFloatingCartBar() {
       <span class="floating-cart-divider">|</span>
       <span class="floating-cart-total">₹${subtotal}</span>
     </div>
-    <a href="cart.html" class="floating-cart-btn">Checkout &rarr;</a>
+    <a href="cart.html" class="floating-cart-btn">
+      <span>Checkout</span>
+      <svg class="btn-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+        <polyline points="12,5 19,12 12,19"></polyline>
+      </svg>
+    </a>
   `;
 }
 
