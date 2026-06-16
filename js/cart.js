@@ -8,8 +8,83 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const itemsContainer = document.querySelector(".cart-items-list");
   const summaryBlock = document.querySelector(".cart-summary-block");
+  const ABANDONED_MARK_KEY = "ss_abandoned_cart_last_sent";
+  const ABANDONED_COOLDOWN_MS = 12 * 60 * 60 * 1000;
   
   if (!itemsContainer) return;
+
+  const checkoutCta = document.getElementById("proceed-checkout-cta");
+  if (checkoutCta) {
+    checkoutCta.addEventListener("click", () => {
+      sessionStorage.setItem("ss_skip_abandoned_cart_once", "1");
+    });
+  }
+
+  function getLoggedInEmail() {
+    if (typeof auth !== "undefined" && auth.currentUser && auth.currentUser.email) {
+      return auth.currentUser.email;
+    }
+    if (typeof UserSession !== "undefined" && typeof UserSession.get === "function") {
+      const user = UserSession.get();
+      return user && user.email ? user.email : "";
+    }
+    return "";
+  }
+
+  function buildCartPayload(cart) {
+    let subtotal = 0;
+    const items = cart.map(item => {
+      const product = (typeof PRODUCTS !== "undefined") ? PRODUCTS.find(prod => String(prod.id) === String(item.id)) : null;
+      const unitPrice = product ? Number(product.price || 0) : 0;
+      const qty = Number(item.qty || 0);
+      subtotal += unitPrice * qty;
+      return {
+        id: item.id,
+        name: product ? product.name : "Candle",
+        qty: qty,
+        price: unitPrice
+      };
+    });
+
+    return {
+      email: getLoggedInEmail(),
+      customer: "",
+      items: items,
+      subtotal: Number(subtotal.toFixed(2)),
+      cartUrl: "https://signature-spell.com/cart.html"
+    };
+  }
+
+  function maybeQueueAbandonedCartReminder(useBeacon) {
+    if (!window.EmailNotificationService || typeof window.EmailNotificationService.queueAbandonedCartReminder !== "function") {
+      return;
+    }
+
+    if (sessionStorage.getItem("ss_skip_abandoned_cart_once") === "1") {
+      sessionStorage.removeItem("ss_skip_abandoned_cart_once");
+      return;
+    }
+
+    if (typeof CartStorage === "undefined") return;
+    const cart = CartStorage.get();
+    if (!cart || cart.length === 0) return;
+
+    const email = getLoggedInEmail();
+    if (!email) return;
+
+    const lastSent = Number(localStorage.getItem(ABANDONED_MARK_KEY) || "0");
+    if (Date.now() - lastSent < ABANDONED_COOLDOWN_MS) return;
+
+    const payload = buildCartPayload(cart);
+    if (!payload.items.length) return;
+
+    localStorage.setItem(ABANDONED_MARK_KEY, String(Date.now()));
+    window.EmailNotificationService.queueAbandonedCartReminder(payload, !!useBeacon);
+  }
+
+  window.addEventListener("pagehide", () => {
+    maybeQueueAbandonedCartReminder(true);
+  });
 
   function renderCart() {
     if (typeof CartStorage === "undefined" || typeof PRODUCTS === "undefined") return;
