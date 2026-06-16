@@ -14,6 +14,7 @@
   transition: var(--transition-smooth) !important;
   overflow: hidden !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02) !important;
+  cursor: pointer !important;
 }
 
 html body .product-card:hover {
