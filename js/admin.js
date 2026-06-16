@@ -464,7 +464,7 @@ function setupAdminFormBindings() {
 
   const annForm = document.getElementById("form-announcement");
   if (annForm) {
-    annForm.addEventListener("submit", (e) => {
+    annForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const title = document.getElementById("announcement-title").value.trim();
       const msg = document.getElementById("announcement-message").value.trim();
@@ -477,6 +477,14 @@ function setupAdminFormBindings() {
           timestamp: Date.now()
         })
         .then(() => {
+          if (window.UserNotificationsApi && typeof window.UserNotificationsApi.createForAllUsers === "function") {
+            window.UserNotificationsApi.createForAllUsers({
+              type: "announcement",
+              title: title,
+              message: msg,
+              link: "index.html"
+            });
+          }
           logAdminAction("announcement_created", `Created bulletin: ${title}`);
           showToast("Bulletin broadcasted.");
           closeAllAdminModals();

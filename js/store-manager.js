@@ -280,7 +280,7 @@ window.syncOrdersTable = function() {
             <td>${o.customer}</td>
             <td><span class="status-badge ${o.status.toLowerCase()}">${o.status}</span></td>
             <td>
-              <select class="admin-status-select" onchange="handleAdminUpdateOrderStatus('${o.id}', this.value)" style="padding: 4px; border: 1px solid var(--color-light-gray); background: white;">
+              <select class="admin-status-select" onchange="handleAdminUpdateOrderStatus('${o.id}', this.value, '${o.status}')" style="padding: 4px; border: 1px solid var(--color-light-gray); background: white;">
                 <option value="Confirmed" ${o.status === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
                 <option value="Processing" ${o.status === 'Processing' ? 'selected' : ''}>Processing</option>
                 <option value="Shipped" ${o.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
@@ -309,15 +309,19 @@ window.filterOrders = function() {
   syncOrdersTable();
 };
 
-window.handleAdminUpdateOrderStatus = function(orderId, status) {
+window.handleAdminUpdateOrderStatus = function(orderId, status, previousStatus) {
   if (status === "Shipped") {
-    openCarrierDetailsModal(orderId);
+    openCarrierDetailsModal(orderId, previousStatus || "Processing");
     return;
   }
 
   if (isFirebaseInitialized) {
     db.ref("orders/" + orderId).update({ status: status })
-      .then(() => {
+      .then(async () => {
+        if (window.EmailNotificationService && typeof window.EmailNotificationService.notifyOrderStatusUpdate === "function") {
+          await window.EmailNotificationService.notifyOrderStatusUpdate(orderId, status, previousStatus || "Confirmed");
+        }
+        await pushOrderStatusWebsiteNotification(orderId, status);
         logAdminAction("order_status_updated", `Updated order ${orderId} status to ${status}`);
         showToast(`Order ${orderId} set to ${status}`);
       })
@@ -437,12 +441,43 @@ async function logAdminAction(action, details) {
   }
 }
 
+async function pushOrderStatusWebsiteNotification(orderId, status) {
+  if (!window.UserNotificationsApi || typeof window.UserNotificationsApi.createForUserByEmail !== "function") return;
+  if (!isFirebaseInitialized) return;
+
+  try {
+    const snapshot = await db.ref("orders/" + orderId).once("value");
+    const order = snapshot.val();
+    if (!order || !order.email) return;
+
+    const statusLabels = {
+      Confirmed: "Order confirmed",
+      Processing: "Order processing",
+      Shipped: "Order shipped",
+      Delivered: "Order delivered",
+      Cancelled: "Order cancelled"
+    };
+
+    await window.UserNotificationsApi.createForUserByEmail(order.email, {
+      type: "order",
+      title: statusLabels[status] || "Order updated",
+      message: `Order ${orderId} is now ${status}.`,
+      link: `order-tracking.html?orderId=${encodeURIComponent(orderId)}`,
+      orderId: orderId,
+      status: status
+    });
+  } catch (err) {
+    console.error("Failed to create website order notification:", err);
+  }
+}
+
 function setupStoreManagerFormBindings() {
   const carrierForm = document.getElementById("form-carrier-details");
   if (carrierForm) {
     carrierForm.addEventListener("submit", (e) => {
       e.preventDefault();
       const orderId = document.getElementById("carrier-order-id").value;
+      const prevStatus = document.getElementById("carrier-prev-status").value || "Processing";
       const carrier = document.getElementById("carrier-name-input").value.trim();
       const trackingId = document.getElementById("carrier-tracking-input").value.trim();
       const alertCont = document.getElementById("alert-carrier-details");
@@ -453,7 +488,11 @@ function setupStoreManagerFormBindings() {
           carrier: carrier,
           trackingId: trackingId
         })
-        .then(() => {
+        .then(async () => {
+          if (window.EmailNotificationService && typeof window.EmailNotificationService.notifyOrderStatusUpdate === "function") {
+            await window.EmailNotificationService.notifyOrderStatusUpdate(orderId, "Shipped", prevStatus);
+          }
+          await pushOrderStatusWebsiteNotification(orderId, "Shipped");
           logAdminAction("order_status_updated", `Updated order ${orderId} status to Shipped (Carrier: ${carrier}, Tracking ID: ${trackingId})`);
           showToast(`Order ${orderId} marked as Shipped`);
           closeAllAdminModals();
@@ -483,12 +522,15 @@ function setupStoreManagerFormBindings() {
   }
 }
 
-window.openCarrierDetailsModal = function(orderId) {
+window.openCarrierDetailsModal = function(orderId, previousStatus) {
   const alertCont = document.getElementById("alert-carrier-details");
   if (alertCont) alertCont.innerHTML = "";
   
   const orderIdInput = document.getElementById("carrier-order-id");
   if (orderIdInput) orderIdInput.value = orderId;
+
+  const prevStatusInput = document.getElementById("carrier-prev-status");
+  if (prevStatusInput) prevStatusInput.value = previousStatus || "Processing";
   
   const nameInput = document.getElementById("carrier-name-input");
   if (nameInput) nameInput.value = "";
