@@ -48,6 +48,228 @@
     originalRemoveItem.apply(this, arguments);
   };
 
+  let notificationItems = [];
+  let notificationsRef = null;
+
+  function getLocalNotificationKey(user) {
+    if (user && user.uid) return "signature_spell_notifications_" + user.uid;
+    return "signature_spell_notifications_guest";
+  }
+
+  function loadLocalNotifications(user) {
+    try {
+      const raw = localStorage.getItem(getLocalNotificationKey(user));
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (err) {
+      return [];
+    }
+  }
+
+  function saveLocalNotifications(list, user) {
+    localStorage.setItem(getLocalNotificationKey(user), JSON.stringify(list.slice(0, 50)));
+  }
+
+  function escapeHtml(str) {
+    return String(str || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function formatRelativeTime(ts) {
+    const now = Date.now();
+    const diff = Math.max(0, now - Number(ts || now));
+    const min = 60 * 1000;
+    const hr = 60 * min;
+    const day = 24 * hr;
+    if (diff < min) return "Just now";
+    if (diff < hr) return Math.floor(diff / min) + "m ago";
+    if (diff < day) return Math.floor(diff / hr) + "h ago";
+    return Math.floor(diff / day) + "d ago";
+  }
+
+  function ensureNotificationIcon() {
+    const navIcons = document.querySelector(".nav-icons");
+    const wishlistBtn = document.getElementById("wishlist-btn");
+    if (!navIcons || !wishlistBtn || document.getElementById("notification-btn")) return;
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "notification-dropdown-container";
+
+    const button = document.createElement("a");
+    button.href = "#";
+    button.className = "icon-btn";
+    button.id = "notification-btn";
+    button.setAttribute("aria-label", "Notifications");
+    button.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span class="notification-count" id="notification-badge-count" style="display:none;">0</span>
+    `;
+
+    const menu = document.createElement("div");
+    menu.className = "notification-dropdown-menu";
+    menu.id = "notification-dropdown-menu";
+    menu.innerHTML = `
+      <div class="notification-menu-header">
+        <strong>Notifications</strong>
+        <button type="button" id="notification-mark-read-btn">Mark all read</button>
+      </div>
+      <div class="notification-menu-list" id="notification-menu-list"></div>
+    `;
+
+    wrapper.appendChild(button);
+    wrapper.appendChild(menu);
+
+    wishlistBtn.insertAdjacentElement("afterend", wrapper);
+
+    button.addEventListener("click", function(e) {
+      e.preventDefault();
+      menu.classList.toggle("show");
+    });
+
+    document.addEventListener("click", function(e) {
+      if (!wrapper.contains(e.target)) {
+        menu.classList.remove("show");
+      }
+    });
+
+    const markReadBtn = document.getElementById("notification-mark-read-btn");
+    if (markReadBtn) {
+      markReadBtn.addEventListener("click", function(e) {
+        e.preventDefault();
+        markAllNotificationsRead();
+      });
+    }
+  }
+
+  function renderNotificationMenu() {
+    const listEl = document.getElementById("notification-menu-list");
+    if (!listEl) return;
+
+    const user = typeof UserSession !== "undefined" ? UserSession.get() : null;
+    if (!user) {
+      listEl.innerHTML = `<div class="notification-empty">Log in to view notifications.</div>`;
+      updateNotificationBadge();
+      return;
+    }
+
+    if (!notificationItems.length) {
+      listEl.innerHTML = `<div class="notification-empty">No notifications yet.</div>`;
+      updateNotificationBadge();
+      return;
+    }
+
+    listEl.innerHTML = notificationItems.slice(0, 20).map(function(item) {
+      const href = item.link || "#";
+      return `
+        <a href="${escapeHtml(href)}" class="notification-item ${item.read ? "" : "unread"}" data-id="${escapeHtml(item.id || "")}">
+          <span class="notification-title">${escapeHtml(item.title || "Update")}</span>
+          <span class="notification-text">${escapeHtml(item.message || "")}</span>
+          <span class="notification-time">${formatRelativeTime(item.createdAt)}</span>
+        </a>
+      `;
+    }).join("");
+
+    listEl.querySelectorAll(".notification-item").forEach(function(link) {
+      link.addEventListener("click", function() {
+        const id = link.getAttribute("data-id");
+        if (id) markNotificationRead(id);
+      });
+    });
+
+    updateNotificationBadge();
+  }
+
+  function updateNotificationBadge() {
+    const badge = document.getElementById("notification-badge-count");
+    if (!badge) return;
+    const unread = notificationItems.filter(function(n) { return !n.read; }).length;
+    badge.textContent = String(unread);
+    badge.style.display = unread > 0 ? "flex" : "none";
+  }
+
+  function markNotificationRead(notificationId) {
+    const user = typeof UserSession !== "undefined" ? UserSession.get() : null;
+    if (!user || !notificationId) return;
+
+    if (typeof firebase !== "undefined" && typeof isFirebaseInitialized !== "undefined" && isFirebaseInitialized && db) {
+      db.ref("users/" + user.uid + "/notifications/" + notificationId + "/read").set(true);
+      return;
+    }
+
+    notificationItems = notificationItems.map(function(item) {
+      return item.id === notificationId ? { ...item, read: true } : item;
+    });
+    saveLocalNotifications(notificationItems, user);
+    renderNotificationMenu();
+  }
+
+  function markAllNotificationsRead() {
+    const user = typeof UserSession !== "undefined" ? UserSession.get() : null;
+    if (!user) return;
+
+    if (typeof firebase !== "undefined" && typeof isFirebaseInitialized !== "undefined" && isFirebaseInitialized && db) {
+      const updates = {};
+      notificationItems.forEach(function(item) {
+        if (item.id && !item.read) {
+          updates[item.id + "/read"] = true;
+        }
+      });
+      if (Object.keys(updates).length) {
+        db.ref("users/" + user.uid + "/notifications").update(updates);
+      }
+      return;
+    }
+
+    notificationItems = notificationItems.map(function(item) {
+      return { ...item, read: true };
+    });
+    saveLocalNotifications(notificationItems, user);
+    renderNotificationMenu();
+  }
+
+  function subscribeNotifications() {
+    if (notificationsRef && typeof notificationsRef.off === "function") {
+      notificationsRef.off();
+      notificationsRef = null;
+    }
+
+    ensureNotificationIcon();
+
+    const user = typeof UserSession !== "undefined" ? UserSession.get() : null;
+    if (!user) {
+      notificationItems = [];
+      renderNotificationMenu();
+      return;
+    }
+
+    if (typeof firebase !== "undefined" && typeof isFirebaseInitialized !== "undefined" && isFirebaseInitialized && db) {
+      notificationsRef = db.ref("users/" + user.uid + "/notifications").limitToLast(50);
+      notificationsRef.on("value", function(snapshot) {
+        const val = snapshot.val() || {};
+        const entries = Object.keys(val).map(function(key) {
+          return { id: key, ...val[key] };
+        });
+        entries.sort(function(a, b) {
+          return Number(b.createdAt || 0) - Number(a.createdAt || 0);
+        });
+        notificationItems = entries;
+        renderNotificationMenu();
+      });
+      return;
+    }
+
+    const local = loadLocalNotifications(user);
+    local.sort(function(a, b) {
+      return Number(b.createdAt || 0) - Number(a.createdAt || 0);
+    });
+    notificationItems = local;
+    renderNotificationMenu();
+  }
+
   // Function to update header auth state layout
   function updateHeaderAuthLayout() {
     const userBtn = document.getElementById("user-btn");
@@ -98,6 +320,8 @@
       loginTextLink.style.display = "inline-block";
       userBtn.style.display = "none";
     }
+
+    subscribeNotifications();
 
     // Update Mobile Nav links dynamically
     const mobileDrawer = document.getElementById("mobile-drawer");
@@ -360,8 +584,12 @@
       
       // Initial layout run
       updateHeaderAuthLayout();
+      subscribeNotifications();
     }
   }
+
+  document.addEventListener("authUpdated", subscribeNotifications);
+  document.addEventListener("notificationsUpdated", subscribeNotifications);
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initProfileDropdown);

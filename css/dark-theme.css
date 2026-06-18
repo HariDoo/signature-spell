@@ -5,8 +5,8 @@
 /* 1. Global Custom Theme Settings */
 :root {
   /* Core Variable Overrides for style.css integration */
-  --color-charcoal: #e6e6fa;
-  /* Silver text */
+  --color-charcoal: #181614;
+  /* Stone-900 (Primary Dark text / Charcoal value) */
   --color-dark-gray: #9e97b0;
   /* Muted lavender gray */
   --color-gold: #f5c518;
@@ -131,13 +131,54 @@ h6 {
 }
 
 /* Mobile drawer navigation */
+.hamburger span {
+  background-color: var(--theme-text-primary) !important;
+}
+
 .mobile-nav {
   background-color: var(--theme-bg) !important;
   border-left: 1px solid var(--theme-border) !important;
 }
 
-.mobile-nav-close {
+.mobile-drawer-title {
   color: var(--theme-text-primary) !important;
+}
+
+.mobile-nav-close {
+  background-color: var(--theme-bg-nested) !important;
+  color: var(--theme-text-primary) !important;
+}
+
+.mobile-nav-close:hover {
+  background-color: var(--theme-border) !important;
+  color: var(--theme-text-gold) !important;
+}
+
+.mobile-search-input-wrapper {
+  background-color: var(--theme-bg-nested) !important;
+  border-color: var(--theme-border) !important;
+}
+
+.mobile-search-input-wrapper input {
+  color: var(--theme-text-primary) !important;
+}
+
+.mobile-user-profile-card {
+  background: var(--theme-bg-nested) !important;
+  border-color: var(--theme-border) !important;
+}
+
+.mobile-user-name {
+  color: var(--theme-text-primary) !important;
+}
+
+.mobile-menu-item {
+  color: var(--theme-text-primary) !important;
+}
+
+.mobile-menu-item:hover {
+  background-color: var(--theme-bg-nested) !important;
+  color: var(--theme-text-gold) !important;
 }
 
 .mobile-nav-links a {
@@ -150,15 +191,15 @@ h6 {
 
 /* 4. Luxury Buttons */
 .btn-primary {
-  background-color: #c084fc !important;
-  /* Glowing lavender accent button for dark mode */
+  background-color: var(--color-gold) !important;
+  /* Gold/yellow accent button for dark mode */
   color: #0f0c1b !important;
 }
 
 .btn-primary:hover {
-  background-color: var(--theme-text-gold) !important;
+  background-color: #ffffff !important;
   color: #0f0c1b !important;
-  box-shadow: 0 4px 15px rgba(245, 197, 24, 0.3) !important;
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.25) !important;
 }
 
 .btn-secondary {
@@ -786,6 +827,17 @@ textarea:focus {
   color: #0f0c1b !important;
 }
 
+#floating-cart-bar .floating-cart-btn {
+  background-color: var(--theme-text-gold) !important;
+  color: #0f0c1b !important;
+}
+
+#floating-cart-bar .floating-cart-btn:hover {
+  background-color: #ffffff !important;
+  color: #0f0c1b !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35) !important;
+}
+
 .theme-toggle-btn {
   color: var(--theme-text-primary) !important;
   border-radius: 50% !important;
@@ -852,5 +904,20 @@ textarea:focus {
 }
 
 .breadcrumbs a:hover {
+  color: var(--theme-text-primary) !important;
+}
+
+/* 13. Product Details Page Dark Mode Fixes */
+#detail-size-badge {
+  color: var(--theme-text-primary) !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.product-detail-fragrance-wrapper label {
+  color: var(--theme-text-primary) !important;
+}
+
+.tab-header.active {
   color: var(--theme-text-primary) !important;
 }

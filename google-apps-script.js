@@ -24,6 +24,12 @@ const BRAND_NAME = "Signature Spell";
 
 /** Reply-to address shown in notification emails */
 const BRAND_EMAIL = "hello@signaturespell.com";
+const STORE_BASE_URL = "https://signature-spell.com";
+const EMAIL_QUEUE_SHEET = "Email Queue";
+const EMAIL_EVENT_LOG_SHEET = "Email Event Logs";
+const REVIEW_DELAY_MS = 3 * 24 * 60 * 60 * 1000;
+const ABANDONED_DELAY_MS = 2 * 60 * 60 * 1000;
+const SCRIPT_VERSION = "2026-06-16-status-router-v3";
 
 // ─── MAIN HANDLERS ────────────────────────────────────────────────────────────
 
@@ -35,9 +41,30 @@ function doPost(e) {
   try {
     // Parse the incoming JSON body
     const payload = JSON.parse(e.postData.contents);
+    const action = String(payload.action || payload.Action || "").trim().toLowerCase();
+
+    if (action === "order_status_update" || isOrderStatusPayload_(payload)) {
+      return handleOrderStatusNotificationPost_(payload);
+    }
+
+    if (action === "abandoned_cart_event" || isAbandonedCartPayload_(payload)) {
+      return handleAbandonedCartEventPost_(payload);
+    }
+
+    // Hard guard: never let action payloads fall into contact-flow emails.
+    if (action) {
+      logEmailEvent_("unsupported_action_rejected", {
+        action: action,
+        keys: Object.keys(payload || {}),
+        version: SCRIPT_VERSION
+      });
+      return ContentService
+        .createTextOutput(JSON.stringify({ result: "error", error: `Unsupported action: ${action}` }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
 
     // Extract common fields
-    const formName    = payload["Form Name"]    || "Unknown Form";
+    const formName    = payload["Form Name"]    || "";
     const submittedAt = payload["Submitted At"] || new Date().toLocaleString();
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -100,7 +127,8 @@ function doPost(e) {
           to:       adminEmail,
           subject:  adminSubject,
           htmlBody: adminBody,
-          replyTo:  customerEmail || BRAND_EMAIL
+          replyTo:  customerEmail || BRAND_EMAIL,
+          name:     BRAND_NAME
         });
       });
 
@@ -116,11 +144,25 @@ function doPost(e) {
           replyTo:  BRAND_EMAIL,
           name:     BRAND_NAME
         });
+
+        // New order placed: cancel pending abandoned-cart reminders for the same customer.
+        cancelQueuedEmailByRecipient_("abandoned_cart", customerEmail);
       }
 
     } else {
       // ── STANDARD CONTACT FORM FLOW ───────────────────────────────────────────
-      const senderName  = payload["name"]         || payload["contactPerson"] || "N/A";
+      if (!isLikelyContactPayload_(payload)) {
+        logEmailEvent_("unknown_payload_rejected", {
+          keys: Object.keys(payload || {}),
+          preview: JSON.stringify(payload || {}).slice(0, 300)
+        });
+        return ContentService
+          .createTextOutput(JSON.stringify({ result: "error", error: "Unsupported payload shape" }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+
+      const safeFormName = formName || "Website Inquiry";
+      const senderName  = payload["name"] || payload["contactPerson"] || (payload["email"] ? String(payload["email"]).split("@")[0] : "Customer");
       const senderEmail = payload["email"]        || "";
 
       // Get or create "Contact Submissions" sheet
@@ -148,7 +190,7 @@ function doPost(e) {
       // Append data row
       sheet.appendRow([
         submittedAt,
-        formName,
+        safeFormName,
         senderName,
         senderEmail,
         payload["phone"]     || "",
@@ -159,22 +201,23 @@ function doPost(e) {
       ]);
 
       // Send Admin Notification Email
-      const adminSubject = `[${BRAND_NAME}] New ${formName} from ${senderName}`;
-      const adminBody    = buildAdminEmailBody(payload, formName, submittedAt);
+      const adminSubject = `[${BRAND_NAME}] New ${safeFormName} from ${senderName}`;
+      const adminBody    = buildAdminEmailBody(payload, safeFormName, submittedAt);
 
       ADMIN_EMAILS.forEach(adminEmail => {
         MailApp.sendEmail({
           to:       adminEmail,
           subject:  adminSubject,
           htmlBody: adminBody,
-          replyTo:  senderEmail || BRAND_EMAIL
+          replyTo:  senderEmail || BRAND_EMAIL,
+          name:     BRAND_NAME
         });
       });
 
       // Send Confirmation Email to Submitter
       if (senderEmail) {
         const confirmSubject = `We received your message — ${BRAND_NAME}`;
-        const confirmBody    = buildConfirmationEmailBody(senderName, formName);
+        const confirmBody    = buildConfirmationEmailBody(senderName, safeFormName);
 
         MailApp.sendEmail({
           to:       senderEmail,
@@ -184,6 +227,7 @@ function doPost(e) {
           name:     BRAND_NAME
         });
       }
+
     }
 
     // Return success response
@@ -199,13 +243,282 @@ function doPost(e) {
   }
 }
 
+function isOrderStatusPayload_(payload) {
+  if (!payload || typeof payload !== "object") return false;
+  const action = String(payload.action || payload.Action || "").trim().toLowerCase();
+  if (action === "order_status_update") return true;
+  const hasOrderId = !!(payload.orderId || (payload.order && payload.order.id));
+  const hasStatus = !!(payload.newStatus || (payload.order && payload.order.status));
+  const hasOrderObj = !!payload.order;
+  return hasOrderId && hasStatus && hasOrderObj;
+}
+
+function isAbandonedCartPayload_(payload) {
+  if (!payload || typeof payload !== "object") return false;
+  const action = String(payload.action || payload.Action || "").trim().toLowerCase();
+  if (action === "abandoned_cart_event") return true;
+  return !!(payload.payload && Array.isArray(payload.payload.items) && (payload.payload.email || payload.payload.customer));
+}
+
+function isLikelyContactPayload_(payload) {
+  if (!payload || typeof payload !== "object") return false;
+  if (payload["Form Name"] && payload["Form Name"] !== "Unknown Form") return true;
+  const keys = ["name", "contactPerson", "email", "message", "phone", "company", "product", "quantity"];
+  return keys.some(k => payload[k]);
+}
+
 /**
  * doGet — simple health check endpoint (also prevents "doGet not found" errors)
  */
 function doGet(e) {
+  if (e && e.parameter && e.parameter.action === "processQueue") {
+    const result = processEmailQueue();
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: "ok", processed: result }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
   return ContentService
-    .createTextOutput(JSON.stringify({ status: "ok", service: "Signature Spell Form Handler" }))
+    .createTextOutput(JSON.stringify({ status: "ok", service: "Signature Spell Form Handler", version: SCRIPT_VERSION }))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+function handleOrderStatusNotificationPost_(payload) {
+  const order = payload.order || {};
+  const newStatus = payload.newStatus || order.status || "Confirmed";
+  const orderId = payload.orderId || order.id || "N/A";
+  const customerEmail = order.email || "";
+  const stampDate = payload.updatedAt ? new Date(payload.updatedAt) : new Date();
+  const stampToken = Utilities.formatDate(stampDate, Session.getScriptTimeZone(), "yyyyMMdd-HHmmss");
+  const updateSubject = `Order Update ${orderId} | ${newStatus} | ${stampToken} | ${BRAND_NAME}`;
+
+  logEmailEvent_("order_status_update_received", {
+    orderId: orderId,
+    status: newStatus,
+    email: customerEmail,
+    source: payload.adminEmail || "system",
+    version: SCRIPT_VERSION
+  });
+
+  if (!customerEmail) {
+    logEmailEvent_("order_status_update_failed", {
+      orderId: orderId,
+      status: newStatus,
+      reason: "missing_email"
+    });
+    return ContentService
+      .createTextOutput(JSON.stringify({ result: "error", error: "Missing customer email in order payload" }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  const statusBody = (newStatus === "Confirmed")
+    ? buildOrderCustomerEmailBody(order, new Date().toLocaleString())
+    : buildOrderStatusEmailBody(order, newStatus);
+
+  MailApp.sendEmail({
+    to: customerEmail,
+    subject: updateSubject,
+    htmlBody: statusBody,
+    replyTo: BRAND_EMAIL,
+    name: BRAND_NAME
+  });
+  logEmailEvent_("order_status_email_sent", { orderId: orderId, status: newStatus, email: customerEmail, subject: updateSubject });
+
+  if (newStatus === "Delivered") {
+    queueEmail_({
+      type: "review_request",
+      orderId: orderId,
+      recipient: customerEmail,
+      payload: order,
+      sendAt: Date.now() + REVIEW_DELAY_MS
+    });
+    logEmailEvent_("review_request_queued", { orderId: orderId, email: customerEmail, sendAt: Date.now() + REVIEW_DELAY_MS });
+  }
+
+  return ContentService
+    .createTextOutput(JSON.stringify({ result: "success", status: newStatus }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function handleAbandonedCartEventPost_(payload) {
+  const cartPayload = payload.payload || {};
+  const email = cartPayload.email || "";
+  logEmailEvent_("abandoned_cart_event_received", { email: email, itemCount: Array.isArray(cartPayload.items) ? cartPayload.items.length : 0 });
+  if (!email) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ result: "error", error: "Missing customer email for abandoned cart" }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  queueEmail_({
+    type: "abandoned_cart",
+    orderId: "",
+    recipient: email,
+    payload: cartPayload,
+    sendAt: Date.now() + ABANDONED_DELAY_MS
+  });
+
+  return ContentService
+    .createTextOutput(JSON.stringify({ result: "success", queued: true }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function logEmailEvent_(eventType, details) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let sheet = ss.getSheetByName(EMAIL_EVENT_LOG_SHEET);
+    if (!sheet) {
+      sheet = ss.insertSheet(EMAIL_EVENT_LOG_SHEET);
+    }
+
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(["Timestamp", "Event", "Details JSON"]);
+      sheet.getRange(1, 1, 1, 3).setFontWeight("bold");
+    }
+
+    sheet.appendRow([
+      new Date().toISOString(),
+      eventType,
+      JSON.stringify(details || {})
+    ]);
+  } catch (err) {
+    console.error("Unable to log email event", err);
+  }
+}
+
+function queueEmail_(entry) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(EMAIL_QUEUE_SHEET);
+  if (!sheet) {
+    sheet = ss.insertSheet(EMAIL_QUEUE_SHEET);
+  }
+
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(["Queue ID", "Type", "Order ID", "Recipient", "Payload JSON", "Send At", "Status", "Created At", "Sent At", "Error"]);
+    sheet.getRange(1, 1, 1, 10).setFontWeight("bold");
+  }
+
+  if (entry.type === "abandoned_cart") {
+    // Keep only latest pending abandoned cart reminder per recipient.
+    cancelQueuedEmailByRecipient_("abandoned_cart", entry.recipient);
+  }
+
+  const queueId = Utilities.getUuid();
+  sheet.appendRow([
+    queueId,
+    entry.type,
+    entry.orderId || "",
+    entry.recipient || "",
+    JSON.stringify(entry.payload || {}),
+    Number(entry.sendAt || Date.now()),
+    "pending",
+    Date.now(),
+    "",
+    ""
+  ]);
+
+  ensureQueueProcessorTrigger_();
+  return queueId;
+}
+
+function cancelQueuedEmailByRecipient_(type, recipient) {
+  if (!recipient) return;
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(EMAIL_QUEUE_SHEET);
+  if (!sheet || sheet.getLastRow() < 2) return;
+
+  const values = sheet.getRange(2, 1, sheet.getLastRow() - 1, 10).getValues();
+  values.forEach(function(row, idx) {
+    const rowType = String(row[1] || "");
+    const rowRecipient = String(row[3] || "").toLowerCase();
+    const rowStatus = String(row[6] || "").toLowerCase();
+    if (rowType === type && rowRecipient === String(recipient).toLowerCase() && rowStatus === "pending") {
+      sheet.getRange(idx + 2, 7).setValue("cancelled");
+      sheet.getRange(idx + 2, 10).setValue("Cancelled by newer event");
+    }
+  });
+}
+
+function ensureQueueProcessorTrigger_() {
+  const existing = ScriptApp.getProjectTriggers().some(function(trigger) {
+    return trigger.getHandlerFunction() === "processEmailQueue";
+  });
+
+  if (!existing) {
+    ScriptApp.newTrigger("processEmailQueue")
+      .timeBased()
+      .everyHours(1)
+      .create();
+  }
+}
+
+function processEmailQueue() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(EMAIL_QUEUE_SHEET);
+  if (!sheet || sheet.getLastRow() < 2) {
+    return { sent: 0, skipped: 0, failed: 0 };
+  }
+
+  const now = Date.now();
+  const values = sheet.getRange(2, 1, sheet.getLastRow() - 1, 10).getValues();
+  let sent = 0;
+  let skipped = 0;
+  let failed = 0;
+
+  values.forEach(function(row, idx) {
+    const queueId = row[0];
+    const type = row[1];
+    const recipient = row[3];
+    const payloadText = row[4];
+    const sendAt = Number(row[5] || 0);
+    const status = String(row[6] || "pending").toLowerCase();
+
+    if (status !== "pending") {
+      skipped += 1;
+      return;
+    }
+
+    if (sendAt > now) {
+      skipped += 1;
+      return;
+    }
+
+    try {
+      const payload = payloadText ? JSON.parse(payloadText) : {};
+      if (type === "review_request") {
+        MailApp.sendEmail({
+          to: recipient,
+          subject: `How was your order experience? — ${BRAND_NAME}`,
+          htmlBody: buildReviewRequestEmailBody(payload),
+          replyTo: BRAND_EMAIL,
+          name: BRAND_NAME
+        });
+        logEmailEvent_("queued_email_sent", { type: type, recipient: recipient, orderId: row[2] || "" });
+      } else if (type === "abandoned_cart") {
+        MailApp.sendEmail({
+          to: recipient,
+          subject: `You left something beautiful behind — ${BRAND_NAME}`,
+          htmlBody: buildAbandonedCartEmailBody(payload),
+          replyTo: BRAND_EMAIL,
+          name: BRAND_NAME
+        });
+        logEmailEvent_("queued_email_sent", { type: type, recipient: recipient, orderId: row[2] || "" });
+      }
+
+      sheet.getRange(idx + 2, 7).setValue("sent");
+      sheet.getRange(idx + 2, 9).setValue(Date.now());
+      sheet.getRange(idx + 2, 10).setValue("");
+      sent += 1;
+    } catch (err) {
+      sheet.getRange(idx + 2, 7).setValue("failed");
+      sheet.getRange(idx + 2, 10).setValue((err && err.message) ? err.message : String(err));
+      logEmailEvent_("queued_email_failed", { type: type, recipient: recipient, error: (err && err.message) ? err.message : String(err) });
+      failed += 1;
+      console.error("Queue send failed for", queueId, err);
+    }
+  });
+
+  return { sent: sent, skipped: skipped, failed: failed };
 }
 
 // ─── EMAIL TEMPLATE BUILDERS ──────────────────────────────────────────────────
@@ -367,6 +680,216 @@ function buildOrderCustomerEmailBody(payload, submittedAt) {
               <td style="background:#fafaf9;padding:20px 40px;border-top:1px solid #e7e5e4;text-align:center;">
                 <p style="margin:0 0 4px;font-size:11px;color:#78716c;">© 2026 Signature Spell Candles · All rights reserved</p>
                 <p style="margin:0;font-size:11px;color:#a8a29e;">Need help? Contact us at hello@signaturespell.com</p>
+              </td>
+            </tr>
+          </table>
+        </td></tr>
+      </table>
+    </body>
+    </html>`;
+}
+
+function buildOrderStatusEmailBody(order, status) {
+  const safeStatus = escapeHtml(status || "Updated");
+  const orderId = escapeHtml(order.id || "N/A");
+  const trackUrl = `${STORE_BASE_URL}/order-tracking.html?id=${encodeURIComponent(order.id || "")}`;
+  const customerName = escapeHtml(order.customer || "Customer");
+  const orderDate = order.date ? new Date(order.date).toLocaleString() : new Date().toLocaleString();
+
+  let statusText = "Your order has been updated.";
+  if (status === "Processing") {
+    statusText = "Our team has started preparing your order with care.";
+  } else if (status === "Shipped") {
+    statusText = "Great news. Your package is on the way to your address.";
+  } else if (status === "Delivered") {
+    statusText = "Your package was delivered successfully. We hope you love the fragrances.";
+  } else if (status === "Cancelled") {
+    statusText = "This order has been cancelled. If this was unexpected, please contact support immediately.";
+  }
+
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+    <body style="margin:0;padding:0;background:#f5f5f4;font-family:'Helvetica Neue',Arial,sans-serif;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f4;padding:32px 0;">
+        <tr><td align="center">
+          <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border:1px solid #e7e5e4;border-radius:4px;overflow:hidden;max-width:600px;">
+            <tr>
+              <td style="background:#1c1917;padding:32px;text-align:center;">
+                <span style="font-family:Georgia,serif;font-size:26px;font-weight:700;color:#ffffff;letter-spacing:2px;">
+                  Signature <span style="color:#d97706;">Spell</span>
+                </span>
+                <p style="color:rgba(255,255,255,0.6);margin:8px 0 0;font-size:12px;letter-spacing:1px;text-transform:uppercase;">Order Update</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:28px 40px 18px;text-align:center;">
+                <h2 style="margin:0 0 10px;font-family:Georgia,serif;font-size:24px;font-weight:400;color:#1c1917;">Order ${orderId}</h2>
+                <p style="margin:0 0 8px;font-size:14px;color:#57534e;">Hello ${customerName}, we have a new update for your order.</p>
+                <div style="display:inline-block;margin:8px 0 10px;padding:8px 14px;border:1px solid #e7e5e4;background:#fafaf9;border-radius:20px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#1c1917;font-weight:700;">Status: ${safeStatus}</div>
+                <p style="margin:0;font-size:14px;color:#78716c;line-height:1.7;">${escapeHtml(statusText)}</p>
+              </td>
+            </tr>
+            <tr><td style="padding:0 40px;"><hr style="border:none;border-top:1px solid #e7e5e4;margin:0;"></td></tr>
+            <tr>
+              <td style="padding:24px 40px 20px;">
+                <h3 style="margin:0 0 12px;font-family:Georgia,serif;font-size:16px;color:#1c1917;">Order Snapshot</h3>
+                <p style="margin:0 0 16px;font-size:14px;color:#57534e;line-height:1.6;">
+                  <strong>Order Date:</strong> ${escapeHtml(orderDate)}<br>
+                  <strong>Deliver To:</strong> ${customerName}<br>
+                  <strong>Address:</strong> ${escapeHtml(order.address || "Address not available")}<br>
+                  <strong>Contact:</strong> ${escapeHtml(order.phone || "N/A")}
+                </p>
+                <table width="100%" cellpadding="0" cellspacing="0" style="font-size:14px; color:#1c1917;">
+                  <tr><td style="padding:5px 0;text-align:right;color:#57534e;">Subtotal:</td><td style="padding:5px 0 5px 20px;text-align:right;width:100px;">₹${Number(order.subtotal || 0).toFixed(2)}</td></tr>
+                  <tr><td style="padding:5px 0;text-align:right;color:#57534e;">Tax (18% GST):</td><td style="padding:5px 0 5px 20px;text-align:right;">₹${Number(order.tax || 0).toFixed(2)}</td></tr>
+                  <tr><td style="padding:5px 0;text-align:right;color:#57534e;">Shipping:</td><td style="padding:5px 0 5px 20px;text-align:right;">₹${Number(order.shipping || 0).toFixed(2)}</td></tr>
+                  <tr style="font-weight:700;font-size:16px;"><td style="padding:10px 0 0;text-align:right;border-top:1px solid #e7e5e4;">Grand Total:</td><td style="padding:10px 0 0 20px;text-align:right;border-top:1px solid #e7e5e4;color:#d97706;">₹${Number(order.total || 0).toFixed(2)}</td></tr>
+                </table>
+              </td>
+            </tr>
+            <tr><td style="padding:0 40px;"><hr style="border:none;border-top:1px solid #e7e5e4;margin:0;"></td></tr>
+            <tr>
+              <td style="padding:26px 40px 28px;text-align:center;">
+                <p style="margin:0 0 14px;font-size:13px;color:#78716c;">Track the latest movement of your order anytime.</p>
+                <a href="${trackUrl}" style="display:inline-block;background:#1c1917;color:#ffffff;text-decoration:none;padding:12px 28px;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:30px;">
+                  Track Order
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td style="background:#fafaf9;padding:20px 40px;border-top:1px solid #e7e5e4;text-align:center;">
+                <p style="margin:0 0 4px;font-size:11px;color:#78716c;">© 2026 Signature Spell Candles · All rights reserved</p>
+                <p style="margin:0;font-size:11px;color:#a8a29e;">Need help? Contact us at hello@signaturespell.com</p>
+              </td>
+            </tr>
+          </table>
+        </td></tr>
+      </table>
+    </body>
+    </html>`;
+}
+
+function buildShippingUpdateEmailBody(order) {
+  const trackingUrl = `${STORE_BASE_URL}/order-tracking.html?id=${encodeURIComponent(order.id || "")}`;
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+    <body style="margin:0;padding:0;background:#f5f5f4;font-family:'Helvetica Neue',Arial,sans-serif;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f4;padding:32px 0;">
+        <tr><td align="center">
+          <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border:1px solid #e7e5e4;border-radius:4px;overflow:hidden;max-width:600px;">
+            <tr>
+              <td style="background:#1c1917;padding:32px;text-align:center;">
+                <span style="font-family:Georgia,serif;font-size:26px;font-weight:700;color:#ffffff;letter-spacing:2px;">Signature <span style="color:#d97706;">Spell</span></span>
+                <p style="color:rgba(255,255,255,0.6);margin:8px 0 0;font-size:12px;letter-spacing:1px;text-transform:uppercase;">Shipping Update</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:28px 32px;color:#292524;">
+                <h2 style="margin:0 0 10px;font-family:Georgia,serif;font-weight:400;color:#1c1917;">Your order is on the way</h2>
+                <p style="margin:0 0 8px;">Order <strong>${escapeHtml(order.id || "")}</strong> has been shipped.</p>
+                <p style="margin:0 0 8px;">Carrier: <strong>${escapeHtml(order.carrier || "Shipping Partner")}</strong></p>
+                <p style="margin:0 0 16px;">Tracking ID: <strong>${escapeHtml(order.trackingId || "Will be shared shortly")}</strong></p>
+                <a href="${trackingUrl}" style="display:inline-block;background:#1c1917;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:24px;font-size:13px;">Track Order</a>
+              </td>
+            </tr>
+          </table>
+        </td></tr>
+      </table>
+    </body>
+    </html>`;
+}
+
+function buildDeliveryConfirmationEmailBody(order) {
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+    <body style="margin:0;padding:0;background:#f5f5f4;font-family:'Helvetica Neue',Arial,sans-serif;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f4;padding:32px 0;">
+        <tr><td align="center">
+          <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border:1px solid #e7e5e4;border-radius:4px;overflow:hidden;max-width:600px;">
+            <tr>
+              <td style="background:#1c1917;padding:32px;text-align:center;">
+                <span style="font-family:Georgia,serif;font-size:26px;font-weight:700;color:#ffffff;letter-spacing:2px;">Signature <span style="color:#d97706;">Spell</span></span>
+                <p style="color:rgba(255,255,255,0.6);margin:8px 0 0;font-size:12px;letter-spacing:1px;text-transform:uppercase;">Delivered</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:28px 32px;color:#292524;">
+                <h2 style="margin:0 0 10px;font-family:Georgia,serif;font-weight:400;color:#1c1917;">Delivered successfully</h2>
+                <p style="margin:0 0 8px;">Your order <strong>${escapeHtml(order.id || "")}</strong> has been delivered.</p>
+                <p style="margin:0;color:#57534e;">Thank you for choosing Signature Spell.</p>
+              </td>
+            </tr>
+          </table>
+        </td></tr>
+      </table>
+    </body>
+    </html>`;
+}
+
+function buildReviewRequestEmailBody(order) {
+  const reviewUrl = `${STORE_BASE_URL}/contact.html`;
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+    <body style="margin:0;padding:0;background:#f5f5f4;font-family:'Helvetica Neue',Arial,sans-serif;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f4;padding:32px 0;">
+        <tr><td align="center">
+          <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border:1px solid #e7e5e4;border-radius:4px;overflow:hidden;max-width:600px;">
+            <tr>
+              <td style="background:#1c1917;padding:32px;text-align:center;">
+                <span style="font-family:Georgia,serif;font-size:26px;font-weight:700;color:#ffffff;letter-spacing:2px;">Signature <span style="color:#d97706;">Spell</span></span>
+                <p style="color:rgba(255,255,255,0.6);margin:8px 0 0;font-size:12px;letter-spacing:1px;text-transform:uppercase;">Review Request</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:28px 32px;color:#292524;">
+                <h2 style="margin:0 0 10px;font-family:Georgia,serif;font-weight:400;color:#1c1917;">How was your order experience?</h2>
+                <p style="margin:0 0 16px;">It has been 3 days since order <strong>${escapeHtml(order.id || "")}</strong> was delivered. We would love your feedback.</p>
+                <a href="${reviewUrl}" style="display:inline-block;background:#1c1917;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:24px;font-size:13px;">Share Feedback</a>
+              </td>
+            </tr>
+          </table>
+        </td></tr>
+      </table>
+    </body>
+    </html>`;
+}
+
+function buildAbandonedCartEmailBody(payload) {
+  const items = Array.isArray(payload.items) ? payload.items : [];
+  const rows = items.map(function(item) {
+    return `<tr><td style="padding:8px 0;border-bottom:1px solid #e7e5e4;">${escapeHtml(item.name || "Candle")}</td><td style="padding:8px 0;border-bottom:1px solid #e7e5e4;text-align:right;">x${escapeHtml(String(item.qty || 1))}</td></tr>`;
+  }).join("");
+
+  const cartUrl = payload.cartUrl || `${STORE_BASE_URL}/cart.html`;
+
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+    <body style="margin:0;padding:0;background:#f5f5f4;font-family:'Helvetica Neue',Arial,sans-serif;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f4;padding:32px 0;">
+        <tr><td align="center">
+          <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border:1px solid #e7e5e4;border-radius:4px;overflow:hidden;max-width:600px;">
+            <tr>
+              <td style="background:#1c1917;padding:32px;text-align:center;">
+                <span style="font-family:Georgia,serif;font-size:26px;font-weight:700;color:#ffffff;letter-spacing:2px;">Signature <span style="color:#d97706;">Spell</span></span>
+                <p style="color:rgba(255,255,255,0.6);margin:8px 0 0;font-size:12px;letter-spacing:1px;text-transform:uppercase;">Cart Reminder</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:28px 32px;color:#292524;">
+                <h2 style="margin:0 0 10px;font-family:Georgia,serif;font-weight:400;color:#1c1917;">Your candles are waiting</h2>
+                <p style="margin:0 0 16px;">You left ${items.length} item(s) in your cart.</p>
+                <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">${rows}</table>
+                <a href="${cartUrl}" style="display:inline-block;background:#1c1917;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:24px;font-size:13px;">Return to Cart</a>
               </td>
             </tr>
           </table>

@@ -25,6 +25,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // Check URL parameters for tab selection on load
+  const urlParams = new URLSearchParams(window.location.search);
+  const tabParam = urlParams.get("tab");
+  if (tabParam === "bulk") {
+    switchTab("pane-bulk");
+  } else if (tabParam === "general") {
+    switchTab("pane-general");
+  }
+
   // ── FORM REFS ──────────────────────────────────────────────────────────────
   const generalForm = document.getElementById("general-contact-form");
   const bulkForm = document.getElementById("bulk-order-form");

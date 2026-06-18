@@ -339,6 +339,112 @@ const UserSession = {
   }
 };
 
+const UserNotificationsApi = {
+  getLocalKey: function(user) {
+    if (user && user.uid) return "signature_spell_notifications_" + user.uid;
+    return "signature_spell_notifications_guest";
+  },
+
+  getLocal: function(user) {
+    try {
+      const raw = localStorage.getItem(this.getLocalKey(user));
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      return [];
+    }
+  },
+
+  saveLocal: function(list, user) {
+    const safeList = Array.isArray(list) ? list.slice(0, 50) : [];
+    localStorage.setItem(this.getLocalKey(user), JSON.stringify(safeList));
+    document.dispatchEvent(new CustomEvent("notificationsUpdated"));
+  },
+
+  buildPayload: function(data) {
+    return {
+      type: data.type || "general",
+      title: data.title || "New update",
+      message: data.message || "You have a new notification.",
+      link: data.link || "",
+      orderId: data.orderId || "",
+      status: data.status || "",
+      createdAt: data.createdAt || Date.now(),
+      read: !!data.read
+    };
+  },
+
+  createForCurrentUser: async function(data) {
+    const payload = this.buildPayload(data || {});
+    const user = UserSession.get();
+
+    if (typeof firebase !== "undefined" && isFirebaseInitialized && auth && auth.currentUser) {
+      try {
+        await db.ref("users/" + auth.currentUser.uid + "/notifications").push(payload);
+        return { ok: true, remote: true };
+      } catch (e) {
+        console.error("Failed to write notification to Firebase:", e);
+      }
+    }
+
+    const local = this.getLocal(user);
+    local.unshift({ id: "local-" + Date.now(), ...payload });
+    this.saveLocal(local, user);
+    return { ok: true, remote: false };
+  },
+
+  createForUserByEmail: async function(email, data) {
+    if (!email) return { ok: false, reason: "Missing email" };
+    const payload = this.buildPayload(data || {});
+
+    if (!(typeof firebase !== "undefined" && isFirebaseInitialized && db)) {
+      return { ok: false, reason: "Firebase not initialized" };
+    }
+
+    try {
+      const snap = await db.ref("users").orderByChild("email").equalTo(String(email).toLowerCase()).once("value");
+      if (!snap.exists()) return { ok: false, reason: "User not found" };
+
+      const writes = [];
+      snap.forEach(child => {
+        writes.push(db.ref("users/" + child.key + "/notifications").push(payload));
+      });
+
+      await Promise.all(writes);
+      return { ok: true, recipients: writes.length };
+    } catch (e) {
+      console.error("Failed createForUserByEmail:", e);
+      return { ok: false, reason: e.message };
+    }
+  },
+
+  createForAllUsers: async function(data) {
+    const payload = this.buildPayload(data || {});
+
+    if (!(typeof firebase !== "undefined" && isFirebaseInitialized && db)) {
+      return { ok: false, reason: "Firebase not initialized" };
+    }
+
+    try {
+      const snap = await db.ref("users").once("value");
+      if (!snap.exists()) return { ok: false, reason: "No users found" };
+
+      const writes = [];
+      snap.forEach(child => {
+        writes.push(db.ref("users/" + child.key + "/notifications").push(payload));
+      });
+
+      await Promise.all(writes);
+      return { ok: true, recipients: writes.length };
+    } catch (e) {
+      console.error("Failed createForAllUsers:", e);
+      return { ok: false, reason: e.message };
+    }
+  }
+};
+
+window.UserNotificationsApi = UserNotificationsApi;
+
 // Global DOM Content Loaded Init
 document.addEventListener("DOMContentLoaded", () => {
   // Clear order tracking id if we are on any page other than order-tracking.html
@@ -594,7 +700,13 @@ function updateFloatingCartBar() {
       <span class="floating-cart-divider">|</span>
       <span class="floating-cart-total">₹${subtotal}</span>
     </div>
-    <a href="cart.html" class="floating-cart-btn">Checkout &rarr;</a>
+    <a href="cart.html" class="floating-cart-btn">
+      <span>Checkout</span>
+      <svg class="btn-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+        <polyline points="12,5 19,12 12,19"></polyline>
+      </svg>
+    </a>
   `;
 }
 

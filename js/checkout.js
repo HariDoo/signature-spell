@@ -250,6 +250,21 @@ document.addEventListener("DOMContentLoaded", () => {
         window.location.href = "order-tracking.html";
       };
 
+      const sendWebsiteOrderNotification = () => {
+        if (!window.UserNotificationsApi || typeof window.UserNotificationsApi.createForCurrentUser !== "function") {
+          return Promise.resolve();
+        }
+
+        return window.UserNotificationsApi.createForCurrentUser({
+          type: "order",
+          title: "Order confirmed",
+          message: `Your order ${orderId} has been placed successfully.`,
+          link: `order-tracking.html?orderId=${encodeURIComponent(orderId)}`,
+          orderId: orderId,
+          status: "Confirmed"
+        }).catch(() => {});
+      };
+
       const sendOrderNotification = () => {
         const emailPayload = {
           ...newOrderObj,
@@ -271,15 +286,16 @@ document.addEventListener("DOMContentLoaded", () => {
       if (typeof isFirebaseInitialized !== "undefined" && isFirebaseInitialized) {
         db.ref("orders/" + orderId).set(newOrderObj)
           .then(() => sendOrderNotification())
+          .then(() => sendWebsiteOrderNotification())
           .then(proceedToReceipt)
           .catch(err => {
             console.error("Firebase order save failed", err);
             if (typeof OrderDb !== "undefined") OrderDb.add(newOrderObj);
-            sendOrderNotification().then(proceedToReceipt);
+            sendOrderNotification().then(() => sendWebsiteOrderNotification()).then(proceedToReceipt);
           });
       } else {
         if (typeof OrderDb !== "undefined") OrderDb.add(newOrderObj);
-        sendOrderNotification().then(proceedToReceipt);
+        sendOrderNotification().then(() => sendWebsiteOrderNotification()).then(proceedToReceipt);
       }
     });
   }
