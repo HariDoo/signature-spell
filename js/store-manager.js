@@ -64,6 +64,8 @@ function initStoreManagerConsole() {
   document.addEventListener("productsUpdated", () => {
     PRODUCTS = ProductDb.get();
     syncCatalogTable();
+    populateOrderProductFilterDropdown();
+    syncStockTable();
   });
 }
 
@@ -83,7 +85,9 @@ async function verifyAdminRole(user) {
 function initializeStoreManager() {
   loadStats();
   syncCatalogTable();
+  populateOrderProductFilterDropdown();
   syncOrdersTable();
+  initializeStockManager();
 }
 
 function loadStats() {
@@ -229,17 +233,32 @@ window.openEditProductModal = function(productId) {
   document.getElementById("modal-add-product")?.classList.add("active");
 };
 
+window.populateOrderProductFilterDropdown = function() {
+  const sel = document.getElementById("admin-order-product-filter");
+  if (!sel) return;
+  const currentVal = sel.value || "all";
+  sel.innerHTML = `<option value="all">All Products</option>` +
+    (typeof PRODUCTS !== "undefined" ? PRODUCTS : []).map(p =>
+      `<option value="${p.id}">${p.name}</option>`
+    ).join("");
+  // Restore previous selection if still valid
+  if ([...sel.options].some(o => o.value === currentVal)) {
+    sel.value = currentVal;
+  }
+};
+
 window.syncOrdersTable = function() {
   const ordersTable = document.getElementById("admin-orders-table-body");
   if (ordersTable) {
     const orders = OrderDb.get();
-    
+
     // Read filter values
     const query = document.getElementById("admin-order-search")?.value.toLowerCase() || "";
     const statusFilter = document.getElementById("admin-order-status-filter")?.value || "all";
+    const productFilter = document.getElementById("admin-order-product-filter")?.value || "all";
     const startDateVal = document.getElementById("admin-order-start-date")?.value;
     const endDateVal = document.getElementById("admin-order-end-date")?.value;
-    
+
     let startMidnight = null;
     let endMidnight = null;
     if (startDateVal) {
@@ -253,19 +272,23 @@ window.syncOrdersTable = function() {
 
     // Filter orders
     const filteredOrders = orders.filter(o => {
-      const matchQuery = (o.id && o.id.toLowerCase().includes(query)) || 
+      const matchQuery = (o.id && o.id.toLowerCase().includes(query)) ||
                          (o.customer && o.customer.toLowerCase().includes(query)) ||
                          (o.email && o.email.toLowerCase().includes(query));
       const matchStatus = statusFilter === "all" ? true : o.status === statusFilter;
-      
+
+      // Product filter – check if any line item matches the selected product id
+      const matchProduct = productFilter === "all" ? true :
+        (o.items && o.items.some(i => String(i.productId) === String(productFilter)));
+
       let matchDate = true;
       if (o.date) {
         const orderDate = new Date(o.date);
         if (startMidnight && orderDate < startMidnight) matchDate = false;
         if (endMidnight && orderDate > endMidnight) matchDate = false;
       }
-      
-      return matchQuery && matchStatus && matchDate;
+
+      return matchQuery && matchStatus && matchProduct && matchDate;
     });
 
     if (filteredOrders.length === 0) {
@@ -360,13 +383,14 @@ window.handleAdminDeleteOrder = function(orderId) {
 
 window.triggerExportOrders = function() {
   const orders = OrderDb.get();
-  
-  // Apply active filters
+
+  // Apply same active filters as the visible table
   const query = document.getElementById("admin-order-search")?.value.toLowerCase() || "";
   const statusFilter = document.getElementById("admin-order-status-filter")?.value || "all";
+  const productFilter = document.getElementById("admin-order-product-filter")?.value || "all";
   const startDateVal = document.getElementById("admin-order-start-date")?.value;
   const endDateVal = document.getElementById("admin-order-end-date")?.value;
-  
+
   let startMidnight = null;
   let endMidnight = null;
   if (startDateVal) {
@@ -379,19 +403,21 @@ window.triggerExportOrders = function() {
   }
 
   const filteredOrders = orders.filter(o => {
-    const matchQuery = (o.id && o.id.toLowerCase().includes(query)) || 
+    const matchQuery = (o.id && o.id.toLowerCase().includes(query)) ||
                        (o.customer && o.customer.toLowerCase().includes(query)) ||
                        (o.email && o.email.toLowerCase().includes(query));
     const matchStatus = statusFilter === "all" ? true : o.status === statusFilter;
-    
+    const matchProduct = productFilter === "all" ? true :
+      (o.items && o.items.some(i => String(i.productId) === String(productFilter)));
+
     let matchDate = true;
     if (o.date) {
       const orderDate = new Date(o.date);
       if (startMidnight && orderDate < startMidnight) matchDate = false;
       if (endMidnight && orderDate > endMidnight) matchDate = false;
     }
-    
-    return matchQuery && matchStatus && matchDate;
+
+    return matchQuery && matchStatus && matchProduct && matchDate;
   });
 
   if (filteredOrders.length === 0) {
@@ -588,4 +614,236 @@ window.populateActiveFragrancesDropdown = function() {
       fragSelect.appendChild(opt);
     });
   }
+};
+
+// ─── STOCK MANAGEMENT MODULE ──────────────────────────────────────────────────
+
+let inventoryList = [];
+
+function getLocalStock() {
+  const stored = localStorage.getItem("signature_spell_stock");
+  return stored ? JSON.parse(stored) : [];
+}
+
+function saveLocalStock(list) {
+  localStorage.setItem("signature_spell_stock", JSON.stringify(list));
+  inventoryList = list;
+  syncStockTable();
+}
+
+function initializeStockManager() {
+  setupStockFormBindings();
+  
+  if (typeof firebase !== "undefined" && isFirebaseInitialized) {
+    db.ref("inventory").on("value", snapshot => {
+      const val = snapshot.val() || {};
+      inventoryList = Object.keys(val).map(key => ({ id: key, ...val[key] }));
+      syncStockTable();
+    });
+  } else {
+    inventoryList = getLocalStock();
+    syncStockTable();
+  }
+}
+
+function syncStockTable() {
+  const tbody = document.getElementById("admin-stock-table-body");
+  if (!tbody) return;
+
+  if (inventoryList.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--color-muted-gray);">No stock entries registered yet.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = inventoryList.map(item => {
+    // Find matching catalog product
+    const p = PRODUCTS.find(prod => prod.id == item.productId);
+    const prodName = p ? `${p.name} (${p.category})` : `Product #${item.productId}`;
+    const prodImg = p ? p.image : 'assets/regular_tlight.png';
+    const prodSize = p ? p.size || 'Medium' : '-';
+    
+    return `
+      <tr>
+        <td>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <img src="${prodImg}" alt="" style="width:32px; height:32px; object-fit:cover; border-radius:4px; border:1px solid var(--color-light-gray);">
+            <div>
+              <strong>${prodName}</strong>
+              <small style="display:block; color:var(--color-muted-gray); font-size:0.75rem;">Size: ${prodSize}</small>
+            </div>
+          </div>
+        </td>
+        <td><span style="font-family:Georgia,serif; font-style:italic;">${item.fragrance}</span></td>
+        <td><strong>${item.qty} units</strong></td>
+        <td style="text-align:right; white-space:nowrap;">
+          <button class="btn btn-primary btn-small" style="padding:4px 8px; font-size:0.75rem; margin-right:5px; height:auto; width:auto; display:inline-block;" onclick="openEditStockModal('${item.id}')">Edit</button>
+          <button class="btn-danger-sm" onclick="handleDeleteStock('${item.id}')">Remove</button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+window.openAddStockModal = function() {
+  const alertCont = document.getElementById("alert-stock-modal");
+  if (alertCont) alertCont.innerHTML = "";
+
+  document.getElementById("stock-modal-title").textContent = "Add Stock Entry";
+  document.getElementById("stock-modal-submit-btn").textContent = "Add Stock";
+  document.getElementById("edit-stock-id").value = "";
+
+  const form = document.getElementById("admin-add-stock-form");
+  if (form) form.reset();
+
+  // Populate Products dropdown
+  const prodSelect = document.getElementById("add-stock-product");
+  if (prodSelect) {
+    prodSelect.innerHTML = PRODUCTS.map(p => `<option value="${p.id}">${p.name} (${p.category})</option>`).join("");
+    prodSelect.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  // Populate Fragrances dropdown
+  const fragSelect = document.getElementById("add-stock-fragrance");
+  if (fragSelect) {
+    const fragrancesList = Object.values(window.allFragrances || {});
+    if (fragrancesList.length > 0) {
+      fragSelect.innerHTML = fragrancesList.map(f => `<option value="${f.name}">${f.name}</option>`).join("");
+    } else {
+      fragSelect.innerHTML = '<option value="Lavender Mist">Lavender Mist</option><option value="Vanilla Wood">Vanilla Wood</option>';
+    }
+    fragSelect.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  // Upgrade custom selects if styled dropdowns are in use
+  if (typeof window.initCustomSelect === "function") {
+    if (prodSelect) window.initCustomSelect(prodSelect);
+    if (fragSelect) window.initCustomSelect(fragSelect);
+  }
+
+  document.getElementById("modal-add-stock")?.classList.add("active");
+};
+
+window.openEditStockModal = function(stockId) {
+  const alertCont = document.getElementById("alert-stock-modal");
+  if (alertCont) alertCont.innerHTML = "";
+
+  const item = inventoryList.find(i => i.id === stockId);
+  if (!item) return;
+
+  document.getElementById("stock-modal-title").textContent = "Edit Stock Entry";
+  document.getElementById("stock-modal-submit-btn").textContent = "Save Changes";
+  document.getElementById("edit-stock-id").value = item.id;
+
+  // Populate Products dropdown
+  const prodSelect = document.getElementById("add-stock-product");
+  if (prodSelect) {
+    prodSelect.innerHTML = PRODUCTS.map(p => `<option value="${p.id}">${p.name} (${p.category})</option>`).join("");
+    prodSelect.value = item.productId;
+    prodSelect.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  // Populate Fragrances dropdown
+  const fragSelect = document.getElementById("add-stock-fragrance");
+  if (fragSelect) {
+    const fragrancesList = Object.values(window.allFragrances || {});
+    if (fragrancesList.length > 0) {
+      fragSelect.innerHTML = fragrancesList.map(f => `<option value="${f.name}">${f.name}</option>`).join("");
+    } else {
+      fragSelect.innerHTML = '<option value="Lavender Mist">Lavender Mist</option><option value="Vanilla Wood">Vanilla Wood</option>';
+    }
+    fragSelect.value = item.fragrance;
+    fragSelect.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  document.getElementById("add-stock-qty").value = item.qty;
+
+  // Upgrade custom selects if styled dropdowns are in use
+  if (typeof window.initCustomSelect === "function") {
+    if (prodSelect) window.initCustomSelect(prodSelect);
+    if (fragSelect) window.initCustomSelect(fragSelect);
+  }
+
+  document.getElementById("modal-add-stock")?.classList.add("active");
+};
+
+function setupStockFormBindings() {
+  const form = document.getElementById("admin-add-stock-form");
+  if (!form) return;
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const stockId = document.getElementById("edit-stock-id").value;
+    const productId = document.getElementById("add-stock-product").value;
+    const fragrance = document.getElementById("add-stock-fragrance").value;
+    const qty = Number(document.getElementById("add-stock-qty").value);
+    const alertCont = document.getElementById("alert-stock-modal");
+
+    const payload = {
+      productId: productId,
+      fragrance: fragrance,
+      qty: qty
+    };
+
+    if (typeof isFirebaseInitialized !== "undefined" && isFirebaseInitialized) {
+      const ref = stockId ? db.ref("inventory/" + stockId) : db.ref("inventory").push();
+      ref.set(payload)
+        .then(() => {
+          logAdminAction(stockId ? "stock_updated" : "stock_created", `Managed stock item - Product ID: ${productId}, Fragrance: ${fragrance}, Qty: ${qty}`);
+          showToast(stockId ? "Stock entry saved." : "Stock entry created.");
+          closeAllAdminModals();
+        })
+        .catch(err => {
+          if (typeof showInlineAlert === "function") {
+            showInlineAlert(alertCont, err.message, "danger");
+          } else {
+            alert(err.message);
+          }
+        });
+    } else {
+      const list = getLocalStock();
+      if (stockId) {
+        const item = list.find(i => i.id === stockId);
+        if (item) {
+          item.productId = productId;
+          item.fragrance = fragrance;
+          item.qty = qty;
+        }
+      } else {
+        const newId = "STK-" + Math.floor(100000 + Math.random() * 900000);
+        list.push({ id: newId, ...payload });
+      }
+      saveLocalStock(list);
+      logAdminAction(stockId ? "stock_updated" : "stock_created", `Managed stock locally - Product ID: ${productId}, Qty: ${qty}`);
+      showToast(stockId ? "Stock entry updated locally." : "Stock entry created locally.");
+      closeAllAdminModals();
+    }
+  });
+}
+
+window.handleDeleteStock = function(stockId) {
+  showConfirm("Are you sure you want to delete this stock entry? This will remove the inventory mapping.", {
+    title: 'Delete Stock Entry',
+    icon: '🗑️',
+    confirmText: 'Yes, Delete',
+    cancelText: 'Cancel',
+    dangerous: true
+  }).then(function(confirmed) {
+    if (!confirmed) return;
+
+    if (typeof isFirebaseInitialized !== "undefined" && isFirebaseInitialized) {
+      db.ref("inventory/" + stockId).remove()
+        .then(() => {
+          logAdminAction("stock_deleted", `Removed inventory mapping: ${stockId}`);
+          showToast("Stock entry deleted.");
+        })
+        .catch(err => showModal(err.message, { title: 'Delete Error', type: 'error' }));
+    } else {
+      let list = getLocalStock();
+      list = list.filter(i => i.id !== stockId);
+      saveLocalStock(list);
+      logAdminAction("stock_deleted", `Removed inventory mapping locally: ${stockId}`);
+      showToast("Stock entry deleted locally.");
+    }
+  });
 };

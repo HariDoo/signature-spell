@@ -192,7 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // CONFIGURATION: Replace with your deployed Google Apps Script Web App URL
-  const GOOGLE_SHEET_FORM_URL = "https://script.google.com/macros/s/AKfycbzIrSiQ7Awd5WrQ7v7UU3G5OAVai_egithMCa58yKwalHHpuFHnqnxmgalzCVigxbs9/exec";
+  const GOOGLE_SHEET_FORM_URL = "https://script.google.com/macros/s/AKfycbwu1xvxnI50q_Thhmtt75wUiIjnZX0z2Czf2Ei2PYv2-gQN1SrSk1oEmuLC9vF5yP6m/exec";
 
   // Form checkout submits
   const checkoutForm = document.getElementById("checkout-form");
