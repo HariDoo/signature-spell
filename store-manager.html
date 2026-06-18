@@ -173,8 +173,9 @@
               <h2>Customer Orders</h2>
             </div>
 
-            <div class="admin-filters" style="margin-top: 15px; margin-bottom: 15px; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));">
+            <div class="admin-filters" style="margin-top: 15px; margin-bottom: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px;">
               <input type="text" id="admin-order-search" placeholder="Search ID or Customer..." oninput="filterOrders()">
+
               <select id="admin-order-status-filter" data-ss-select="compact" onchange="filterOrders()">
                 <option value="all">All Statuses</option>
                 <option value="Confirmed">Confirmed</option>
@@ -183,10 +184,17 @@
                 <option value="Delivered">Delivered</option>
                 <option value="Cancelled">Cancelled</option>
               </select>
-              <input type="date" id="admin-order-start-date" onchange="filterOrders()" title="Start Date" style="padding: 10px; font-family: inherit; font-size: 0.85rem; border: 1px solid var(--color-light-gray); background-color: var(--color-off-white); border-radius: 4px;">
-              <input type="date" id="admin-order-end-date" onchange="filterOrders()" title="End Date" style="padding: 10px; font-family: inherit; font-size: 0.85rem; border: 1px solid var(--color-light-gray); background-color: var(--color-off-white); border-radius: 4px;">
+
+              <select id="admin-order-product-filter" data-ss-select="compact" onchange="filterOrders()">
+                <option value="all">All Products</option>
+                <!-- Populated dynamically -->
+              </select>
+
+              <input type="date" id="admin-order-start-date" onchange="filterOrders()" title="From Date" style="padding: 10px; font-family: inherit; font-size: 0.85rem; border: 1px solid var(--color-light-gray); background-color: var(--color-off-white); border-radius: 4px; width: 100%;">
+              <input type="date" id="admin-order-end-date" onchange="filterOrders()" title="To Date" style="padding: 10px; font-family: inherit; font-size: 0.85rem; border: 1px solid var(--color-light-gray); background-color: var(--color-off-white); border-radius: 4px; width: 100%;">
+
               <button class="btn btn-secondary btn-small" onclick="triggerExportOrders()" style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 0.85rem; padding: 10px 15px; border-radius: 4px; gap: 6px; width: 100%;">
-                <span>💾</span> Export
+                <span>💾</span> Export CSV
               </button>
             </div>
             
@@ -229,6 +237,30 @@
                   </tr>
                 </thead>
                 <tbody id="admin-product-table-body">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Stock Inventory Card -->
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h2>Stock Inventory</h2>
+              <button class="btn btn-primary btn-small" onclick="openAddStockModal()">+ Add Stock Entry</button>
+            </div>
+            
+            <div class="admin-table-container">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Fragrance</th>
+                    <th>Quantity</th>
+                    <th style="text-align:right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-stock-table-body">
                   <!-- Populated dynamically -->
                 </tbody>
               </table>
@@ -290,6 +322,38 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary btn-small" onclick="closeAllAdminModals()">Cancel</button>
           <button type="submit" class="btn btn-primary btn-small">Mark as Shipped</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add/Edit Stock Inventory Item -->
+  <div class="modal-overlay" id="modal-add-stock">
+    <div class="admin-modal">
+      <button class="modal-close" onclick="closeAllAdminModals()">&times;</button>
+      <h3 class="modal-title" id="stock-modal-title">Add Stock Entry</h3>
+      <div id="alert-stock-modal"></div>
+      <form id="admin-add-stock-form">
+        <input type="hidden" id="edit-stock-id">
+        <div class="form-group">
+          <label for="add-stock-product">Product</label>
+          <select id="add-stock-product" required data-ss-select="compact">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="add-stock-fragrance">Fragrance</label>
+          <select id="add-stock-fragrance" required data-ss-select="compact">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="add-stock-qty">Quantity</label>
+          <input type="number" id="add-stock-qty" required min="0" placeholder="E.g., 50">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-small" onclick="closeAllAdminModals()">Cancel</button>
+          <button type="submit" class="btn btn-accent btn-small" id="stock-modal-submit-btn">Add Stock</button>
         </div>
       </form>
     </div>
