@@ -451,4 +451,47 @@
   color: #a0101a;
 }
 
+/* Responsive Address Book Custom styling for Mobile viewports (under 768px) */
+@media (max-width: 768px) {
+  .address-book-list {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+
+  .address-book-card-item {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 16px !important;
+    border-radius: 8px !important;
+  }
+
+  .address-card-header-row {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+  }
+
+  .address-card-body {
+    display: block !important;
+    width: 100% !important;
+    margin-top: 8px !important;
+  }
+
+  .address-card-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    gap: 20px !important;
+    margin-top: 12px !important;
+    padding-top: 10px !important;
+  }
+}
+
 

@@ -120,8 +120,8 @@ window.syncCatalogTable = function() {
         <td>${p.fragrance || p.notes?.top || '-'}</td>
         <td>₹${p.price}</td>
         <td style="text-align:right; white-space:nowrap;">
-          <button class="btn btn-primary btn-small" style="padding:4px 8px; font-size:0.75rem; margin-right:5px; height:auto; width:auto; display:inline-block;" onclick="openEditProductModal('${p.id}')">Edit</button>
-          <button class="btn-danger-sm" onclick="handleAdminDeleteProduct('${p.id}')">Remove</button>
+          <button class="btn-edit" onclick="openEditProductModal('${p.id}')" title="Edit Candle"><i class="bi bi-pencil-fill"></i></button>
+          <button class="btn-revoke" onclick="handleAdminDeleteProduct('${p.id}')" title="Remove Product"><i class="bi bi-trash-fill"></i></button>
         </td>
       </tr>
     `).join("");
@@ -312,7 +312,7 @@ window.syncOrdersTable = function() {
               </select>
             </td>
             <td style="text-align:right;">
-              <button class="btn-danger-sm" onclick="handleAdminDeleteOrder('${o.id}')">Delete</button>
+              <button class="btn-revoke" onclick="handleAdminDeleteOrder('${o.id}')" title="Delete Order"><i class="bi bi-trash-fill"></i></button>
             </td>
           </tr>
         `;
@@ -676,8 +676,8 @@ function syncStockTable() {
         <td><span style="font-family:Georgia,serif; font-style:italic;">${item.fragrance}</span></td>
         <td><strong>${item.qty} units</strong></td>
         <td style="text-align:right; white-space:nowrap;">
-          <button class="btn btn-primary btn-small" style="padding:4px 8px; font-size:0.75rem; margin-right:5px; height:auto; width:auto; display:inline-block;" onclick="openEditStockModal('${item.id}')">Edit</button>
-          <button class="btn-danger-sm" onclick="handleDeleteStock('${item.id}')">Remove</button>
+          <button class="btn-edit" onclick="openEditStockModal('${item.id}')" title="Edit Stock"><i class="bi bi-pencil-fill"></i></button>
+          <button class="btn-revoke" onclick="handleDeleteStock('${item.id}')" title="Remove Stock"><i class="bi bi-trash-fill"></i></button>
         </td>
       </tr>
     `;

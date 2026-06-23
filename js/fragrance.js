@@ -679,7 +679,7 @@
       html += `
         <div class="fragrance-list-item">
           <span><strong>${frag.name}</strong></span>
-          <button class="btn btn-secondary btn-small" style="background-color:#ffebe9; color:#cf222e; border-color:#ffebe9; padding:4px 8px; cursor:pointer;" onclick="handleDeleteGlobalFragrance('${fid}')">Delete</button>
+          <button class="btn-revoke" onclick="handleDeleteGlobalFragrance('${fid}')" title="Delete Fragrance"><i class="bi bi-trash-fill"></i></button>
         </div>
       `;
     });

@@ -129,8 +129,8 @@
 
   <!-- Breadcrumbs -->
   <div class="container" style="padding-top: 24px; padding-bottom: 0;">
-    <div class="breadcrumbs" style="margin-top: 0; color: var(--color-muted-gray); font-size: 0.85rem;">
-      <a href="index.html" style="color: var(--color-charcoal); font-weight:700;">Home</a> &nbsp;/&nbsp; 
+    <div class="breadcrumbs" style="margin-top: 0; font-size: 0.85rem;">
+      <a href="index.html">Home</a> &nbsp;/&nbsp; 
       <span style="color: var(--color-gold); font-weight:700;">Admin Dashboard</span>
     </div>
   </div>
@@ -300,7 +300,7 @@
       <div class="admin-card">
         <div class="admin-card-header">
           <h2>Administrative Audit Trails</h2>
-          <button class="btn btn-secondary btn-small" onclick="triggerClearAuditLogs()">Clear Old Trails</button>
+          <button class="btn-revoke" onclick="triggerClearAuditLogs()" title="Clear Old Trails"><i class="bi bi-trash-fill"></i></button>
         </div>
         <div class="admin-table-container">
           <table class="admin-table">
