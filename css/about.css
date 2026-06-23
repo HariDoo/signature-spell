@@ -20,8 +20,48 @@
 }
 
 .about-intro-text p {
-  color: #555;
+  color: var(--color-charcoal);
+  opacity: 0.9;
   margin-bottom: 20px;
+}
+
+.about-quote {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-style: italic;
+  border-left: 2px solid var(--color-gold);
+  padding-left: 24px;
+  color: var(--color-charcoal);
+  margin-bottom: 24px;
+}
+
+.registry-card {
+  background-color: var(--color-white);
+  padding: 40px;
+  border: var(--border-gold-light);
+  max-width: 700px;
+  margin: 0 auto;
+  box-shadow: var(--shadow-subtle);
+  border-radius: 12px;
+}
+
+.registry-card p {
+  color: var(--color-charcoal);
+  opacity: 0.9;
+  margin-bottom: 16px;
+}
+
+.registry-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 0.95rem;
+}
+
+.registry-list li {
+  color: var(--color-charcoal);
+  opacity: 0.85;
 }
 
 .about-values {
@@ -35,8 +75,19 @@
 }
 
 .value-item {
+  background-color: var(--color-cream-dark);
+  border: 1px solid var(--color-light-gray);
+  border-radius: 12px;
   text-align: center;
-  padding: 24px;
+  padding: 32px 24px;
+  box-shadow: var(--shadow-subtle);
+  transition: var(--transition-smooth);
+}
+
+.value-item:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-luxury);
+  border-color: var(--color-gold);
 }
 
 .value-icon {
@@ -71,11 +122,13 @@
   border: var(--border-gold-light);
   padding: 10px;
   background-color: var(--color-white);
+  border-radius: 8px;
 }
 
 .founder-img img {
   width: 100%;
   box-shadow: var(--shadow-luxury);
+  border-radius: 4px;
 }
 
 .founder-content h3 {
@@ -94,7 +147,77 @@
 }
 
 .founder-content p {
-  color: #444;
+  color: var(--color-charcoal);
+  opacity: 0.9;
   margin-bottom: 20px;
   font-size: 0.95rem;
+}
+
+/* Responsive UI Enhancements for Tablet and Mobile */
+@media (max-width: 992px) {
+  .about-intro-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .values-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .founder-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .about-intro-text h2 {
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .about-intro-text .section-subtitle {
+    display: block;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  .about-quote {
+    font-size: 1.15rem;
+    padding-left: 16px;
+    margin: 24px 0;
+  }
+
+  .registry-card {
+    padding: 24px 20px;
+  }
+
+  .values-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .value-item {
+    padding: 24px 20px;
+  }
+
+  .founder-grid {
+    gap: 32px;
+    text-align: center;
+  }
+
+  .founder-img {
+    max-width: 320px;
+    margin: 0 auto;
+  }
+
+  .founder-content h3 {
+    font-size: 1.8rem;
+  }
+
+  .founder-content .btn {
+    width: 100%;
+  }
 }

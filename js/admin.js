@@ -211,13 +211,19 @@ function loadAdminManagers() {
     for (let key in managers) {
       const m = managers[key];
       const isPrimary = m.email === "nandheswara21@gmail.com" || m.email === "admin@signaturespell.com";
+      const matchUser = allUsers.find(u => u.email === m.email);
+      const displayName = matchUser ? matchUser.displayName : "";
+      
       html += `
         <div class="admin-manager-item">
-          <div>
-            <span style="font-weight: 700; font-size:0.9rem;">${m.email}</span>
-            <small style="display:block; color:var(--color-muted-gray); font-size:0.75rem;">Added by ${m.addedByEmail || 'system'}</small>
+          <div class="manager-identity-wrapper">
+            <span class="manager-name">${displayName || m.email.split('@')[0]}</span>
+            <small class="manager-email">${m.email}</small>
+            <small class="manager-added-by">Added by ${m.addedByEmail || 'system'}</small>
           </div>
-          ${isPrimary ? '<span class="badge badge-success">Primary</span>' : `<button class="btn btn-secondary btn-small" onclick="revokeAdminPrivileges('${key}', '${m.email}')">Revoke</button>`}
+          <div class="manager-action-wrapper">
+            ${isPrimary ? '<span class="badge badge-success">Primary</span>' : `<button class="btn btn-secondary btn-small btn-revoke" onclick="revokeAdminPrivileges('${key}', '${m.email}')" title="Revoke Admin Access"><i class="bi bi-trash-fill"></i></button>`}
+          </div>
         </div>
       `;
     }
@@ -260,7 +266,7 @@ function loadAuditTrails() {
       
       const arr = Object.values(logs).reverse();
       tbody.innerHTML = arr.map(l => `
-        <tr>
+        <tr onclick="this.classList.toggle('expanded')">
           <td>${new Date(l.timestamp).toLocaleString("en-IN")}</td>
           <td><strong>${l.adminEmail}</strong></td>
           <td><span class="audit-action-badge" style="background:#e8f2ff; color:#0969da;">${l.action}</span></td>
