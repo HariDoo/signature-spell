@@ -5,8 +5,8 @@ document.addEventListener("DOMContentLoaded", () => {
   
   function renderFeatured() {
     if (featuredGrid && typeof PRODUCTS !== "undefined") {
-      const featuredIds = [1, 5, 7, 8];
-      const featuredProducts = PRODUCTS.filter(p => featuredIds.includes(Number(p.id)));
+      // Pick the first 4 products dynamically to avoid missing items
+      const featuredProducts = PRODUCTS.slice(0, 4);
       if (typeof createProductCardHTML === "function") {
         featuredGrid.innerHTML = featuredProducts.map(p => createProductCardHTML(p)).join("");
       }
