@@ -11,47 +11,72 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
   
-  let subtotal = 0;
-  
-  if (checkoutList) {
-    let html = "";
-    cart.forEach(item => {
-      const p = PRODUCTS.find(prod => prod.id == item.id);
-      if (!p) return;
-      const rowTotal = p.price * item.qty;
-      subtotal += rowTotal;
-      
-      html += `
-        <div class="checkout-item">
-          <div class="checkout-item-left">
-            <div class="checkout-item-thumb">
-              <img src="${p.image}" alt="${p.name}" style="width:100%; height:100%; object-fit:cover;">
+  function updateCheckoutTotals() {
+    let subtotal = 0;
+    if (checkoutList) {
+      let html = "";
+      cart.forEach(item => {
+        const p = PRODUCTS.find(prod => prod.id == item.id);
+        if (!p) return;
+        const rowTotal = p.price * item.qty;
+        subtotal += rowTotal;
+        
+        html += `
+          <div class="checkout-item">
+            <div class="checkout-item-left">
+              <div class="checkout-item-thumb">
+                <img src="${p.image}" alt="${p.name}" style="width:100%; height:100%; object-fit:cover;">
+              </div>
+              <div>
+                <span class="checkout-item-title">${p.name}</span>
+                <span class="checkout-item-qty">x${item.qty}</span>
+              </div>
             </div>
-            <div>
-              <span class="checkout-item-title">${p.name}</span>
-              <span class="checkout-item-qty">x${item.qty}</span>
-            </div>
+            <span class="checkout-item-price">₹${rowTotal}</span>
           </div>
-          <span class="checkout-item-price">₹${rowTotal}</span>
-        </div>
-      `;
-    });
-    checkoutList.innerHTML = html;
+        `;
+      });
+      checkoutList.innerHTML = html;
+    }
+    
+    let discountAmt = 0;
+    if (window.checkoutAppliedPromo) {
+      if (window.checkoutAppliedPromo.discountType === 'percentage') {
+        discountAmt = subtotal * (window.checkoutAppliedPromo.discountValue / 100);
+      } else {
+        discountAmt = window.checkoutAppliedPromo.discountValue;
+      }
+      if (discountAmt > subtotal) discountAmt = subtotal;
+    }
+    
+    const shipping = subtotal >= 500 ? 0 : 50;
+    const tax = subtotal * 0.18; // 18% GST
+    const total = (subtotal - discountAmt) + shipping + tax;
+    
+    const subtotalEl = document.getElementById("checkout-subtotal");
+    const shippingEl = document.getElementById("checkout-shipping");
+    const taxEl = document.getElementById("checkout-tax");
+    const totalEl = document.getElementById("checkout-total");
+    
+    const promoRow = document.getElementById("checkout-promo-row");
+    const promoLabel = document.getElementById("checkout-promo-label");
+    const promoAmount = document.getElementById("checkout-promo-amount");
+    
+    if (window.checkoutAppliedPromo && promoRow && promoLabel && promoAmount) {
+      promoRow.style.display = "flex";
+      promoLabel.textContent = window.checkoutAppliedPromo.code;
+      promoAmount.textContent = `-₹${discountAmt.toFixed(2)}`;
+    } else if (promoRow) {
+      promoRow.style.display = "none";
+    }
+    
+    if (subtotalEl) subtotalEl.textContent = `₹${subtotal.toFixed(2)}`;
+    if (shippingEl) shippingEl.textContent = shipping === 0 ? "FREE" : `₹${shipping.toFixed(2)}`;
+    if (taxEl) taxEl.textContent = `₹${tax.toFixed(2)}`;
+    if (totalEl) totalEl.textContent = `₹${total.toFixed(2)}`;
   }
   
-  const shipping = subtotal >= 500 ? 0 : 50;
-  const tax = subtotal * 0.18; // 18% GST
-  const total = subtotal + shipping + tax;
-  
-  const subtotalEl = document.getElementById("checkout-subtotal");
-  const shippingEl = document.getElementById("checkout-shipping");
-  const taxEl = document.getElementById("checkout-tax");
-  const totalEl = document.getElementById("checkout-total");
-  
-  if (subtotalEl) subtotalEl.textContent = `₹${subtotal.toFixed(2)}`;
-  if (shippingEl) shippingEl.textContent = shipping === 0 ? "FREE" : `₹${shipping.toFixed(2)}`;
-  if (taxEl) taxEl.textContent = `₹${tax.toFixed(2)}`;
-  if (totalEl) totalEl.textContent = `₹${total.toFixed(2)}`;
+  updateCheckoutTotals();
   
   // Auto-populate & lock email address if logged in
   const emailInput = document.getElementById("shipping-email");
@@ -296,6 +321,52 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         if (typeof OrderDb !== "undefined") OrderDb.add(newOrderObj);
         sendOrderNotification().then(() => sendWebsiteOrderNotification()).then(proceedToReceipt);
+      }
+    });
+  }
+  
+  // Promo code apply logic
+  const promoApplyBtn = document.getElementById("checkout-promo-apply-btn");
+  if (promoApplyBtn) {
+    promoApplyBtn.addEventListener("click", () => {
+      const codeInput = document.getElementById("checkout-promo-input").value.trim().toUpperCase();
+      const msgEl = document.getElementById("checkout-promo-message");
+      if (!codeInput) {
+        msgEl.textContent = "Enter a promo code";
+        msgEl.style.color = "var(--color-danger)";
+        return;
+      }
+      
+      msgEl.textContent = "Applying...";
+      msgEl.style.color = "var(--color-muted-gray)";
+      
+      if (typeof isFirebaseInitialized !== "undefined" && isFirebaseInitialized) {
+        db.ref("promo_codes/" + codeInput).once("value").then(snap => {
+          const promo = snap.val();
+          if (promo && promo.isActive) {
+            window.checkoutAppliedPromo = promo;
+            msgEl.textContent = "Promo applied successfully!";
+            msgEl.style.color = "var(--color-success)";
+            updateCheckoutTotals();
+          } else {
+            msgEl.textContent = "Invalid or inactive promo code.";
+            msgEl.style.color = "var(--color-danger)";
+          }
+        }).catch(() => {
+          msgEl.textContent = "Error applying code.";
+          msgEl.style.color = "var(--color-danger)";
+        });
+      } else {
+        const promos = JSON.parse(localStorage.getItem("ss_mock_promos") || "{}");
+        if (promos[codeInput] && promos[codeInput].isActive) {
+          window.checkoutAppliedPromo = promos[codeInput];
+          msgEl.textContent = "Promo applied successfully!";
+          msgEl.style.color = "var(--color-success)";
+          updateCheckoutTotals();
+        } else {
+          msgEl.textContent = "Invalid or inactive promo code.";
+          msgEl.style.color = "var(--color-danger)";
+        }
       }
     });
   }
