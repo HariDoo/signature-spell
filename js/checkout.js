@@ -327,45 +327,79 @@ document.addEventListener("DOMContentLoaded", () => {
   
   // Promo code apply logic
   const promoApplyBtn = document.getElementById("checkout-promo-apply-btn");
+  const promoRemoveBtn = document.getElementById("checkout-promo-remove-btn");
+  
+  if (promoRemoveBtn) {
+    promoRemoveBtn.addEventListener("click", () => {
+      window.checkoutAppliedPromo = null;
+      
+      const msgTextEl = document.getElementById("checkout-promo-msg-text");
+      if (msgTextEl) msgTextEl.textContent = "";
+      
+      promoRemoveBtn.style.display = "none";
+      
+      const inputEl = document.getElementById("checkout-promo-input");
+      if (inputEl) {
+        inputEl.value = "";
+        inputEl.disabled = false;
+      }
+      
+      if (promoApplyBtn) promoApplyBtn.disabled = false;
+      
+      updateCheckoutTotals();
+    });
+  }
+
   if (promoApplyBtn) {
     promoApplyBtn.addEventListener("click", () => {
       const codeInput = document.getElementById("checkout-promo-input").value.trim().toUpperCase();
-      const msgEl = document.getElementById("checkout-promo-message");
+      const msgTextEl = document.getElementById("checkout-promo-msg-text");
+      const removeBtn = document.getElementById("checkout-promo-remove-btn");
+      
       if (!codeInput) {
-        msgEl.textContent = "Enter a promo code";
-        msgEl.style.color = "var(--color-danger)";
+        msgTextEl.textContent = "Enter a promo code";
+        msgTextEl.style.color = "var(--color-danger)";
+        if (removeBtn) removeBtn.style.display = "none";
         return;
       }
       
-      msgEl.textContent = "Applying...";
-      msgEl.style.color = "var(--color-muted-gray)";
+      msgTextEl.textContent = "Applying...";
+      msgTextEl.style.color = "var(--color-muted-gray)";
+      if (removeBtn) removeBtn.style.display = "none";
+      
+      const handleSuccess = (promo) => {
+        window.checkoutAppliedPromo = promo;
+        msgTextEl.textContent = "Promo applied successfully!";
+        msgTextEl.style.color = "var(--color-success)";
+        if (removeBtn) removeBtn.style.display = "inline-block";
+        document.getElementById("checkout-promo-input").disabled = true;
+        promoApplyBtn.disabled = true;
+        updateCheckoutTotals();
+      };
+      
+      const handleError = (msg) => {
+        msgTextEl.textContent = msg;
+        msgTextEl.style.color = "var(--color-danger)";
+        if (removeBtn) removeBtn.style.display = "none";
+      };
       
       if (typeof isFirebaseInitialized !== "undefined" && isFirebaseInitialized) {
         db.ref("promo_codes/" + codeInput).once("value").then(snap => {
           const promo = snap.val();
           if (promo && promo.isActive) {
-            window.checkoutAppliedPromo = promo;
-            msgEl.textContent = "Promo applied successfully!";
-            msgEl.style.color = "var(--color-success)";
-            updateCheckoutTotals();
+            handleSuccess(promo);
           } else {
-            msgEl.textContent = "Invalid or inactive promo code.";
-            msgEl.style.color = "var(--color-danger)";
+            handleError("Invalid or inactive promo code.");
           }
         }).catch(() => {
-          msgEl.textContent = "Error applying code.";
-          msgEl.style.color = "var(--color-danger)";
+          handleError("Error applying code.");
         });
       } else {
         const promos = JSON.parse(localStorage.getItem("ss_mock_promos") || "{}");
         if (promos[codeInput] && promos[codeInput].isActive) {
-          window.checkoutAppliedPromo = promos[codeInput];
-          msgEl.textContent = "Promo applied successfully!";
-          msgEl.style.color = "var(--color-success)";
-          updateCheckoutTotals();
+          handleSuccess(promos[codeInput]);
         } else {
-          msgEl.textContent = "Invalid or inactive promo code.";
-          msgEl.style.color = "var(--color-danger)";
+          handleError("Invalid or inactive promo code.");
         }
       }
     });
