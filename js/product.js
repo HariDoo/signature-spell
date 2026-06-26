@@ -145,7 +145,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (thumbStrip) {
       thumbStrip.innerHTML = `
         <div class="thumbnail active" onclick="swapMainImage('${product.image}', this)"><img src="${product.image}" alt="${product.name}"></div>
-        <div class="thumbnail" onclick="swapMainImage('assets/large-jar-jasmine.png', this)"><img src="assets/large-jar-jasmine.png" alt="Mood Candle Ambient"></div>
       `;
     }
     
@@ -285,3 +284,152 @@ window.swapMainImage = function(src, thumbElement) {
     thumbElement.classList.add("active");
   }
 };
+
+// Customer Reviews Logic
+document.addEventListener("DOMContentLoaded", () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const productId = urlParams.get("id") || 1;
+  const reviewsList = document.getElementById("reviews-list");
+  const reviewForm = document.getElementById("submit-review-form");
+  const reviewMsg = document.getElementById("review-msg");
+  let reviewToDelete = null;
+  const deleteModal = document.getElementById("review-delete-modal");
+  const cancelBtn = document.getElementById("review-delete-cancel");
+  const confirmBtn = document.getElementById("review-delete-confirm");
+
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", () => {
+      reviewToDelete = null;
+      deleteModal.classList.remove("active");
+    });
+  }
+
+  if (confirmBtn) {
+    confirmBtn.addEventListener("click", () => {
+      if (!reviewToDelete) return;
+      
+      const reviewId = reviewToDelete;
+      reviewToDelete = null;
+      deleteModal.classList.remove("active");
+
+      if (typeof isFirebaseInitialized !== "undefined" && isFirebaseInitialized) {
+        db.ref("product_reviews/" + productId + "/" + reviewId).remove().then(() => {
+          if (typeof showToast === "function") showToast("Review deleted");
+        });
+      } else {
+        const mock = JSON.parse(localStorage.getItem("ss_mock_reviews") || "{}");
+        if (mock[productId] && mock[productId][reviewId]) {
+          delete mock[productId][reviewId];
+          localStorage.setItem("ss_mock_reviews", JSON.stringify(mock));
+          loadReviews();
+          if (typeof showToast === "function") showToast("Review deleted");
+        }
+      }
+    });
+  }
+
+  window.deleteReview = function(reviewId) {
+    reviewToDelete = reviewId;
+    if (deleteModal) {
+      deleteModal.classList.add("active");
+    }
+  };
+
+  function renderReviews(reviewsObj) {
+    if (!reviewsList) return;
+    reviewsList.innerHTML = "";
+    if (!reviewsObj || Object.keys(reviewsObj).length === 0) {
+      reviewsList.innerHTML = "<p>No reviews yet. Be the first to review this candle!</p>";
+      return;
+    }
+
+    const isAdmin = typeof UserSession !== "undefined" && UserSession.get() && UserSession.get().isAdmin;
+    
+    // Map to array with IDs
+    const reviews = Object.entries(reviewsObj).map(([id, data]) => ({ id, ...data }));
+    reviews.sort((a, b) => b.timestamp - a.timestamp);
+    
+    reviewsList.innerHTML = reviews.map(r => `
+      <div class="review-card" style="position: relative;">
+        ${isAdmin ? `<button onclick="deleteReview('${r.id}')" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: var(--color-danger); cursor: pointer; font-size: 1.2rem;" aria-label="Delete Review"><i class="bi bi-trash"></i></button>` : ''}
+        <div class="review-header" style="margin-right: ${isAdmin ? '30px' : '0'};">
+          <span class="review-author">${r.name}</span>
+          <span class="review-date">${new Date(r.timestamp).toLocaleDateString()}</span>
+        </div>
+        <div class="review-stars">
+          ${Array(5).fill(0).map((_, i) => `<i class="bi bi-star${i < r.rating ? '-fill' : ''}"></i>`).join('')}
+        </div>
+        <div class="review-text">${r.text}</div>
+      </div>
+    `).join("");
+  }
+
+  function loadReviews() {
+    if (typeof isFirebaseInitialized !== "undefined" && isFirebaseInitialized) {
+      db.ref("product_reviews/" + productId).on("value", snap => {
+        renderReviews(snap.val());
+      });
+    } else {
+      const mock = JSON.parse(localStorage.getItem("ss_mock_reviews") || "{}");
+      renderReviews(mock[productId]);
+    }
+  }
+
+  // Load reviews on Firebase initialization
+  const fbCheck = setInterval(() => {
+    if (typeof isFirebaseInitialized !== "undefined" && isFirebaseInitialized) {
+      clearInterval(fbCheck);
+      loadReviews();
+    }
+  }, 100);
+
+  // Fallback clear
+  setTimeout(() => { clearInterval(fbCheck); loadReviews(); }, 3000);
+
+  if (reviewForm) {
+    reviewForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = document.getElementById("review-name").value.trim();
+      const rating = parseInt(document.getElementById("review-rating").value);
+      const text = document.getElementById("review-text").value.trim();
+      
+      if (!name || !rating || !text) {
+        reviewMsg.textContent = "Please fill in all fields.";
+        reviewMsg.style.color = "var(--color-danger)";
+        return;
+      }
+
+      const reviewData = {
+        name,
+        rating,
+        text,
+        timestamp: Date.now()
+      };
+
+      reviewMsg.textContent = "Submitting review...";
+      reviewMsg.style.color = "var(--color-muted-gray)";
+
+      if (typeof isFirebaseInitialized !== "undefined" && isFirebaseInitialized) {
+        db.ref("product_reviews/" + productId).push(reviewData).then(() => {
+          reviewForm.reset();
+          reviewMsg.textContent = "Thank you for your review!";
+          reviewMsg.style.color = "var(--color-success)";
+          setTimeout(() => reviewMsg.textContent = "", 3000);
+        }).catch(() => {
+          reviewMsg.textContent = "Failed to submit review. Try again.";
+          reviewMsg.style.color = "var(--color-danger)";
+        });
+      } else {
+        const mock = JSON.parse(localStorage.getItem("ss_mock_reviews") || "{}");
+        if (!mock[productId]) mock[productId] = {};
+        mock[productId]["mock_" + Date.now()] = reviewData;
+        localStorage.setItem("ss_mock_reviews", JSON.stringify(mock));
+        reviewForm.reset();
+        reviewMsg.textContent = "Thank you for your review!";
+        reviewMsg.style.color = "var(--color-success)";
+        setTimeout(() => reviewMsg.textContent = "", 3000);
+        loadReviews();
+      }
+    });
+  }
+});
