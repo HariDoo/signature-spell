@@ -88,6 +88,7 @@ function initializeStoreManager() {
   populateOrderProductFilterDropdown();
   syncOrdersTable();
   initializeStockManager();
+  syncPromoTable();
 }
 
 function loadStats() {
@@ -498,6 +499,7 @@ async function pushOrderStatusWebsiteNotification(orderId, status) {
 }
 
 function setupStoreManagerFormBindings() {
+  setupPromoFormBindings();
   const carrierForm = document.getElementById("form-carrier-details");
   if (carrierForm) {
     carrierForm.addEventListener("submit", (e) => {
@@ -847,3 +849,175 @@ window.handleDeleteStock = function(stockId) {
     }
   });
 };
+
+/* --- Promo Codes --- */
+window.openAddPromoModal = function() {
+  const modal = document.getElementById("modal-add-promo");
+  const alertCont = document.getElementById("alert-promo-modal");
+  if (alertCont) alertCont.innerHTML = "";
+  
+  const codeInput = document.getElementById("add-promo-code");
+  if (codeInput) codeInput.value = "";
+  
+  const valInput = document.getElementById("add-promo-value");
+  if (valInput) valInput.value = "";
+  
+  if (modal) modal.classList.add("active");
+};
+
+window.setupPromoFormBindings = function() {
+  const form = document.getElementById("admin-add-promo-form");
+  if (!form) return;
+  
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const codeInput = document.getElementById("add-promo-code");
+    const typeInput = document.getElementById("add-promo-type");
+    const valInput = document.getElementById("add-promo-value");
+    
+    const code = codeInput.value.trim().toUpperCase();
+    const type = typeInput.value;
+    const value = parseFloat(valInput.value);
+    const alertCont = document.getElementById("alert-promo-modal");
+    
+    if (!code || isNaN(value) || value <= 0) {
+      if (typeof showInlineAlert === "function") {
+        showInlineAlert(alertCont, "Please enter valid promo code and discount value.", "danger");
+      }
+      return;
+    }
+    
+    if (isFirebaseInitialized) {
+      db.ref("promo_codes/" + code).set({
+        code: code,
+        discountType: type,
+        discountValue: value,
+        isActive: true,
+        createdAt: firebase.database.ServerValue.TIMESTAMP
+      }).then(() => {
+        logAdminAction("promo_created", `Created promo code: ${code}`);
+        showToast("Promo Code added successfully!");
+        closeAllAdminModals();
+        syncPromoTable();
+      }).catch(err => {
+        if (typeof showInlineAlert === "function") {
+          showInlineAlert(alertCont, err.message, "danger");
+        }
+      });
+    } else {
+      let promos = JSON.parse(localStorage.getItem("ss_mock_promos") || "{}");
+      promos[code] = {
+        code: code,
+        discountType: type,
+        discountValue: value,
+        isActive: true,
+        createdAt: Date.now()
+      };
+      localStorage.setItem("ss_mock_promos", JSON.stringify(promos));
+      showToast("Promo Code added locally.");
+      closeAllAdminModals();
+      syncPromoTable();
+    }
+  });
+};
+
+window.syncPromoTable = function() {
+  const table = document.getElementById("admin-promo-table-body");
+  if (!table) return;
+  
+  if (isFirebaseInitialized) {
+    db.ref("promo_codes").on("value", snapshot => {
+      renderPromoTable(snapshot.val());
+    });
+  } else {
+    const promos = JSON.parse(localStorage.getItem("ss_mock_promos") || "{}");
+    renderPromoTable(promos);
+  }
+};
+
+function renderPromoTable(data) {
+  const table = document.getElementById("admin-promo-table-body");
+  if (!table) return;
+  
+  if (!data) {
+    table.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--color-muted-gray);">No promo codes found.</td></tr>`;
+    return;
+  }
+  
+  const promos = Object.values(data);
+  if (promos.length === 0) {
+    table.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--color-muted-gray);">No promo codes found.</td></tr>`;
+    return;
+  }
+  
+  // Sort newest first
+  promos.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  
+  let html = "";
+  promos.forEach(p => {
+    const statusLabel = p.isActive ? `<span style="color:var(--color-success);font-weight:600;">Active</span>` : `<span style="color:var(--color-danger);font-weight:600;">Inactive</span>`;
+    const toggleBtn = p.isActive ? 
+      `<button class="btn btn-secondary btn-small" onclick="handleTogglePromo('${p.code}', false)">Disable</button>` :
+      `<button class="btn btn-primary btn-small" onclick="handleTogglePromo('${p.code}', true)">Enable</button>`;
+      
+    const discStr = p.discountType === "percentage" ? `${p.discountValue}%` : `₹${p.discountValue}`;
+    
+    html += `
+      <tr>
+        <td style="font-weight: 700;">${p.code}</td>
+        <td>${discStr}</td>
+        <td>${statusLabel}</td>
+        <td style="text-align:right;">
+          ${toggleBtn}
+          <button class="btn btn-secondary btn-small" onclick="handleDeletePromo('${p.code}')" style="color:var(--color-danger); border-color:var(--color-danger);">Delete</button>
+        </td>
+      </tr>
+    `;
+  });
+  
+  table.innerHTML = html;
+}
+
+window.handleTogglePromo = function(code, newStatus) {
+  if (isFirebaseInitialized) {
+    db.ref("promo_codes/" + code).update({ isActive: newStatus })
+      .then(() => showToast(`Promo ${code} is now ${newStatus ? 'Active' : 'Inactive'}`))
+      .catch(err => console.error(err));
+  } else {
+    let promos = JSON.parse(localStorage.getItem("ss_mock_promos") || "{}");
+    if (promos[code]) {
+      promos[code].isActive = newStatus;
+      localStorage.setItem("ss_mock_promos", JSON.stringify(promos));
+      syncPromoTable();
+    }
+  }
+};
+
+window.handleDeletePromo = function(code) {
+  if (typeof showModal === "function") {
+    showModal(`Are you sure you want to delete promo code "${code}"?`, {
+      title: "Confirm Deletion",
+      type: "confirm",
+      dangerous: true
+    }).then(confirmed => {
+      if (confirmed) executeDeletePromo(code);
+    });
+  } else {
+    if (confirm(`Are you sure you want to delete promo code "${code}"?`)) {
+      executeDeletePromo(code);
+    }
+  }
+};
+
+function executeDeletePromo(code) {
+  if (isFirebaseInitialized) {
+    db.ref("promo_codes/" + code).remove()
+      .then(() => showToast(`Promo ${code} deleted`))
+      .catch(err => console.error(err));
+  } else {
+    let promos = JSON.parse(localStorage.getItem("ss_mock_promos") || "{}");
+    delete promos[code];
+    localStorage.setItem("ss_mock_promos", JSON.stringify(promos));
+    syncPromoTable();
+  }
+}

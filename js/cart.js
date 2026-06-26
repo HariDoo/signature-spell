@@ -156,7 +156,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const shipping = subtotal >= 500 ? 0 : 50;
     const gstRate = 0.18;
     const estimatedTax = subtotal * gstRate;
-    const grandTotal = subtotal;
+    
+    let discountAmt = 0;
+    if (window.cartAppliedPromo) {
+      if (window.cartAppliedPromo.discountType === 'percentage') {
+        discountAmt = subtotal * (window.cartAppliedPromo.discountValue / 100);
+      } else {
+        discountAmt = window.cartAppliedPromo.discountValue;
+      }
+      if (discountAmt > subtotal) discountAmt = subtotal;
+    }
+    
+    const grandTotal = subtotal - discountAmt;
     
     const subtotalEl = document.getElementById("cart-subtotal");
     const shippingEl = document.getElementById("cart-shipping");
@@ -168,6 +179,18 @@ document.addEventListener("DOMContentLoaded", () => {
     if (shippingEl) shippingEl.textContent = shipping === 0 ? "FREE" : `₹${shipping.toFixed(2)}`;
     if (taxEl) taxEl.textContent = `₹${estimatedTax.toFixed(2)}`;
     if (totalEl) totalEl.textContent = `₹${grandTotal.toFixed(2)}`;
+    
+    const promoRow = document.getElementById("cart-promo-row");
+    const promoLabel = document.getElementById("cart-promo-label");
+    const promoAmount = document.getElementById("cart-promo-amount");
+    
+    if (window.cartAppliedPromo && promoRow && promoLabel && promoAmount) {
+      promoRow.style.display = "flex";
+      promoLabel.textContent = window.cartAppliedPromo.code;
+      promoAmount.textContent = `-₹${discountAmt.toFixed(2)}`;
+    } else if (promoRow) {
+      promoRow.style.display = "none";
+    }
     
     if (shipBanner) {
       if (subtotal >= 500) {
@@ -205,4 +228,50 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   
   renderCart();
+  
+  // Promo code apply logic
+  const promoApplyBtn = document.getElementById("cart-promo-apply-btn");
+  if (promoApplyBtn) {
+    promoApplyBtn.addEventListener("click", () => {
+      const codeInput = document.getElementById("cart-promo-input").value.trim().toUpperCase();
+      const msgEl = document.getElementById("cart-promo-message");
+      if (!codeInput) {
+        msgEl.textContent = "Enter a promo code";
+        msgEl.style.color = "var(--color-danger)";
+        return;
+      }
+      
+      msgEl.textContent = "Applying...";
+      msgEl.style.color = "var(--color-muted-gray)";
+      
+      if (typeof isFirebaseInitialized !== "undefined" && isFirebaseInitialized) {
+        db.ref("promo_codes/" + codeInput).once("value").then(snap => {
+          const promo = snap.val();
+          if (promo && promo.isActive) {
+            window.cartAppliedPromo = promo;
+            msgEl.textContent = "Promo applied successfully!";
+            msgEl.style.color = "var(--color-success)";
+            renderCart();
+          } else {
+            msgEl.textContent = "Invalid or inactive promo code.";
+            msgEl.style.color = "var(--color-danger)";
+          }
+        }).catch(() => {
+          msgEl.textContent = "Error applying code.";
+          msgEl.style.color = "var(--color-danger)";
+        });
+      } else {
+        const promos = JSON.parse(localStorage.getItem("ss_mock_promos") || "{}");
+        if (promos[codeInput] && promos[codeInput].isActive) {
+          window.cartAppliedPromo = promos[codeInput];
+          msgEl.textContent = "Promo applied successfully!";
+          msgEl.style.color = "var(--color-success)";
+          renderCart();
+        } else {
+          msgEl.textContent = "Invalid or inactive promo code.";
+          msgEl.style.color = "var(--color-danger)";
+        }
+      }
+    });
+  }
 });

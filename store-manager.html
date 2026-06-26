@@ -271,6 +271,30 @@
             <!-- Rendered by js/fragrance.js -->
           </div>
 
+          <!-- Promo Code Card -->
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h2>Promo Codes</h2>
+              <button class="btn btn-primary btn-small" onclick="openAddPromoModal()">+ Add Promo Code</button>
+            </div>
+            
+            <div class="admin-table-container">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Code</th>
+                    <th>Discount</th>
+                    <th>Status</th>
+                    <th style="text-align:right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-promo-table-body">
+                  <tr><td colspan="4" style="text-align:center; color: var(--color-muted-gray);">Loading promo codes...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
 
     </div>
   </section>
@@ -380,6 +404,8 @@
           <select id="add-prod-category" required data-ss-select="normal">
             <option value="Tea Lights">Tea Lights</option>
             <option value="Jars">Glass Jars</option>
+            <option value="Pet Jars">Pet Jars</option>
+            <option value="Star Lights">Star Light</option>
             <option value="Shells">Coconut Shells</option>
           </select>
         </div>
@@ -394,17 +420,15 @@
         <div class="form-group">
           <label for="add-prod-image">Image URL path</label>
           <select id="add-prod-image" required data-ss-select="compact">
-            <option value="assets/coconut_shell.png">Coconut Shell (assets/coconut_shell.png)</option>
-            <option value="assets/flower_tlight.png">Flower Tea Light (assets/flower_tlight.png)</option>
-            <option value="assets/golden_tlight.png">Golden Tea Light (assets/golden_tlight.png)</option>
-            <option value="assets/heart_tlight.png">Heart Tea Light (assets/heart_tlight.png)</option>
-            <option value="assets/hero_candle.png">Hero Candle (assets/hero_candle.png)</option>
+            <option value="assets/coconut_shell.png" selected>Coconut Shell (assets/coconut_shell.png)</option>
             <option value="assets/large-glass-chocolate.png">Large Glass Chocolate (assets/large-glass-chocolate.png)</option>
             <option value="assets/large-glass-lavender.png">Large Glass Lavender (assets/large-glass-lavender.png)</option>
-            <option value="assets/medium_pet.png">Medium PET Jar (assets/medium_pet.png)</option>
-            <option value="assets/regular_tlight.png" selected>Regular Tea Light (assets/regular_tlight.png)</option>
-            <option value="assets/small_glass.png">Small Glass Jar (assets/small_glass.png)</option>
-            <option value="assets/star_tlight.png">Star Tea Light (assets/star_tlight.png)</option>
+            <option value="assets/large-jar-jasmine.png">Large Jar Jasmine (assets/large-jar-jasmine.png)</option>
+            <option value="assets/medium-glass-rose.png">Medium Glass Rose (assets/medium-glass-rose.png)</option>
+            <option value="assets/medium-glass-straberry.png">Medium Glass Straberry (assets/medium-glass-straberry.png)</option>
+            <option value="assets/star-lavender.png">Star Lavender (assets/star-lavender.png)</option>
+            <option value="assets/tea-light-rose.png">Tea Light Rose (assets/tea-light-rose.png)</option>
+            <option value="assets/golden-tea-light-rose.png">Golden Tea Light Rose (assets/golden-tea-light-rose.png)</option>
           </select>
         </div>
         <div class="form-group">
@@ -420,6 +444,36 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary btn-small" onclick="closeAllAdminModals()">Cancel</button>
           <button type="submit" class="btn btn-accent btn-small" id="product-modal-submit-btn">Add Candle</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add Promo Code -->
+  <div class="modal-overlay" id="modal-add-promo">
+    <div class="admin-modal">
+      <button class="modal-close" onclick="closeAllAdminModals()">&times;</button>
+      <h3 class="modal-title">Add Promo Code</h3>
+      <div id="alert-promo-modal"></div>
+      <form id="admin-add-promo-form">
+        <div class="form-group">
+          <label for="add-promo-code">Promo Code</label>
+          <input type="text" id="add-promo-code" required placeholder="E.g., SUMMER10" style="text-transform: uppercase;">
+        </div>
+        <div class="form-group">
+          <label for="add-promo-type">Discount Type</label>
+          <select id="add-promo-type" required data-ss-select="compact">
+            <option value="percentage">Percentage (%)</option>
+            <option value="fixed">Fixed Amount (₹)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="add-promo-value">Discount Value</label>
+          <input type="number" id="add-promo-value" required min="1" placeholder="E.g., 10">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-small" onclick="closeAllAdminModals()">Cancel</button>
+          <button type="submit" class="btn btn-accent btn-small" id="promo-modal-submit-btn">Add Promo</button>
         </div>
       </form>
     </div>
@@ -477,7 +531,7 @@
   <script src="js/cart-fixes.js"></script>
   <script src="js/header.js"></script>
   <script src="js/email/notifications.js"></script>
-  <script src="js/store-manager.js"></script>
+  <script src="js/store-manager.js?v=3"></script>
   <script src="js/fragrance.js"></script>
 </body>
 </html>
