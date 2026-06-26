@@ -584,7 +584,7 @@
   background-color: var(--theme-bg-container) !important;
   border: 1px solid var(--theme-border);
 }[data-theme="dark"] .product-detail-fragrance-wrapper label {
-  color: var(--theme-text-primary);
+  color: var(--theme-text-primary) !important;
 }[data-theme="dark"] .tab-header.active {
   color: var(--theme-text-primary);
 }/* 14. About Page Dark Mode Fixes */[data-theme="dark"] .about-intro-text p, [data-theme="dark"] .founder-content p, [data-theme="dark"] .registry-card p, [data-theme="dark"] .registry-list li {

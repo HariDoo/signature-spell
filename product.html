@@ -274,9 +274,9 @@
         <div class="review-form-wrapper" style="background-color: var(--color-cream); padding: 30px; border-radius: 8px;">
           <h3 style="margin-bottom: 20px; font-family: var(--font-heading);">Write a Review</h3>
           <form id="submit-review-form" style="display: flex; flex-direction: column; gap: 15px;">
-            <div style="display: flex; gap: 15px;">
-              <input type="text" id="review-name" placeholder="Your Name" required class="form-input" style="flex: 1; padding: 12px; border: 1px solid var(--color-light-gray);">
-              <div style="flex: 1;">
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+              <input type="text" id="review-name" placeholder="Your Name" required class="form-input" style="flex: 1 1 250px; padding: 12px; border: 1px solid var(--color-light-gray);">
+              <div style="flex: 1 1 250px;">
                 <select id="review-rating" required class="form-input" data-ss-select="normal" style="width: 100%;">
                   <option value="" disabled selected>Rating (1-5 Stars)</option>
                   <option value="5">5 - Excellent</option>
