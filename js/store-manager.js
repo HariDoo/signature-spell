@@ -661,7 +661,7 @@ function syncStockTable() {
     // Find matching catalog product
     const p = PRODUCTS.find(prod => prod.id == item.productId);
     const prodName = p ? `${p.name} (${p.category})` : `Product #${item.productId}`;
-    const prodImg = p ? p.image : 'assets/regular_tlight.png';
+    const prodImg = p ? p.image : 'assets/tea-light-rose.png';
     const prodSize = p ? p.size || 'Medium' : '-';
     
     return `

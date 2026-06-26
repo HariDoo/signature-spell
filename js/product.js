@@ -145,7 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (thumbStrip) {
       thumbStrip.innerHTML = `
         <div class="thumbnail active" onclick="swapMainImage('${product.image}', this)"><img src="${product.image}" alt="${product.name}"></div>
-        <div class="thumbnail" onclick="swapMainImage('assets/hero_candle.png', this)"><img src="assets/hero_candle.png" alt="Mood Candle Ambient"></div>
+        <div class="thumbnail" onclick="swapMainImage('assets/large-jar-jasmine.png', this)"><img src="assets/large-jar-jasmine.png" alt="Mood Candle Ambient"></div>
       `;
     }
     
