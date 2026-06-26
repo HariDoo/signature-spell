@@ -292,6 +292,48 @@ document.addEventListener("DOMContentLoaded", () => {
   const reviewsList = document.getElementById("reviews-list");
   const reviewForm = document.getElementById("submit-review-form");
   const reviewMsg = document.getElementById("review-msg");
+  let reviewToDelete = null;
+  const deleteModal = document.getElementById("review-delete-modal");
+  const cancelBtn = document.getElementById("review-delete-cancel");
+  const confirmBtn = document.getElementById("review-delete-confirm");
+
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", () => {
+      reviewToDelete = null;
+      deleteModal.classList.remove("active");
+    });
+  }
+
+  if (confirmBtn) {
+    confirmBtn.addEventListener("click", () => {
+      if (!reviewToDelete) return;
+      
+      const reviewId = reviewToDelete;
+      reviewToDelete = null;
+      deleteModal.classList.remove("active");
+
+      if (typeof isFirebaseInitialized !== "undefined" && isFirebaseInitialized) {
+        db.ref("product_reviews/" + productId + "/" + reviewId).remove().then(() => {
+          if (typeof showToast === "function") showToast("Review deleted");
+        });
+      } else {
+        const mock = JSON.parse(localStorage.getItem("ss_mock_reviews") || "{}");
+        if (mock[productId] && mock[productId][reviewId]) {
+          delete mock[productId][reviewId];
+          localStorage.setItem("ss_mock_reviews", JSON.stringify(mock));
+          loadReviews();
+          if (typeof showToast === "function") showToast("Review deleted");
+        }
+      }
+    });
+  }
+
+  window.deleteReview = function(reviewId) {
+    reviewToDelete = reviewId;
+    if (deleteModal) {
+      deleteModal.classList.add("active");
+    }
+  };
 
   function renderReviews(reviewsObj) {
     if (!reviewsList) return;
@@ -301,11 +343,16 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const reviews = Object.values(reviewsObj).sort((a, b) => b.timestamp - a.timestamp);
+    const isAdmin = typeof UserSession !== "undefined" && UserSession.get() && UserSession.get().isAdmin;
+    
+    // Map to array with IDs
+    const reviews = Object.entries(reviewsObj).map(([id, data]) => ({ id, ...data }));
+    reviews.sort((a, b) => b.timestamp - a.timestamp);
     
     reviewsList.innerHTML = reviews.map(r => `
-      <div class="review-card">
-        <div class="review-header">
+      <div class="review-card" style="position: relative;">
+        ${isAdmin ? `<button onclick="deleteReview('${r.id}')" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: var(--color-danger); cursor: pointer; font-size: 1.2rem;" aria-label="Delete Review"><i class="bi bi-trash"></i></button>` : ''}
+        <div class="review-header" style="margin-right: ${isAdmin ? '30px' : '0'};">
           <span class="review-author">${r.name}</span>
           <span class="review-date">${new Date(r.timestamp).toLocaleDateString()}</span>
         </div>

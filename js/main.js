@@ -495,7 +495,6 @@ function tryInitFirebase() {
       auth = firebase.auth();
       googleProvider = new firebase.auth.GoogleAuthProvider();
       isFirebaseInitialized = true;
-      console.log("Firebase Realtime Database connection established successfully.");
       
       // Auto listen to Auth changes
       auth.onAuthStateChanged(async (user) => {
