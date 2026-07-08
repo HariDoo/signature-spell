@@ -199,18 +199,36 @@ function renderFilteredOrders() {
             <div class="user-order-total">₹${Number(order.total).toFixed(2)}</div>
           </div>
         </div>
-        <div class="user-order-footer">
-          <div style="font-size: 0.8rem; color: var(--color-muted-gray); max-width: 70%; text-align: left;">
+        <div class="user-order-footer" style="display: flex; justify-content: space-between; align-items: center; gap: 15px;">
+          <div style="font-size: 0.8rem; color: var(--color-muted-gray); max-width: 55%; text-align: left;">
             <strong>Ship To:</strong> ${order.address || "N/A"}
           </div>
-          <a href="order-tracking.html?orderId=${order.id}" class="user-order-tracking-btn">
-            Track Order &rarr;
-          </a>
+          <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
+            <button onclick="downloadInvoiceById('${order.id}')" class="btn btn-secondary btn-small" style="font-size: 0.75rem; padding: 6px 12px; border-radius: 4px; display: flex; align-items: center; gap: 4px; cursor: pointer; font-family: inherit; line-height: 1.4;">
+              <span>📥</span> Invoice
+            </button>
+            <a href="order-tracking.html?orderId=${order.id}" class="user-order-tracking-btn" style="margin-left: 0; padding: 6px 12px; font-size: 0.75rem; line-height: 1.4;">
+              Track &rarr;
+            </a>
+          </div>
         </div>
       </div>
     `;
   }).join("");
 }
+
+window.downloadInvoiceById = function(orderId) {
+  const order = allUserOrders.find(o => o.id === orderId);
+  if (order && typeof window.downloadOrderInvoice === "function") {
+    window.downloadOrderInvoice(order);
+  } else {
+    if (typeof showToast === "function") {
+      showToast("Order not found or generator not loaded.", "error");
+    } else {
+      alert("Order not found or invoice generator script not loaded yet.");
+    }
+  }
+};
 
 window.handleOrdersLogout = function() {
   if (isFirebaseInitialized) {

@@ -177,6 +177,7 @@
 
   .tracker-info-header div:last-child {
     text-align: left !important;
+    align-items: flex-start !important;
   }
 
   /* Vertical progress steps on mobile */

@@ -312,7 +312,8 @@ window.syncOrdersTable = function() {
                 <option value="Cancelled" ${o.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
               </select>
             </td>
-            <td style="text-align:right;">
+            <td style="text-align:right; white-space:nowrap;">
+              <button class="btn-edit" onclick="downloadAdminOrderInvoice('${o.id}')" title="Download Invoice" style="margin-right: 6px;"><i class="bi bi-file-earmark-pdf-fill"></i></button>
               <button class="btn-revoke" onclick="handleAdminDeleteOrder('${o.id}')" title="Delete Order"><i class="bi bi-trash-fill"></i></button>
             </td>
           </tr>
@@ -1021,3 +1022,17 @@ function executeDeletePromo(code) {
     syncPromoTable();
   }
 }
+
+window.downloadAdminOrderInvoice = function(orderId) {
+  const orders = OrderDb.get();
+  const order = orders.find(o => o.id === orderId);
+  if (order && typeof window.downloadOrderInvoice === "function") {
+    window.downloadOrderInvoice(order);
+  } else {
+    if (typeof showToast === "function") {
+      showToast("Order details not found or generator not loaded.", "error");
+    } else {
+      alert("Order not found or invoice generator script not loaded yet.");
+    }
+  }
+};
