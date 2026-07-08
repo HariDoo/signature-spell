@@ -72,6 +72,22 @@ document.addEventListener("DOMContentLoaded", () => {
     if (searchSection) searchSection.style.display = "none";
     if (displaySection) displaySection.style.display = "block";
     if (trackingIdEl) trackingIdEl.textContent = order.id;
+
+    const downloadBtn = document.getElementById("download-tracking-invoice-btn");
+    if (downloadBtn) {
+      downloadBtn.style.display = "flex";
+      downloadBtn.onclick = () => {
+        if (typeof window.downloadOrderInvoice === "function") {
+          window.downloadOrderInvoice(order);
+        } else {
+          if (typeof showToast === "function") {
+            showToast("Invoice generator is not ready.", "error");
+          } else {
+            alert("Invoice generator script not loaded yet.");
+          }
+        }
+      };
+    }
     
     // Order date formatting
     const d = new Date(order.date);

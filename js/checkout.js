@@ -10,9 +10,14 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = "cart.html";
     return;
   }
+
+  let subtotal = 0;
+  let shipping = 0;
+  let tax = 0;
+  let total = 0;
   
   function updateCheckoutTotals() {
-    let subtotal = 0;
+    subtotal = 0;
     if (checkoutList) {
       let html = "";
       cart.forEach(item => {
@@ -49,9 +54,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (discountAmt > subtotal) discountAmt = subtotal;
     }
     
-    const shipping = subtotal >= 500 ? 0 : 50;
-    const tax = subtotal * 0.18; // 18% GST
-    const total = (subtotal - discountAmt) + shipping + tax;
+    shipping = subtotal >= 500 ? 0 : 50;
+    tax = subtotal * 0.18; // 18% GST
+    total = (subtotal - discountAmt) + shipping + tax;
     
     const subtotalEl = document.getElementById("checkout-subtotal");
     const shippingEl = document.getElementById("checkout-shipping");
@@ -256,7 +261,16 @@ document.addEventListener("DOMContentLoaded", () => {
         tax: tax,
         shipping: shipping,
         total: total,
-        items: cart.map(i => ({ id: i.id, name: PRODUCTS.find(p => p.id == i.id).name, qty: i.qty })),
+        items: cart.map(i => {
+          const prod = PRODUCTS.find(p => p.id == i.id);
+          return {
+            id: i.id,
+            name: prod ? prod.name : "Luxury Candle",
+            qty: i.qty,
+            price: prod ? prod.price : 0,
+            fragrance: i.fragrance || "Lavender Mist"
+          };
+        }),
         status: "Confirmed"
       };
 

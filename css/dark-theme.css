@@ -374,6 +374,43 @@
   color: #0f0c1b;
 }
 
+/* User Order History Dark Theme Overrides */
+[data-theme="dark"] .user-order-item {
+  background-color: var(--theme-bg-container) !important;
+  border-color: var(--theme-border) !important;
+}
+[data-theme="dark"] .user-order-item:hover {
+  border-color: var(--theme-text-gold) !important;
+}
+[data-theme="dark"] .user-order-id {
+  color: var(--theme-text-primary) !important;
+}
+[data-theme="dark"] .user-order-products {
+  color: var(--theme-text-primary) !important;
+}
+[data-theme="dark"] .user-order-products li span.qty {
+  color: var(--theme-text-secondary) !important;
+}
+[data-theme="dark"] .user-order-total {
+  color: var(--theme-text-gold) !important;
+}
+[data-theme="dark"] .user-order-footer {
+  border-top-color: var(--theme-border) !important;
+}
+[data-theme="dark"] .user-order-tracking-btn:hover {
+  color: var(--theme-text-primary) !important;
+}
+
+/* Store Manager Edit/PDF Icon Button Hover Override */
+[data-theme="dark"] .btn-edit:hover {
+  background-color: var(--theme-text-primary) !important;
+  border-color: var(--theme-text-primary) !important;
+  color: var(--color-charcoal) !important;
+}
+[data-theme="dark"] .btn-edit:hover i {
+  color: var(--color-charcoal) !important;
+}
+
 /* Dark theme overrides for Address Book Card Items */
 [data-theme="dark"] .address-book-card-item {
   background-color: var(--theme-bg-nested) !important;

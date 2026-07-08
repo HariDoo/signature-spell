@@ -672,7 +672,14 @@ window.triggerViewUserOrders = function(uid, email) {
           <td>${new Date(o.date).toLocaleDateString("en-IN")}</td>
           <td>${itemsStr}</td>
           <td>₹${orderTotal}</td>
-          <td><span class="status-badge ${o.status.toLowerCase()}">${o.status}</span></td>
+          <td>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <span class="status-badge ${o.status.toLowerCase()}">${o.status}</span>
+              <button onclick="downloadAdminOrderInvoice('${o.id}')" class="btn btn-secondary btn-small" style="font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; display: flex; align-items: center; gap: 2px; cursor: pointer; border: 1px solid var(--color-light-gray); background-color: var(--color-off-white);" title="Download Invoice">
+                <span>📥</span> Bill
+              </button>
+            </div>
+          </td>
         </tr>
       `;
     }).join("");
@@ -815,6 +822,20 @@ window.handleAdminPageLogout = function() {
     auth.signOut().then(() => {
       window.location.href = "index.html";
     });
+  }
+};
+
+window.downloadAdminOrderInvoice = function(orderId) {
+  const orders = OrderDb.get();
+  const order = orders.find(o => o.id === orderId);
+  if (order && typeof window.downloadOrderInvoice === "function") {
+    window.downloadOrderInvoice(order);
+  } else {
+    if (typeof showToast === "function") {
+      showToast("Order details not found or generator not loaded.", "error");
+    } else {
+      alert("Order not found or invoice generator script not loaded yet.");
+    }
   }
 };
 

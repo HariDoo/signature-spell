@@ -480,11 +480,16 @@
           tax: tax,
           shipping: shipping,
           total: total,
-          items: cart.map(i => ({
-            id: i.id,
-            name: `${PRODUCTS.find(p => p.id == i.id).name} (${i.fragrance || "Lavender Mist"})`,
-            qty: i.qty
-          })),
+          items: cart.map(i => {
+            const prod = PRODUCTS.find(p => p.id == i.id);
+            return {
+              id: i.id,
+              name: prod ? `${prod.name} (${i.fragrance || "Lavender Mist"})` : "Luxury Candle",
+              qty: i.qty,
+              price: prod ? prod.price : 0,
+              fragrance: i.fragrance || "Lavender Mist"
+            };
+          }),
           status: "Confirmed"
         };
         
